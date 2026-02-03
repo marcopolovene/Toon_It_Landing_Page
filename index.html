@@ -321,26 +321,45 @@
                     body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
+const result = await response.json();
 
-                if (result.success || result.video_url) {
-                    status.className = 'status success';
-                    status.innerHTML = '✅ Transformation complete! Your magical video is ready.';
+// Handle async response - job is now processing in background
+if (result.jobId) {
+    status.className = 'status processing';
+    status.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 2em; margin-bottom: 15px;">✨</div>
+            <h3 style="margin: 0 0 10px 0; color: #667eea;">Creating Your Storybook Video!</h3>
+            <p style="margin: 5px 0; color: #666;">Job ID: <code>${result.jobId}</code></p>
+            <p style="margin: 15px 0; color: #888;">${result.message || 'Your image is being transformed...'}</p>
+            <div style="background: rgba(102, 126, 234, 0.1); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                <p style="margin: 0; color: #667eea;">⏱️ <strong>Expected time:</strong> 10-15 minutes</p>
+                <p style="margin: 10px 0 0 0; color: #888; font-size: 0.9em;">The video is being generated in the background.<br>We're working on adding email notifications for when it's ready!</p>
+            </div>
+        </div>
+    `;
+    submitBtn.disabled = false;
+    return; // Exit early, don't throw error
+}
 
-                    if (result.video_url) {
-                        resultVideo.innerHTML = `
-                            <video controls autoplay loop>
-                                <source src="${result.video_url}" type="video/mp4">
-                                Your browser does not support video playback.
-                            </video>
-                            <p style="margin-top: 10px;">
-                                <a href="${result.video_url}" download="storybook_video.mp4" style="color: #667eea;">📥 Download Video</a>
-                            </p>
-                        `;
-                    }
-                } else {
-                    throw new Error(result.error || 'Transformation failed');
-                }
+if (result.success || result.video_url) {
+    status.className = 'status success';
+    status.innerHTML = '✅ Transformation complete! Your magical video is ready.';
+
+    if (result.video_url) {
+        resultVideo.innerHTML = `
+            <video controls autoplay loop>
+                <source src="${result.video_url}" type="video/mp4">
+                Your browser does not support video playback.
+            </video>
+            <p style="margin-top: 10px;">
+                <a href="${result.video_url}" download="storybook_video.mp4" style="color: #667eea;">📥 Download Video</a>
+            </p>
+        `;
+    }
+} else {
+    throw new Error(result.error || 'Transformation failed');
+}
             } catch (error) {
                 status.className = 'status error';
                 status.innerHTML = `❌ Error: ${error.message}. Please try again.`;
@@ -358,6 +377,35 @@
                 reader.readAsDataURL(file);
             });
         }
+
+        function showProcessingStatus(data) {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+
+            statusDiv.innerHTML = `
+                <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+                            border-radius: 16px; padding: 30px; margin-top: 20px;
+                            border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                        <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); 
+                                    border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    </div>
+                    <h3 style="color: #667eea; margin: 0 0 15px 0; font-size: 1.4em;">✨ Creating Your Storybook Video!</h3>
+                    <p style="color: #a0a0a0; margin: 0 0 10px 0;">Job ID: <code style="background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px;">${data.jobId}</code></p>
+                    <p style="color: #c0c0c0; margin: 0 0 20px 0; line-height: 1.6;">${data.message || 'Your image is being transformed into a magical storybook video...'}</p>
+                    <div style="background: rgba(102, 126, 234, 0.2); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                        <p style="color: #667eea; margin: 0; font-size: 0.9em;">⏱️ <strong>Expected time:</strong> 10-15 minutes</p>
+                        <p style="color: #888; margin: 10px 0 0 0; font-size: 0.85em;">The video is being generated in the background. You can close this page - we're working on adding email notifications!</p>
+                    </div>
+                </div>
+            `;
+            statusDiv.style.display = 'block';
+
+            // Hide loading spinner but keep status visible
+            const loadingDiv = document.getElementById('loading');
+            if (loadingDiv) loadingDiv.style.display = 'none';
+        }
+
     </script>
 </body>
 </html>
