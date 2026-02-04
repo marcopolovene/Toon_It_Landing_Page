@@ -578,6 +578,7 @@
 
                 if (result.success && result.job_id) {
                     currentJobId = result.job_id;
+                    saveJob(result.job_id); // Save for page refresh persistence
                     jobInfo.textContent = `Job ID: ${currentJobId}`;
 
                     updateStep(1, 'done');
