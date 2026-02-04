@@ -68,7 +68,7 @@
             color: #333;
             font-weight: 600;
         }
-        .form-group input, .form-group select {
+        .form-group input {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -76,10 +76,20 @@
             font-size: 16px;
             transition: border-color 0.3s;
         }
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
         }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+        .info-box strong { display: block; margin-bottom: 5px; }
         .submit-btn {
             width: 100%;
             padding: 15px;
@@ -96,14 +106,15 @@
         .submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
         .status {
             margin-top: 20px;
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
             text-align: center;
             display: none;
         }
         .status.processing {
-            background: #fff3cd;
-            color: #856404;
+            background: linear-gradient(135deg, #e8f4f8 0%, #d4e5f7 100%);
+            border: 1px solid #667eea;
+            color: #333;
             display: block;
         }
         .status.success {
@@ -118,9 +129,9 @@
         }
         .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e0e0e0;
             border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -128,6 +139,35 @@
             vertical-align: middle;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .progress-steps {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .progress-step {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            color: #666;
+        }
+        .progress-step.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .progress-step.done {
+            color: #28a745;
+        }
+        .progress-step-icon {
+            width: 24px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .time-estimate {
+            font-size: 14px;
+            color: #888;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
         .result-container {
             display: none;
             margin-top: 30px;
@@ -201,26 +241,6 @@
         .analysis-info strong {
             color: #333;
         }
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: #e0e0e0;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 5px;
-            transition: width 0.5s ease;
-            width: 0%;
-        }
-        .time-estimate {
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -243,24 +263,26 @@
             <input type="text" id="userName" placeholder="Enter your name">
         </div>
 
-        <div class="form-group">
-            <label for="videoDuration">Video Duration</label>
-            <select id="videoDuration">
-                <option value="5">5 seconds</option>
-                <option value="10" selected>10 seconds</option>
-                <option value="15">15 seconds</option>
-            </select>
+        <div class="info-box">
+            <strong>⏱️ Processing Time</strong>
+            Video generation takes approximately <strong>12-15 minutes</strong>. Please keep this page open during processing. Your magical storybook video will appear below when ready!
         </div>
 
         <button class="submit-btn" id="submitBtn" disabled>🎬 Transform My Photo!</button>
 
         <div class="status" id="status">
-            <span class="spinner"></span>
-            <span id="statusText">Processing your magic...</span>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+            <div id="statusHeader">
+                <span class="spinner"></span>
+                <span id="statusText">Starting transformation...</span>
             </div>
-            <p class="time-estimate" id="timeEstimate">Estimated time: ~2-3 minutes</p>
+            <div class="progress-steps" id="progressSteps">
+                <div class="progress-step" id="step1"><span class="progress-step-icon">⏳</span> Uploading photo...</div>
+                <div class="progress-step" id="step2"><span class="progress-step-icon">⏳</span> Analyzing image content...</div>
+                <div class="progress-step" id="step3"><span class="progress-step-icon">⏳</span> Creating storybook artwork...</div>
+                <div class="progress-step" id="step4"><span class="progress-step-icon">⏳</span> Generating video animation...</div>
+                <div class="progress-step" id="step5"><span class="progress-step-icon">⏳</span> Finalizing your video...</div>
+            </div>
+            <p class="time-estimate" id="timeEstimate">Estimated time remaining: ~14 minutes</p>
         </div>
 
         <div class="result-container" id="resultContainer">
@@ -291,7 +313,6 @@
         const submitBtn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         const statusText = document.getElementById('statusText');
-        const progressFill = document.getElementById('progressFill');
         const timeEstimate = document.getElementById('timeEstimate');
         const resultContainer = document.getElementById('resultContainer');
         const resultVideo = document.getElementById('resultVideo');
@@ -340,6 +361,33 @@
             reader.readAsDataURL(file);
         }
 
+        function updateStep(stepNum, status) {
+            const step = document.getElementById('step' + stepNum);
+            const icon = step.querySelector('.progress-step-icon');
+
+            // Reset all steps
+            for (let i = 1; i <= 5; i++) {
+                const s = document.getElementById('step' + i);
+                s.classList.remove('active', 'done');
+            }
+
+            // Mark completed steps
+            for (let i = 1; i < stepNum; i++) {
+                const s = document.getElementById('step' + i);
+                s.classList.add('done');
+                s.querySelector('.progress-step-icon').textContent = '✅';
+            }
+
+            // Mark current step
+            if (status === 'active') {
+                step.classList.add('active');
+                icon.textContent = '🔄';
+            } else if (status === 'done') {
+                step.classList.add('done');
+                icon.textContent = '✅';
+            }
+        }
+
         submitBtn.addEventListener('click', async () => {
             if (!base64Image) return;
 
@@ -348,25 +396,42 @@
             status.style.display = 'block';
             resultContainer.style.display = 'none';
 
-            // Progress simulation
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += Math.random() * 2;
-                if (progress > 95) progress = 95;
-                progressFill.style.width = progress + '%';
+            // Reset progress steps
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById('step' + i);
+                step.classList.remove('active', 'done');
+                step.querySelector('.progress-step-icon').textContent = '⏳';
+            }
 
-                if (progress < 20) {
-                    statusText.textContent = '📤 Uploading your photo...';
-                } else if (progress < 40) {
-                    statusText.textContent = '🔍 Analyzing image content...';
-                } else if (progress < 60) {
-                    statusText.textContent = '🎨 Generating storybook artwork...';
-                } else if (progress < 80) {
-                    statusText.textContent = '🎬 Creating video animation...';
+            // Progress simulation
+            const startTime = Date.now();
+            let currentStep = 1;
+
+            const progressInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const remaining = Math.max(0, 840 - elapsed); // 14 minutes
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                timeEstimate.textContent = `Estimated time remaining: ~${mins}:${secs.toString().padStart(2, '0')}`;
+
+                // Update steps based on time
+                if (elapsed < 5) {
+                    updateStep(1, 'active');
+                    statusText.textContent = 'Uploading your photo...';
+                } else if (elapsed < 30) {
+                    updateStep(2, 'active');
+                    statusText.textContent = 'Analyzing image with AI vision...';
+                } else if (elapsed < 90) {
+                    updateStep(3, 'active');
+                    statusText.textContent = 'Creating storybook artwork...';
+                } else if (elapsed < 780) {
+                    updateStep(4, 'active');
+                    statusText.textContent = 'Generating video animation (this takes ~12 minutes)...';
                 } else {
-                    statusText.textContent = '✨ Finalizing your video...';
+                    updateStep(5, 'active');
+                    statusText.textContent = 'Finalizing your video...';
                 }
-            }, 2000);
+            }, 1000);
 
             const payload = {
                 image: base64Image,
@@ -374,25 +439,37 @@
                 user_id: document.getElementById('userName').value || 'anonymous',
                 preferences: {
                     style: 'storybook',
-                    video_duration: parseInt(document.getElementById('videoDuration').value),
+                    video_duration: 5,
                     motion_intensity: 'medium'
                 }
             };
 
             try {
+                // Use AbortController for manual timeout (20 minutes)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1200000); // 20 minutes
+
                 const response = await fetch('https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
                 });
 
+                clearTimeout(timeoutId);
                 clearInterval(progressInterval);
-                progressFill.style.width = '100%';
 
                 if (response.ok) {
                     const result = await response.json();
 
                     if (result.success && (result.video_url || result.download_url)) {
+                        // Mark all steps done
+                        for (let i = 1; i <= 5; i++) {
+                            const step = document.getElementById('step' + i);
+                            step.classList.add('done');
+                            step.querySelector('.progress-step-icon').textContent = '✅';
+                        }
+
                         status.className = 'status success';
                         statusText.textContent = '✅ Your video is ready!';
 
@@ -420,9 +497,14 @@
                 }
             } catch (error) {
                 clearInterval(progressInterval);
-                status.className = 'status error';
-                statusText.textContent = `❌ Error: ${error.message}`;
-                progressFill.style.width = '0%';
+
+                if (error.name === 'AbortError') {
+                    status.className = 'status error';
+                    statusText.textContent = '⏱️ Request timed out. The video may still be processing. Please try refreshing in a few minutes or try again with a simpler image.';
+                } else {
+                    status.className = 'status error';
+                    statusText.textContent = `❌ ${error.message}. The video may still be processing in the background - check your Cloudinary folder!`;
+                }
                 submitBtn.disabled = false;
             }
         });
@@ -449,7 +531,6 @@
             previewContainer.style.display = 'none';
             resultContainer.style.display = 'none';
             status.style.display = 'none';
-            progressFill.style.width = '0%';
             submitBtn.disabled = true;
             resultVideo.src = '';
         });
