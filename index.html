@@ -294,6 +294,91 @@
     </div>
 
     <script>
+    // === JOB PERSISTENCE ===
+    const STORAGE_KEY = 'toonit_pending_job';
+
+    function saveJob(jobId) {
+        const jobData = {
+            jobId: jobId,
+            startedAt: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(jobData));
+        // Update URL for sharing
+        const url = new URL(window.location);
+        url.searchParams.set('job', jobId);
+        window.history.replaceState({}, '', url);
+    }
+
+    function clearJob() {
+        localStorage.removeItem(STORAGE_KEY);
+        const url = new URL(window.location);
+        url.searchParams.delete('job');
+        window.history.replaceState({}, '', url);
+    }
+
+    function getPendingJob() {
+        // Check URL parameter first
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlJobId = urlParams.get('job');
+        if (urlJobId) return { jobId: urlJobId, source: 'url' };
+
+        // Check localStorage
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const jobData = JSON.parse(stored);
+                const startedAt = new Date(jobData.startedAt);
+                const ageMinutes = (Date.now() - startedAt.getTime()) / 60000;
+                if (ageMinutes < 30) {
+                    return { jobId: jobData.jobId, source: 'localStorage', ageMinutes };
+                }
+                clearJob();
+            } catch (e) { clearJob(); }
+        }
+        return null;
+    }
+
+    async function checkPendingJob() {
+        const pending = getPendingJob();
+        if (!pending) return;
+
+        console.log('Found pending job:', pending);
+
+        document.getElementById('upload-form').style.display = 'none';
+        document.getElementById('progress-section').style.display = 'block';
+        document.getElementById('status-message').textContent = 'Checking previous job status...';
+        document.getElementById('progress-bar-fill').style.width = '10%';
+
+        try {
+            const response = await fetch(STATUS_URL + '?job_id=' + pending.jobId);
+            const data = await response.json();
+
+            if (data.status === 'complete' && data.video_url) {
+                showVideo(data.video_url, data.download_url);
+                clearJob();
+            } else if (data.status === 'processing') {
+                document.getElementById('status-message').textContent = 'Resuming... Your video is still being generated!';
+                document.getElementById('progress-bar-fill').style.width = '50%';
+                currentJobId = pending.jobId;
+                pollForCompletion(pending.jobId);
+            } else if (data.status === 'error') {
+                clearJob();
+                showError('Previous job failed: ' + (data.message || 'Unknown error'));
+            } else {
+                clearJob();
+                document.getElementById('upload-form').style.display = 'block';
+                document.getElementById('progress-section').style.display = 'none';
+            }
+        } catch (error) {
+            clearJob();
+            document.getElementById('upload-form').style.display = 'block';
+            document.getElementById('progress-section').style.display = 'none';
+        }
+    }
+
+    // Check for pending job on page load
+    document.addEventListener('DOMContentLoaded', checkPendingJob);
+
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const previewContainer = document.getElementById('previewContainer');
@@ -546,6 +631,9 @@
             submitBtn.disabled = true;
             resultVideo.src = '';
         });
-    </script>
+        // Check for pending job on page load
+    document.addEventListener('DOMContentLoaded', () => checkPendingJob());
+
+</script>
 </body>
 </html>
