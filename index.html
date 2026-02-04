@@ -298,6 +298,7 @@
     const STORAGE_KEY = 'toonit_pending_job';
 
     function saveJob(jobId) {
+        console.log('[PERSISTENCE DEBUG] saveJob called with:', jobId);
         const jobData = {
             jobId: jobId,
             startedAt: new Date().toISOString()
@@ -307,6 +308,7 @@
         const url = new URL(window.location);
         url.searchParams.set('job', jobId);
         window.history.replaceState({}, '', url);
+        console.log('[PERSISTENCE DEBUG] Job saved to localStorage:', localStorage.getItem(STORAGE_KEY));
     }
 
     function clearJob() {
@@ -314,9 +316,11 @@
         const url = new URL(window.location);
         url.searchParams.delete('job');
         window.history.replaceState({}, '', url);
+        console.log('[PERSISTENCE DEBUG] Job saved to localStorage:', localStorage.getItem(STORAGE_KEY));
     }
 
     function getPendingJob() {
+        console.log('[PERSISTENCE DEBUG] getPendingJob called');
         // Check URL parameter first
         const urlParams = new URLSearchParams(window.location.search);
         const urlJobId = urlParams.get('job');
@@ -339,15 +343,25 @@
     }
 
     async function checkPendingJob() {
+        console.log('[PERSISTENCE DEBUG] checkPendingJob running...');
+        console.log('[PERSISTENCE DEBUG] localStorage:', localStorage.getItem(STORAGE_KEY));
+        console.log('[PERSISTENCE DEBUG] URL params:', window.location.search);
         const pending = getPendingJob();
-        if (!pending) return;
+        if (!pending) {
+            console.log('[PERSISTENCE DEBUG] No pending job found');
+            return;
+        }
 
-        console.log('Found pending job:', pending);
+        console.log('[PERSISTENCE DEBUG] Found pending job:', pending);
 
-        document.getElementById('upload-form').style.display = 'none';
-        document.getElementById('progress-section').style.display = 'block';
-        document.getElementById('status-message').textContent = 'Checking previous job status...';
-        document.getElementById('progress-bar-fill').style.width = '10%';
+        // Hide upload area, show status
+        const uploadArea = document.getElementById('uploadArea');
+        const statusEl = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (statusEl) statusEl.style.display = 'block';
+        if (statusText) statusText.textContent = 'Checking previous job status...';
 
         try {
             const response = await fetch(STATUS_URL + '?job_id=' + pending.jobId);
@@ -357,8 +371,8 @@
                 showVideo(data.video_url, data.download_url);
                 clearJob();
             } else if (data.status === 'processing') {
-                document.getElementById('status-message').textContent = 'Resuming... Your video is still being generated!';
-                document.getElementById('progress-bar-fill').style.width = '50%';
+                document.getElementById('statusText').textContent = 'Resuming... Your video is still being generated!';
+                // document.getElementById('progressSteps').style.width = '50%';
                 currentJobId = pending.jobId;
                 pollForCompletion(pending.jobId);
             } else if (data.status === 'error') {
@@ -366,13 +380,13 @@
                 showError('Previous job failed: ' + (data.message || 'Unknown error'));
             } else {
                 clearJob();
-                document.getElementById('upload-form').style.display = 'block';
-                document.getElementById('progress-section').style.display = 'none';
+                document.getElementById('uploadArea').style.display = 'block';
+                document.getElementById('status').style.display = 'none';
             }
         } catch (error) {
             clearJob();
-            document.getElementById('upload-form').style.display = 'block';
-            document.getElementById('progress-section').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('status').style.display = 'none';
         }
     }
 
