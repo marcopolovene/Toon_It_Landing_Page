@@ -433,6 +433,7 @@
         let currentJobId = null;
         let pollInterval = null;
         let pollCount = 0;
+const MAX_POLLS = 30; // Stop after ~10 minutes
 
         // Drag and drop handlers
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -531,7 +532,18 @@
                     resultContainer.style.display = 'block';
                     setTimeout(() => { status.style.display = 'none'; }, 2000);
 
-                } else if (result.status === 'processing') {
+                } else if (result.status === 'expired') {
+        // SAFEGUARD 2: Handle expired jobs
+        clearInterval(pollInterval);
+        clearJob();
+        status.className = 'status error';
+        statusText.textContent = '⏱️ This request has expired. Please upload a new photo.';
+        pollStatus.textContent = 'Job expired.';
+        uploadArea.style.display = 'block';
+        progressSteps.style.display = 'none';
+        submitBtn.disabled = false;
+
+      } else if (result.status === 'processing') {
                     // Still processing - update UI based on time elapsed
                     const elapsed = pollCount * 20; // 20 seconds per poll
 
