@@ -498,6 +498,19 @@ const MAX_POLLS = 30; // Stop after ~10 minutes
 
         async function checkStatus(jobId) {
             pollCount++;
+
+      // SAFEGUARD: Stop after MAX_POLLS to prevent infinite loops
+      if (pollCount > MAX_POLLS) {
+        clearInterval(pollInterval);
+        if (typeof clearJob === 'function') clearJob();
+        status.className = 'status error';
+        statusText.textContent = '⏱️ Request timed out. Please try again with a new photo.';
+        pollStatus.textContent = 'Timed out after maximum attempts.';
+        uploadArea.style.display = 'block';
+        progressSteps.style.display = 'none';
+        submitBtn.disabled = false;
+        return;
+      }
             pollStatus.textContent = `Checking status... (attempt ${pollCount})`;
 
             try {
