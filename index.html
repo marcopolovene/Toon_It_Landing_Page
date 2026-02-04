@@ -296,6 +296,7 @@
     <script>
     // === JOB PERSISTENCE ===
     const STORAGE_KEY = 'toonit_pending_job';
+    const STATUS_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status';
 
     function saveJob(jobId) {
         console.log('[PERSISTENCE DEBUG] saveJob called with:', jobId);
