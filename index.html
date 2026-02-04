@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toon It! - Storybook Photo Transformation</title>
+    <title>Toon It! - Transform Your Photos into Storybook Videos</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -24,87 +20,67 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
         }
         h1 {
-            color: #333;
             text-align: center;
+            color: #333;
             margin-bottom: 10px;
-            font-size: 2em;
+            font-size: 2.5em;
         }
         .subtitle {
+            text-align: center;
             color: #666;
-            text-align: center;
             margin-bottom: 30px;
-            font-size: 1.1em;
         }
-        .emoji-header {
-            text-align: center;
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 25px;
-        }
-        label {
-            display: block;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        input[type="text"], select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .file-upload {
+        .upload-area {
             border: 3px dashed #667eea;
             border-radius: 15px;
-            padding: 40px 20px;
+            padding: 40px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            background: #f8f9ff;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
         }
-        .file-upload:hover {
-            background: #eef0ff;
-            border-color: #764ba2;
-        }
-        .file-upload.has-file {
-            border-style: solid;
-            background: #e8ffe8;
-            border-color: #4CAF50;
-        }
-        .file-upload input {
-            display: none;
-        }
-        .file-upload-text {
-            color: #667eea;
-            font-size: 1.1em;
-        }
-        .file-upload-icon {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
+        .upload-area:hover { background: #f8f9ff; border-color: #764ba2; }
+        .upload-area.dragover { background: #e8ebff; border-color: #764ba2; }
+        .upload-icon { font-size: 48px; margin-bottom: 15px; }
+        .upload-text { color: #666; font-size: 16px; }
+        #fileInput { display: none; }
         .preview-container {
-            margin-top: 15px;
+            display: none;
+            margin: 20px 0;
             text-align: center;
         }
         .preview-container img {
             max-width: 100%;
-            max-height: 200px;
+            max-height: 300px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
-        button[type="submit"] {
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .submit-btn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -114,17 +90,10 @@
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        button[type="submit"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        button[type="submit"]:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
         .status {
             margin-top: 20px;
             padding: 15px;
@@ -133,279 +102,357 @@
             display: none;
         }
         .status.processing {
+            background: #fff3cd;
+            color: #856404;
             display: block;
-            background: #fff3e0;
-            color: #e65100;
         }
         .status.success {
+            background: #d4edda;
+            color: #155724;
             display: block;
-            background: #e8f5e9;
-            color: #2e7d32;
         }
         .status.error {
+            background: #f8d7da;
+            color: #721c24;
             display: block;
-            background: #ffebee;
-            color: #c62828;
         }
         .spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid #e65100;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
-            border-top-color: transparent;
             animation: spin 1s linear infinite;
             margin-right: 10px;
             vertical-align: middle;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 15px;
         }
-        .result-video {
-            margin-top: 20px;
+        .result-container h3 {
+            color: #333;
+            margin-bottom: 15px;
             text-align: center;
         }
-        .result-video video {
-            max-width: 100%;
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .video-wrapper video {
+            width: 100%;
+            display: block;
+        }
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .video-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .video-btn.play-btn {
+            background: #28a745;
+            color: white;
+        }
+        .video-btn.download-btn {
+            background: #667eea;
+            color: white;
+        }
+        .video-btn.new-btn {
+            background: #6c757d;
+            color: white;
+        }
+        .video-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .analysis-info {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .analysis-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .analysis-info strong {
+            color: #333;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        .time-estimate {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="emoji-header">✨📸🎬</div>
-        <h1>Toon It!</h1>
+        <h1>✨ Toon It!</h1>
         <p class="subtitle">Transform your photos into magical storybook videos</p>
 
-        <form id="uploadForm">
-            <div class="form-group">
-                <label>📷 Your Photo</label>
-                <div class="file-upload" id="dropZone">
-                    <div class="file-upload-icon">📁</div>
-                    <div class="file-upload-text">Click or drag photo here</div>
-                    <div class="file-upload-text" style="font-size: 0.9em; color: #999; margin-top: 5px;">JPG, PNG, WebP (max 10MB)</div>
-                    <input type="file" id="photoInput" accept=".jpg,.jpeg,.png,.webp" required>
-                </div>
-                <div class="preview-container" id="previewContainer"></div>
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <p class="upload-text">Drag & drop your photo here<br>or click to browse</p>
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+            <img id="previewImage" src="" alt="Preview">
+        </div>
+
+        <div class="form-group">
+            <label for="userName">Your Name (optional)</label>
+            <input type="text" id="userName" placeholder="Enter your name">
+        </div>
+
+        <div class="form-group">
+            <label for="videoDuration">Video Duration</label>
+            <select id="videoDuration">
+                <option value="5">5 seconds</option>
+                <option value="10" selected>10 seconds</option>
+                <option value="15">15 seconds</option>
+            </select>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" disabled>🎬 Transform My Photo!</button>
+
+        <div class="status" id="status">
+            <span class="spinner"></span>
+            <span id="statusText">Processing your magic...</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
+            <p class="time-estimate" id="timeEstimate">Estimated time: ~2-3 minutes</p>
+        </div>
 
-            <div class="form-group">
-                <label>👤 Your Name (optional)</label>
-                <input type="text" id="userName" placeholder="Enter your name">
+        <div class="result-container" id="resultContainer">
+            <h3>🎉 Your Storybook Video is Ready!</h3>
+            <div class="video-wrapper">
+                <video id="resultVideo" controls playsinline>
+                    Your browser does not support video playback.
+                </video>
             </div>
-
-            <div class="form-group">
-                <label>⏱️ Video Duration</label>
-                <select id="videoDuration">
-                    <option value="5">5 seconds</option>
-                    <option value="10" selected>10 seconds</option>
-                    <option value="15">15 seconds</option>
-                </select>
+            <div class="analysis-info" id="analysisInfo">
+                <p><strong>📍 Subjects:</strong> <span id="subjects">-</span></p>
+                <p><strong>🌍 Environment:</strong> <span id="environment">-</span></p>
+                <p><strong>✨ Mood:</strong> <span id="mood">-</span></p>
             </div>
-
-            <button type="submit" id="submitBtn">🪄 Transform My Photo!</button>
-        </form>
-
-        <div class="status" id="status"></div>
-        <div class="result-video" id="resultVideo"></div>
+            <div class="video-actions">
+                <button class="video-btn play-btn" id="playBtn">▶️ Play Video</button>
+                <a class="video-btn download-btn" id="downloadBtn" download="toon_it_video.mp4">⬇️ Download Video</a>
+                <button class="video-btn new-btn" id="newBtn">🔄 Create Another</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const WEBHOOK_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform';
-
-        const dropZone = document.getElementById('dropZone');
-        const photoInput = document.getElementById('photoInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
         const previewContainer = document.getElementById('previewContainer');
-        const form = document.getElementById('uploadForm');
+        const previewImage = document.getElementById('previewImage');
         const submitBtn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const progressFill = document.getElementById('progressFill');
+        const timeEstimate = document.getElementById('timeEstimate');
+        const resultContainer = document.getElementById('resultContainer');
         const resultVideo = document.getElementById('resultVideo');
+        const playBtn = document.getElementById('playBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const newBtn = document.getElementById('newBtn');
 
         let selectedFile = null;
+        let base64Image = null;
 
-        // Drag and drop handling
-        dropZone.addEventListener('click', () => photoInput.click());
-
-        dropZone.addEventListener('dragover', (e) => {
+        // Drag and drop handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = '#764ba2';
-            dropZone.style.background = '#eef0ff';
+            uploadArea.classList.add('dragover');
         });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = '#667eea';
-            dropZone.style.background = '#f8f9ff';
-        });
-
-        dropZone.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
+            uploadArea.classList.remove('dragover');
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
+            if (files.length > 0) handleFile(files[0]);
         });
-
-        photoInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
         });
 
         function handleFile(file) {
-            // Validate file type
-            const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!validTypes.includes(file.type)) {
-                alert('Please upload a JPG, PNG, or WebP image.');
+            if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
+                alert('Please select a JPG, PNG, or WebP image.');
                 return;
             }
-
-            // Validate file size (10MB max)
             if (file.size > 10 * 1024 * 1024) {
-                alert('File is too large. Maximum size is 10MB.');
+                alert('Image must be less than 10MB.');
                 return;
             }
-
             selectedFile = file;
-            dropZone.classList.add('has-file');
-            dropZone.querySelector('.file-upload-text').textContent = file.name;
-            dropZone.querySelector('.file-upload-icon').textContent = '✅';
 
-            // Show preview
             const reader = new FileReader();
             reader.onload = (e) => {
-                previewContainer.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                base64Image = e.target.result;
+                previewImage.src = base64Image;
+                previewContainer.style.display = 'block';
+                submitBtn.disabled = false;
             };
             reader.readAsDataURL(file);
         }
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        submitBtn.addEventListener('click', async () => {
+            if (!base64Image) return;
 
-            if (!selectedFile) {
-                alert('Please select a photo first.');
-                return;
-            }
-
-            // Disable form
             submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Processing...';
-
-            // Show processing status
             status.className = 'status processing';
-            status.innerHTML = '<span class="spinner"></span> Transforming your photo into a magical storybook video... This may take 1-2 minutes.';
-            resultVideo.innerHTML = '';
+            status.style.display = 'block';
+            resultContainer.style.display = 'none';
+
+            // Progress simulation
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 2;
+                if (progress > 95) progress = 95;
+                progressFill.style.width = progress + '%';
+
+                if (progress < 20) {
+                    statusText.textContent = '📤 Uploading your photo...';
+                } else if (progress < 40) {
+                    statusText.textContent = '🔍 Analyzing image content...';
+                } else if (progress < 60) {
+                    statusText.textContent = '🎨 Generating storybook artwork...';
+                } else if (progress < 80) {
+                    statusText.textContent = '🎬 Creating video animation...';
+                } else {
+                    statusText.textContent = '✨ Finalizing your video...';
+                }
+            }, 2000);
+
+            const payload = {
+                image: base64Image,
+                filename: selectedFile.name,
+                user_id: document.getElementById('userName').value || 'anonymous',
+                preferences: {
+                    style: 'storybook',
+                    video_duration: parseInt(document.getElementById('videoDuration').value),
+                    motion_intensity: 'medium'
+                }
+            };
 
             try {
-                // Convert file to base64
-                const base64 = await fileToBase64(selectedFile);
-
-                // Prepare payload
-                const payload = {
-                    image: base64,
-                    filename: selectedFile.name,
-                    user_id: document.getElementById('userName').value || 'anonymous',
-                    preferences: {
-                        style: 'storybook',
-                        video_duration: parseInt(document.getElementById('videoDuration').value),
-                        motion_intensity: 'medium'
-                    }
-                };
-
-                // Send to webhook
-                const response = await fetch(WEBHOOK_URL, {
+                const response = await fetch('https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-const result = await response.json();
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
 
-// Handle async response - job is now processing in background
-if (result.jobId) {
-    status.className = 'status processing';
-    status.innerHTML = `
-        <div style="text-align: center;">
-            <div style="font-size: 2em; margin-bottom: 15px;">✨</div>
-            <h3 style="margin: 0 0 10px 0; color: #667eea;">Creating Your Storybook Video!</h3>
-            <p style="margin: 5px 0; color: #666;">Job ID: <code>${result.jobId}</code></p>
-            <p style="margin: 15px 0; color: #888;">${result.message || 'Your image is being transformed...'}</p>
-            <div style="background: rgba(102, 126, 234, 0.1); border-radius: 8px; padding: 15px; margin-top: 15px;">
-                <p style="margin: 0; color: #667eea;">⏱️ <strong>Expected time:</strong> 10-15 minutes</p>
-                <p style="margin: 10px 0 0 0; color: #888; font-size: 0.9em;">The video is being generated in the background.<br>We're working on adding email notifications for when it's ready!</p>
-            </div>
-        </div>
-    `;
-    submitBtn.disabled = false;
-    return; // Exit early, don't throw error
-}
+                if (response.ok) {
+                    const result = await response.json();
 
-if (result.success || result.video_url) {
-    status.className = 'status success';
-    status.innerHTML = '✅ Transformation complete! Your magical video is ready.';
+                    if (result.success && (result.video_url || result.download_url)) {
+                        status.className = 'status success';
+                        statusText.textContent = '✅ Your video is ready!';
 
-    if (result.video_url) {
-        resultVideo.innerHTML = `
-            <video controls autoplay loop>
-                <source src="${result.video_url}" type="video/mp4">
-                Your browser does not support video playback.
-            </video>
-            <p style="margin-top: 10px;">
-                <a href="${result.video_url}" download="storybook_video.mp4" style="color: #667eea;">📥 Download Video</a>
-            </p>
-        `;
-    }
-} else {
-    throw new Error(result.error || 'Transformation failed');
-}
+                        // Set video source
+                        const videoUrl = result.video_url || result.download_url;
+                        resultVideo.src = videoUrl;
+
+                        // Set download link
+                        downloadBtn.href = result.download_url || videoUrl;
+
+                        // Update analysis info
+                        if (result.analysis) {
+                            document.getElementById('subjects').textContent = result.analysis.subjects || '-';
+                            document.getElementById('environment').textContent = result.analysis.environment || '-';
+                            document.getElementById('mood').textContent = result.analysis.mood || '-';
+                        }
+
+                        resultContainer.style.display = 'block';
+                        status.style.display = 'none';
+                    } else {
+                        throw new Error(result.error || 'Video generation failed');
+                    }
+                } else {
+                    throw new Error(`Server error: ${response.status}`);
+                }
             } catch (error) {
+                clearInterval(progressInterval);
                 status.className = 'status error';
-                status.innerHTML = `❌ Error: ${error.message}. Please try again.`;
-            } finally {
+                statusText.textContent = `❌ Error: ${error.message}`;
+                progressFill.style.width = '0%';
                 submitBtn.disabled = false;
-                submitBtn.textContent = '🪄 Transform My Photo!';
             }
         });
 
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
+        // Video controls
+        playBtn.addEventListener('click', () => {
+            if (resultVideo.paused) {
+                resultVideo.play();
+                playBtn.textContent = '⏸️ Pause';
+            } else {
+                resultVideo.pause();
+                playBtn.textContent = '▶️ Play Video';
+            }
+        });
 
-        function showProcessingStatus(data) {
-            const statusDiv = document.getElementById('status');
-            const resultDiv = document.getElementById('result');
+        resultVideo.addEventListener('ended', () => {
+            playBtn.textContent = '▶️ Play Video';
+        });
 
-            statusDiv.innerHTML = `
-                <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
-                            border-radius: 16px; padding: 30px; margin-top: 20px;
-                            border: 1px solid rgba(255,255,255,0.1);">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                        <div class="spinner" style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); 
-                                    border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    </div>
-                    <h3 style="color: #667eea; margin: 0 0 15px 0; font-size: 1.4em;">✨ Creating Your Storybook Video!</h3>
-                    <p style="color: #a0a0a0; margin: 0 0 10px 0;">Job ID: <code style="background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px;">${data.jobId}</code></p>
-                    <p style="color: #c0c0c0; margin: 0 0 20px 0; line-height: 1.6;">${data.message || 'Your image is being transformed into a magical storybook video...'}</p>
-                    <div style="background: rgba(102, 126, 234, 0.2); border-radius: 8px; padding: 15px; margin-top: 15px;">
-                        <p style="color: #667eea; margin: 0; font-size: 0.9em;">⏱️ <strong>Expected time:</strong> 10-15 minutes</p>
-                        <p style="color: #888; margin: 10px 0 0 0; font-size: 0.85em;">The video is being generated in the background. You can close this page - we're working on adding email notifications!</p>
-                    </div>
-                </div>
-            `;
-            statusDiv.style.display = 'block';
-
-            // Hide loading spinner but keep status visible
-            const loadingDiv = document.getElementById('loading');
-            if (loadingDiv) loadingDiv.style.display = 'none';
-        }
-
+        newBtn.addEventListener('click', () => {
+            selectedFile = null;
+            base64Image = null;
+            fileInput.value = '';
+            previewContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+            status.style.display = 'none';
+            progressFill.style.width = '0%';
+            submitBtn.disabled = true;
+            resultVideo.src = '';
+        });
     </script>
 </body>
 </html>
