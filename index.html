@@ -1230,5 +1230,69 @@
             }
         }
 </script>
+
+<script>
+// FAILSAFE: Simple button handlers that can't fail
+(function() {
+    'use strict';
+
+    function setupButtons() {
+        console.log('[FAILSAFE] Setting up buttons...');
+
+        // Login button
+        var loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.onclick = function() {
+                console.log('[FAILSAFE] Login clicked');
+                var modal = document.getElementById('loginModal');
+                if (modal) modal.classList.add('active');
+            };
+            console.log('[FAILSAFE] Login button ready');
+        } else {
+            console.error('[FAILSAFE] Login button not found!');
+        }
+
+        // Signup button
+        var signupBtn = document.getElementById('signupBtn');
+        if (signupBtn) {
+            signupBtn.onclick = function() {
+                console.log('[FAILSAFE] Signup clicked');
+                var modal = document.getElementById('signupModal');
+                if (modal) modal.classList.add('active');
+            };
+            console.log('[FAILSAFE] Signup button ready');
+        }
+
+        // Credits button
+        var creditsBtn = document.getElementById('creditsBtn');
+        if (creditsBtn) {
+            creditsBtn.onclick = function() {
+                var modal = document.getElementById('creditsModal');
+                if (modal) modal.classList.add('active');
+            };
+        }
+
+        // Close buttons
+        var closeButtons = document.querySelectorAll('[data-close-modal]');
+        closeButtons.forEach(function(btn) {
+            btn.onclick = function() {
+                document.querySelectorAll('.modal-overlay').forEach(function(m) {
+                    m.classList.remove('active');
+                });
+            };
+        });
+
+        console.log('[FAILSAFE] All buttons initialized!');
+    }
+
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupButtons);
+    } else {
+        // DOM already loaded
+        setupButtons();
+    }
+})();
+</script>
 </body>
 </html>
