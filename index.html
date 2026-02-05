@@ -616,16 +616,26 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Global error handler
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('JS ERROR:', msg, 'at line', line);
+            return false;
+        };
 
         // ==========================================
         // CRITICAL: UI FUNCTIONS FIRST (before any async code)
         // ==========================================
+        console.log('=== Landing page JS loaded ===');
+
         function showModal(type) {
+            console.log('showModal called with:', type);
             closeModals();
             const modal = document.getElementById(type + 'Modal');
+            console.log('Found modal:', modal);
             if (modal) {
                 modal.classList.add('active');
-}
+                console.log('Modal activated');
+            }
         }
 
         function closeModals() {
