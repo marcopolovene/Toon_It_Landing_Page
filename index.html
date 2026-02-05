@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toon It! - Transform Your Photos into Storybook Videos</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -615,28 +615,16 @@
     </div>
 
     <script>
-        alert('PAGE LOADED - JS IS RUNNING');  // IMMEDIATE TEST
-        // Global error handler
-        window.onerror = function(msg, url, line, col, error) {
-            alert('JS Error: ' + msg + ' at line ' + line);
-            return false;
-        };
-        console.log('Script starting...');
+
         // ==========================================
         // CRITICAL: UI FUNCTIONS FIRST (before any async code)
         // ==========================================
         function showModal(type) {
-            console.log('showModal called with:', type);
-            alert('showModal called: ' + type);  // DEBUG
             closeModals();
             const modal = document.getElementById(type + 'Modal');
-            console.log('Modal element:', modal);
             if (modal) {
                 modal.classList.add('active');
-                console.log('Added active class');
-            } else {
-                alert('Modal not found: ' + type + 'Modal');  // DEBUG
-            }
+}
         }
 
         function closeModals() {
@@ -656,14 +644,30 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MzE4NzgsImV4cCI6MjA1NDEwNzg3OH0.EvqH6KfYeIvmYvkTk18Dw9BtejUYyuNguKVkbRKkuOA';
 
         let supabase = null;
-        try {
+
+        // Initialize Supabase when library loads (async)
+        function initSupabase() {
             if (window.supabase && window.supabase.createClient) {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                console.error('Supabase library not loaded');
+                console.log('Supabase initialized');
+                // Check auth after Supabase loads
+                checkAuth();
             }
-        } catch (e) {
-            console.error('Supabase init error:', e);
+        }
+
+        // Try to init immediately if already loaded
+        if (window.supabase) {
+            initSupabase();
+        } else {
+            // Wait for Supabase to load
+            const checkSupabase = setInterval(() => {
+                if (window.supabase) {
+                    clearInterval(checkSupabase);
+                    initSupabase();
+                }
+            }, 100);
+            // Give up after 10 seconds
+            setTimeout(() => clearInterval(checkSupabase), 10000);
         }
 
         // Workflow endpoints
@@ -687,7 +691,7 @@
         // ==========================================
         // INITIALIZATION
         // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             // Get DOM elements
             uploadArea = document.getElementById('uploadArea');
             fileInput = document.getElementById('fileInput');
@@ -702,7 +706,14 @@
             infoBox = document.getElementById('infoBox');
 
             setupUploadHandlers();
-            await checkAuth();
+            // checkAuth is called by initSupabase when library loads
+            // If Supabase already loaded, check auth now
+            if (supabase) {
+                checkAuth();
+            } else {
+                // Show guest UI while waiting for Supabase
+                updateUIForGuest();
+            }
             checkPendingJob();
         });
 
