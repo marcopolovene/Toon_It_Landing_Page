@@ -934,13 +934,48 @@
 
                 if (error) {
                     if (errorEl) errorEl.textContent = error.message;
-                } else {
-                    if (successEl) successEl.textContent = 'Account created! Check your email to confirm, then log in.';
-                    if (data.session) {
-                        closeModals();
-                    }
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                    return;
+                }
+
+                // Check if session was created (email confirmation disabled)
+                if (data.session) {
+                    console.log('Signup successful with immediate session');
+                    if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                    currentUser = data.session.user;
+                    await loadUserCredits();
+                    updateUIForUser();
+                    closeModals();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                    return;
+                }
+
+                // If no session, try to auto-login (in case email confirmation is disabled)
+                console.log('No immediate session, attempting auto-login...');
+                if (successEl) successEl.textContent = 'Account created! Logging you in...';
+
+                // Small delay then try to login
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                    email, password
+                });
+
+                if (loginError) {
+                    console.log('Auto-login failed:', loginError.message);
+                    // Email confirmation might be required
+                    if (successEl) successEl.textContent = 'Account created! Please check your email to confirm, then log in.';
+                } else if (loginData.session) {
+                    console.log('Auto-login successful!');
+                    currentUser = loginData.session.user;
+                    await loadUserCredits();
+                    updateUIForUser();
+                    closeModals();
                 }
             } catch (e) {
+                console.error('Signup error:', e);
                 if (errorEl) errorEl.textContent = 'Signup failed. Please try again.';
             }
 
