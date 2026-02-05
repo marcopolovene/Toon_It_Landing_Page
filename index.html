@@ -364,11 +364,11 @@
                 return;
             }
 
-            console.log('[PERSISTENCE] Found pending job:', pending.job_id);
-            currentJobId = pending.job_id;
+            console.log('[PERSISTENCE] Found pending job:', pending.jobId);
+            currentJobId = pending.jobId;
 
             // === FAST PATH: Check Cloudinary directly first ===
-            const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${pending.job_id}.mp4`;
+            const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${pending.jobId}.mp4`;
             console.log('[PERSISTENCE] Checking Cloudinary directly...');
 
             try {
@@ -378,7 +378,7 @@
                     showVideoResult({
                         video_url: cloudinaryUrl,
                         download_url: cloudinaryUrl.replace('/upload/', '/upload/fl_attachment/'),
-                        job_id: pending.job_id
+                        job_id: pending.jobId
                     });
                     return;
                 }
