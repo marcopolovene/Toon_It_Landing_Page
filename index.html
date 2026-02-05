@@ -616,11 +616,42 @@
 
     <script>
         // ==========================================
+        // CRITICAL: UI FUNCTIONS FIRST (before any async code)
+        // ==========================================
+        function showModal(type) {
+            closeModals();
+            const modal = document.getElementById(type + 'Modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            const loginError = document.getElementById('loginError');
+            const signupError = document.getElementById('signupError');
+            const signupSuccess = document.getElementById('signupSuccess');
+            if (loginError) loginError.textContent = '';
+            if (signupError) signupError.textContent = '';
+            if (signupSuccess) signupSuccess.textContent = '';
+        }
+
+        // ==========================================
         // SUPABASE CONFIGURATION
         // ==========================================
         const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MzE4NzgsImV4cCI6MjA1NDEwNzg3OH0.EvqH6KfYeIvmYvkTk18Dw9BtejUYyuNguKVkbRKkuOA';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let supabase = null;
+        try {
+            if (window.supabase && window.supabase.createClient) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                console.error('Supabase library not loaded');
+            }
+        } catch (e) {
+            console.error('Supabase init error:', e);
+        }
 
         // Workflow endpoints
         const WEBHOOK_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform';
@@ -636,65 +667,84 @@
         let pollInterval = null;
 
         // ==========================================
-        // DOM ELEMENTS
+        // DOM ELEMENTS (set after DOMContentLoaded)
         // ==========================================
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const transformBtn = document.getElementById('transformBtn');
-        const status = document.getElementById('status');
-        const statusText = document.getElementById('statusText');
-        const result = document.getElementById('result');
-        const resultVideo = document.getElementById('resultVideo');
-        const loginRequired = document.getElementById('loginRequired');
-        const noCredits = document.getElementById('noCredits');
-        const infoBox = document.getElementById('infoBox');
+        let uploadArea, fileInput, preview, transformBtn, status, statusText, result, resultVideo, loginRequired, noCredits, infoBox;
 
         // ==========================================
         // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
+            // Get DOM elements
+            uploadArea = document.getElementById('uploadArea');
+            fileInput = document.getElementById('fileInput');
+            preview = document.getElementById('preview');
+            transformBtn = document.getElementById('transformBtn');
+            status = document.getElementById('status');
+            statusText = document.getElementById('statusText');
+            result = document.getElementById('result');
+            resultVideo = document.getElementById('resultVideo');
+            loginRequired = document.getElementById('loginRequired');
+            noCredits = document.getElementById('noCredits');
+            infoBox = document.getElementById('infoBox');
+
+            setupUploadHandlers();
             await checkAuth();
             checkPendingJob();
-            setupUploadHandlers();
         });
 
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                await loadUserCredits();
-                updateUIForUser();
-            } else {
+            if (!supabase) {
+                console.log('Supabase not available, showing guest UI');
                 updateUIForGuest();
+                return;
             }
 
-            // Listen for auth changes
-            supabase.auth.onAuthStateChange(async (event, session) => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
                     currentUser = session.user;
                     await loadUserCredits();
                     updateUIForUser();
                 } else {
-                    currentUser = null;
-                    currentCredits = 0;
                     updateUIForGuest();
                 }
-            });
+
+                // Listen for auth changes
+                supabase.auth.onAuthStateChange(async (event, session) => {
+                    if (session) {
+                        currentUser = session.user;
+                        await loadUserCredits();
+                        updateUIForUser();
+                    } else {
+                        currentUser = null;
+                        currentCredits = 0;
+                        updateUIForGuest();
+                    }
+                });
+            } catch (e) {
+                console.error('Auth check error:', e);
+                updateUIForGuest();
+            }
         }
 
         async function loadUserCredits() {
-            if (!currentUser) return;
+            if (!currentUser || !supabase) return;
 
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('credits')
-                .eq('id', currentUser.id)
-                .single();
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('credits')
+                    .eq('id', currentUser.id)
+                    .single();
 
-            if (data) {
-                currentCredits = data.credits;
-                document.getElementById('creditCount').textContent = currentCredits;
+                if (data) {
+                    currentCredits = data.credits;
+                    const creditEl = document.getElementById('creditCount');
+                    if (creditEl) creditEl.textContent = currentCredits;
+                }
+            } catch (e) {
+                console.error('Load credits error:', e);
             }
         }
 
@@ -702,56 +752,54 @@
         // UI STATE MANAGEMENT
         // ==========================================
         function updateUIForGuest() {
-            document.getElementById('guestView').style.display = '';
-            document.getElementById('userView').style.display = 'none';
-            document.getElementById('guestButtons').style.display = '';
-            document.getElementById('userButtons').style.display = 'none';
-            loginRequired.style.display = '';
-            noCredits.style.display = 'none';
-            infoBox.style.display = 'none';
-            uploadArea.classList.add('disabled');
-            transformBtn.disabled = true;
+            const guestView = document.getElementById('guestView');
+            const userView = document.getElementById('userView');
+            const guestButtons = document.getElementById('guestButtons');
+            const userButtons = document.getElementById('userButtons');
+
+            if (guestView) guestView.style.display = '';
+            if (userView) userView.style.display = 'none';
+            if (guestButtons) guestButtons.style.display = '';
+            if (userButtons) userButtons.style.display = 'none';
+            if (loginRequired) loginRequired.style.display = '';
+            if (noCredits) noCredits.style.display = 'none';
+            if (infoBox) infoBox.style.display = 'none';
+            if (uploadArea) uploadArea.classList.add('disabled');
+            if (transformBtn) transformBtn.disabled = true;
         }
 
         function updateUIForUser() {
-            document.getElementById('guestView').style.display = 'none';
-            document.getElementById('userView').style.display = '';
-            document.getElementById('guestButtons').style.display = 'none';
-            document.getElementById('userButtons').style.display = '';
-            document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('creditCount').textContent = currentCredits;
-            loginRequired.style.display = 'none';
+            const guestView = document.getElementById('guestView');
+            const userView = document.getElementById('userView');
+            const guestButtons = document.getElementById('guestButtons');
+            const userButtons = document.getElementById('userButtons');
+            const userEmail = document.getElementById('userEmail');
+            const creditCount = document.getElementById('creditCount');
+
+            if (guestView) guestView.style.display = 'none';
+            if (userView) userView.style.display = '';
+            if (guestButtons) guestButtons.style.display = 'none';
+            if (userButtons) userButtons.style.display = '';
+            if (userEmail) userEmail.textContent = currentUser.email;
+            if (creditCount) creditCount.textContent = currentCredits;
+            if (loginRequired) loginRequired.style.display = 'none';
 
             if (currentCredits > 0) {
-                noCredits.style.display = 'none';
-                infoBox.style.display = '';
-                uploadArea.classList.remove('disabled');
+                if (noCredits) noCredits.style.display = 'none';
+                if (infoBox) infoBox.style.display = '';
+                if (uploadArea) uploadArea.classList.remove('disabled');
             } else {
-                noCredits.style.display = '';
-                infoBox.style.display = 'none';
-                uploadArea.classList.add('disabled');
+                if (noCredits) noCredits.style.display = '';
+                if (infoBox) infoBox.style.display = 'none';
+                if (uploadArea) uploadArea.classList.add('disabled');
             }
             updateTransformButton();
         }
 
         function updateTransformButton() {
-            transformBtn.disabled = !selectedFile || !currentUser || currentCredits < 1;
-        }
-
-        // ==========================================
-        // MODAL MANAGEMENT
-        // ==========================================
-        function showModal(type) {
-            closeModals();
-            document.getElementById(type + 'Modal').classList.add('active');
-        }
-
-        function closeModals() {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-            // Clear error messages
-            document.getElementById('loginError').textContent = '';
-            document.getElementById('signupError').textContent = '';
-            document.getElementById('signupSuccess').textContent = '';
+            if (transformBtn) {
+                transformBtn.disabled = !selectedFile || !currentUser || currentCredits < 1;
+            }
         }
 
         // ==========================================
@@ -759,6 +807,11 @@
         // ==========================================
         async function handleLogin(event) {
             event.preventDefault();
+            if (!supabase) {
+                alert('Authentication service not available. Please refresh the page.');
+                return;
+            }
+
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorEl = document.getElementById('loginError');
@@ -766,25 +819,33 @@
 
             submitBtn.disabled = true;
             submitBtn.textContent = 'Logging in...';
-            errorEl.textContent = '';
+            if (errorEl) errorEl.textContent = '';
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email, password
-            });
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email, password
+                });
 
-            if (error) {
-                errorEl.textContent = error.message;
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Log In';
-            } else {
-                closeModals();
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Log In';
+                if (error) {
+                    if (errorEl) errorEl.textContent = error.message;
+                } else {
+                    closeModals();
+                }
+            } catch (e) {
+                if (errorEl) errorEl.textContent = 'Login failed. Please try again.';
             }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Log In';
         }
 
         async function handleSignup(event) {
             event.preventDefault();
+            if (!supabase) {
+                alert('Authentication service not available. Please refresh the page.');
+                return;
+            }
+
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirm = document.getElementById('signupConfirm').value;
@@ -792,38 +853,42 @@
             const successEl = document.getElementById('signupSuccess');
             const submitBtn = document.getElementById('signupSubmit');
 
-            errorEl.textContent = '';
-            successEl.textContent = '';
+            if (errorEl) errorEl.textContent = '';
+            if (successEl) successEl.textContent = '';
 
             if (password !== confirm) {
-                errorEl.textContent = 'Passwords do not match';
+                if (errorEl) errorEl.textContent = 'Passwords do not match';
                 return;
             }
 
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating account...';
 
-            const { data, error } = await supabase.auth.signUp({
-                email, password
-            });
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email, password
+                });
 
-            if (error) {
-                errorEl.textContent = error.message;
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account';
-            } else {
-                successEl.textContent = 'Account created! Check your email to confirm, then log in.';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account';
-                // If email confirmation is disabled, user is automatically logged in
-                if (data.session) {
-                    closeModals();
+                if (error) {
+                    if (errorEl) errorEl.textContent = error.message;
+                } else {
+                    if (successEl) successEl.textContent = 'Account created! Check your email to confirm, then log in.';
+                    if (data.session) {
+                        closeModals();
+                    }
                 }
+            } catch (e) {
+                if (errorEl) errorEl.textContent = 'Signup failed. Please try again.';
             }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            if (supabase) {
+                await supabase.auth.signOut();
+            }
         }
 
         // ==========================================
@@ -831,13 +896,14 @@
         // ==========================================
         function buyCredits(bundle) {
             alert('Stripe payment integration coming soon!\n\nBundle: ' + bundle);
-            // TODO: Call n8n webhook to create Stripe checkout session
         }
 
         // ==========================================
         // FILE UPLOAD
         // ==========================================
         function setupUploadHandlers() {
+            if (!uploadArea || !fileInput) return;
+
             uploadArea.addEventListener('click', () => {
                 if (!uploadArea.classList.contains('disabled')) {
                     fileInput.click();
@@ -869,10 +935,14 @@
                 }
             });
 
-            transformBtn.addEventListener('click', startTransformation);
+            if (transformBtn) {
+                transformBtn.addEventListener('click', startTransformation);
+            }
 
-            document.getElementById('downloadBtn').addEventListener('click', downloadVideo);
-            document.getElementById('newBtn').addEventListener('click', resetForNew);
+            const downloadBtn = document.getElementById('downloadBtn');
+            const newBtn = document.getElementById('newBtn');
+            if (downloadBtn) downloadBtn.addEventListener('click', downloadVideo);
+            if (newBtn) newBtn.addEventListener('click', resetForNew);
         }
 
         function handleFile(file) {
@@ -884,8 +954,10 @@
             selectedFile = file;
             const reader = new FileReader();
             reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
             };
             reader.readAsDataURL(file);
             updateTransformButton();
@@ -897,30 +969,30 @@
         async function startTransformation() {
             if (!selectedFile || !currentUser || currentCredits < 1) return;
 
-            // Convert to base64
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const base64 = e.target.result;
 
-                // Show status
-                uploadArea.style.display = 'none';
-                infoBox.style.display = 'none';
-                transformBtn.style.display = 'none';
-                status.style.display = 'block';
+                if (uploadArea) uploadArea.style.display = 'none';
+                if (infoBox) infoBox.style.display = 'none';
+                if (transformBtn) transformBtn.style.display = 'none';
+                if (status) status.style.display = 'block';
                 setStep(1);
 
                 try {
-                    // Get auth token
-                    const { data: { session } } = await supabase.auth.getSession();
+                    let authToken = '';
+                    if (supabase) {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        authToken = session?.access_token || '';
+                    }
 
-                    // Submit to webhook
                     const response = await fetch(WEBHOOK_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             image: base64,
                             user_id: currentUser.id,
-                            auth_token: session?.access_token || '',
+                            auth_token: authToken,
                             duration: 5
                         })
                     });
@@ -935,7 +1007,7 @@
                         throw new Error(result.error || 'Failed to start transformation');
                     }
                 } catch (error) {
-                    statusText.textContent = 'Error: ' + error.message;
+                    if (statusText) statusText.textContent = 'Error: ' + error.message;
                 }
             };
             reader.readAsDataURL(selectedFile);
@@ -943,7 +1015,7 @@
 
         function startPolling() {
             pollInterval = setInterval(checkStatus, 10000);
-            checkStatus(); // Check immediately
+            checkStatus();
         }
 
         async function checkStatus() {
@@ -957,15 +1029,12 @@
                     clearInterval(pollInterval);
                     clearJob();
                     showVideo(data.video_url);
-                    // Refresh credits
                     await loadUserCredits();
-                    document.getElementById('creditCount').textContent = currentCredits;
                 } else if (data.status === 'failed' || data.status === 'expired') {
                     clearInterval(pollInterval);
                     clearJob();
-                    statusText.textContent = 'Transformation failed. Please try again.';
+                    if (statusText) statusText.textContent = 'Transformation failed. Please try again.';
                 } else {
-                    // Update step based on status
                     updateStepFromStatus(data.status);
                 }
             } catch (error) {
@@ -976,13 +1045,13 @@
         function updateStepFromStatus(status) {
             if (status === 'analyzing' || status === 'processing') {
                 setStep(1);
-                statusText.textContent = 'Analyzing your image...';
+                if (statusText) statusText.textContent = 'Analyzing your image...';
             } else if (status === 'generating') {
                 setStep(2);
-                statusText.textContent = 'Generating storybook image...';
+                if (statusText) statusText.textContent = 'Generating storybook image...';
             } else if (status === 'animating') {
                 setStep(3);
-                statusText.textContent = 'Creating video animation...';
+                if (statusText) statusText.textContent = 'Creating video animation...';
             }
         }
 
@@ -995,14 +1064,14 @@
         }
 
         function showVideo(url) {
-            status.style.display = 'none';
-            result.style.display = 'block';
-            resultVideo.src = url;
+            if (status) status.style.display = 'none';
+            if (result) result.style.display = 'block';
+            if (resultVideo) resultVideo.src = url;
             setStep(4);
         }
 
         function downloadVideo() {
-            if (resultVideo.src) {
+            if (resultVideo && resultVideo.src) {
                 const a = document.createElement('a');
                 a.href = resultVideo.src;
                 a.download = 'toon-it-video.mp4';
@@ -1013,16 +1082,19 @@
         function resetForNew() {
             selectedFile = null;
             currentJobId = null;
-            preview.style.display = 'none';
-            preview.src = '';
-            fileInput.value = '';
-            result.style.display = 'none';
-            status.style.display = 'none';
-            uploadArea.style.display = '';
-            transformBtn.style.display = '';
-            transformBtn.disabled = true;
+            if (preview) {
+                preview.style.display = 'none';
+                preview.src = '';
+            }
+            if (fileInput) fileInput.value = '';
+            if (result) result.style.display = 'none';
+            if (status) status.style.display = 'none';
+            if (uploadArea) uploadArea.style.display = '';
+            if (transformBtn) {
+                transformBtn.style.display = '';
+                transformBtn.disabled = true;
+            }
             clearJob();
-            // Refresh UI based on credits
             if (currentUser) {
                 loadUserCredits().then(() => updateUIForUser());
             }
@@ -1034,7 +1106,6 @@
         function saveJob(jobId) {
             const job = { jobId, timestamp: Date.now() };
             localStorage.setItem('toonit_job', JSON.stringify(job));
-            // Update URL
             const url = new URL(window.location);
             url.searchParams.set('job', jobId);
             window.history.replaceState({}, '', url);
@@ -1048,16 +1119,13 @@
         }
 
         function getPendingJob() {
-            // Check URL first
             const urlParams = new URLSearchParams(window.location.search);
             const urlJobId = urlParams.get('job');
             if (urlJobId) return { jobId: urlJobId, timestamp: Date.now() };
 
-            // Check localStorage
             const stored = localStorage.getItem('toonit_job');
             if (stored) {
                 const job = JSON.parse(stored);
-                // Expire after 30 minutes
                 if (Date.now() - job.timestamp < 30 * 60 * 1000) {
                     return job;
                 }
@@ -1072,16 +1140,14 @@
 
             currentJobId = pending.jobId;
 
-            // Show status UI
-            uploadArea.style.display = 'none';
-            infoBox.style.display = 'none';
-            transformBtn.style.display = 'none';
-            loginRequired.style.display = 'none';
-            noCredits.style.display = 'none';
-            status.style.display = 'block';
-            statusText.textContent = 'Resuming... Checking status...';
+            if (uploadArea) uploadArea.style.display = 'none';
+            if (infoBox) infoBox.style.display = 'none';
+            if (transformBtn) transformBtn.style.display = 'none';
+            if (loginRequired) loginRequired.style.display = 'none';
+            if (noCredits) noCredits.style.display = 'none';
+            if (status) status.style.display = 'block';
+            if (statusText) statusText.textContent = 'Resuming... Checking status...';
 
-            // Check if video is ready
             try {
                 const response = await fetch(`${STATUS_URL}?job_id=${currentJobId}`);
                 const data = await response.json();
@@ -1093,7 +1159,6 @@
                     clearJob();
                     resetForNew();
                 } else {
-                    // Still processing, start polling
                     startPolling();
                 }
             } catch (error) {
@@ -1101,6 +1166,6 @@
                 startPolling();
             }
         }
-    </script>
+</script>
 </body>
 </html>
