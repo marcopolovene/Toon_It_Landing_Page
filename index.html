@@ -1267,12 +1267,168 @@
 </script>
 
 <script>
-// FAILSAFE: Simple button handlers that can't fail
+// FAILSAFE: Complete auth handlers that can't fail
 (function() {
     'use strict';
 
-    function setupButtons() {
-        console.log('[FAILSAFE] Setting up buttons...');
+    // Wait for Supabase to be available
+    function getSupabase() {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+            if (!window._supabaseClient) {
+                window._supabaseClient = window.supabase.createClient(
+                    'https://zgfpxdkanwbcieowrqoz.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MzE4NzgsImV4cCI6MjA1NDEwNzg3OH0.EvqH6KfYeIvmYvkTk18Dw9BtejUYyuNguKVkbRKkuOA'
+                );
+            }
+            return window._supabaseClient;
+        }
+        return null;
+    }
+
+    function closeAllModals() {
+        document.querySelectorAll('.modal-overlay').forEach(function(m) {
+            m.classList.remove('active');
+        });
+    }
+
+    function updateUIForUser(email, credits) {
+        console.log('[FAILSAFE] Updating UI for user:', email);
+        var guestView = document.getElementById('guestView');
+        var userView = document.getElementById('userView');
+        var userEmail = document.getElementById('userEmail');
+        var userCredits = document.getElementById('userCredits');
+        var loginRequired = document.getElementById('loginRequired');
+        var uploadArea = document.getElementById('uploadArea');
+
+        if (guestView) guestView.style.display = 'none';
+        if (userView) userView.style.display = 'flex';
+        if (userEmail) userEmail.textContent = email;
+        if (userCredits) userCredits.textContent = credits + ' credits';
+        if (loginRequired) loginRequired.style.display = 'none';
+        if (uploadArea) uploadArea.style.display = 'block';
+    }
+
+    async function handleLoginSubmit(e) {
+        e.preventDefault();
+        console.log('[FAILSAFE] Login form submitted');
+
+        var sb = getSupabase();
+        if (!sb) {
+            alert('Authentication service loading... Please try again.');
+            return;
+        }
+
+        var email = document.getElementById('loginEmail').value;
+        var password = document.getElementById('loginPassword').value;
+        var errorEl = document.getElementById('loginError');
+        var submitBtn = document.getElementById('loginSubmit');
+
+        if (errorEl) errorEl.textContent = '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+        }
+
+        try {
+            var result = await sb.auth.signInWithPassword({ email: email, password: password });
+            console.log('[FAILSAFE] Login result:', result);
+
+            if (result.error) {
+                if (errorEl) errorEl.textContent = result.error.message;
+            } else if (result.data && result.data.session) {
+                console.log('[FAILSAFE] Login successful!');
+                closeAllModals();
+                updateUIForUser(email, 2);
+            }
+        } catch (err) {
+            console.error('[FAILSAFE] Login error:', err);
+            if (errorEl) errorEl.textContent = 'Login failed. Please try again.';
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Log In';
+        }
+    }
+
+    async function handleSignupSubmit(e) {
+        e.preventDefault();
+        console.log('[FAILSAFE] Signup form submitted');
+
+        var sb = getSupabase();
+        if (!sb) {
+            alert('Authentication service loading... Please try again.');
+            return;
+        }
+
+        var email = document.getElementById('signupEmail').value;
+        var password = document.getElementById('signupPassword').value;
+        var confirm = document.getElementById('signupConfirm').value;
+        var errorEl = document.getElementById('signupError');
+        var successEl = document.getElementById('signupSuccess');
+        var submitBtn = document.getElementById('signupSubmit');
+
+        if (errorEl) errorEl.textContent = '';
+        if (successEl) successEl.textContent = '';
+
+        if (password !== confirm) {
+            if (errorEl) errorEl.textContent = 'Passwords do not match';
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+        }
+
+        try {
+            // Sign up
+            var signupResult = await sb.auth.signUp({ email: email, password: password });
+            console.log('[FAILSAFE] Signup result:', signupResult);
+
+            if (signupResult.error) {
+                if (errorEl) errorEl.textContent = signupResult.error.message;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                }
+                return;
+            }
+
+            // If we got a session immediately, we're done
+            if (signupResult.data && signupResult.data.session) {
+                console.log('[FAILSAFE] Signup with immediate session!');
+                closeAllModals();
+                updateUIForUser(email, 2);
+                return;
+            }
+
+            // Try auto-login
+            if (successEl) successEl.textContent = 'Account created! Logging you in...';
+
+            var loginResult = await sb.auth.signInWithPassword({ email: email, password: password });
+            console.log('[FAILSAFE] Auto-login result:', loginResult);
+
+            if (loginResult.error) {
+                if (successEl) successEl.textContent = 'Account created! Please check your email to confirm, then log in.';
+            } else if (loginResult.data && loginResult.data.session) {
+                console.log('[FAILSAFE] Auto-login successful!');
+                closeAllModals();
+                updateUIForUser(email, 2);
+            }
+        } catch (err) {
+            console.error('[FAILSAFE] Signup error:', err);
+            if (errorEl) errorEl.textContent = 'Signup failed. Please try again.';
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+        }
+    }
+
+    function setupHandlers() {
+        console.log('[FAILSAFE] Setting up all handlers...');
 
         // Login button
         var loginBtn = document.getElementById('loginBtn');
@@ -1282,9 +1438,6 @@
                 var modal = document.getElementById('loginModal');
                 if (modal) modal.classList.add('active');
             };
-            console.log('[FAILSAFE] Login button ready');
-        } else {
-            console.error('[FAILSAFE] Login button not found!');
         }
 
         // Signup button
@@ -1295,7 +1448,6 @@
                 var modal = document.getElementById('signupModal');
                 if (modal) modal.classList.add('active');
             };
-            console.log('[FAILSAFE] Signup button ready');
         }
 
         // Credits button
@@ -1308,24 +1460,32 @@
         }
 
         // Close buttons
-        var closeButtons = document.querySelectorAll('[data-close-modal]');
-        closeButtons.forEach(function(btn) {
-            btn.onclick = function() {
-                document.querySelectorAll('.modal-overlay').forEach(function(m) {
-                    m.classList.remove('active');
-                });
-            };
+        document.querySelectorAll('[data-close-modal]').forEach(function(btn) {
+            btn.onclick = closeAllModals;
         });
 
-        console.log('[FAILSAFE] All buttons initialized!');
+        // Login form
+        var loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.onsubmit = handleLoginSubmit;
+            console.log('[FAILSAFE] Login form handler attached');
+        }
+
+        // Signup form
+        var signupForm = document.getElementById('signupForm');
+        if (signupForm) {
+            signupForm.onsubmit = handleSignupSubmit;
+            console.log('[FAILSAFE] Signup form handler attached');
+        }
+
+        console.log('[FAILSAFE] All handlers ready!');
     }
 
     // Run when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupButtons);
+        document.addEventListener('DOMContentLoaded', setupHandlers);
     } else {
-        // DOM already loaded
-        setupButtons();
+        setupHandlers();
     }
 })();
 </script>
