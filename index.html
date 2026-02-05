@@ -615,14 +615,26 @@
     </div>
 
     <script>
+        // Global error handler
+        window.onerror = function(msg, url, line, col, error) {
+            alert('JS Error: ' + msg + ' at line ' + line);
+            return false;
+        };
+        console.log('Script starting...');
         // ==========================================
         // CRITICAL: UI FUNCTIONS FIRST (before any async code)
         // ==========================================
         function showModal(type) {
+            console.log('showModal called with:', type);
+            alert('showModal called: ' + type);  // DEBUG
             closeModals();
             const modal = document.getElementById(type + 'Modal');
+            console.log('Modal element:', modal);
             if (modal) {
                 modal.classList.add('active');
+                console.log('Added active class');
+            } else {
+                alert('Modal not found: ' + type + 'Modal');  // DEBUG
             }
         }
 
