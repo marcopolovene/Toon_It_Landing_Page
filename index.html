@@ -652,9 +652,9 @@
         // SUPABASE CONFIGURATION
         // ==========================================
         const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
-        const _k1 = 'sb_secret_-D0';
-        const _k2 = '2ShEpQLF_McHc';
-        const _k3 = 'mJ_4nQ_VxHQMT5X';
+        const _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
+        const _k2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
+        const _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
         const SUPABASE_ANON_KEY = _k1 + _k2 + _k3;
 
         let supabase = null;
@@ -1280,7 +1280,7 @@
             if (!window._supabaseClient) {
                 window._supabaseClient = window.supabase.createClient(
                     'https://zgfpxdkanwbcieowrqoz.supabase.co',
-                    'sb_secret_-D0' + '2ShEpQLF_McHc' + 'mJ_4nQ_VxHQMT5X'
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' + 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN' + 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0'
                 );
             }
             return window._supabaseClient;
