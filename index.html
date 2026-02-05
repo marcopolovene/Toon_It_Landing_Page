@@ -456,13 +456,13 @@
                 <span class="credits-display">Credits: <span id="creditCount">0</span></span>
             </div>
             <div class="auth-buttons" id="guestButtons">
-                <button class="btn-login" onclick="showModal('login')">Log In</button>
-                <button class="btn-signup" onclick="showModal('signup')">Sign Up</button>
+                <button class="btn-login" id="loginBtn">Log In</button>
+                <button class="btn-signup" id="signupBtn">Sign Up</button>
             </div>
             <div class="auth-buttons" id="userButtons" style="display: none;">
                 <span class="user-email" id="userEmail"></span>
-                <button class="btn-credits" onclick="showModal('credits')">Buy Credits</button>
-                <button class="btn-logout" onclick="logout()">Log Out</button>
+                <button class="btn-credits" id="creditsBtn">Buy Credits</button>
+                <button class="btn-logout" id="logoutBtn">Log Out</button>
             </div>
         </div>
 
@@ -535,7 +535,7 @@
     <!-- Login Modal -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
-            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <button class="modal-close" data-close-modal>&times;</button>
             <h2>Welcome Back!</h2>
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
@@ -558,7 +558,7 @@
     <!-- Signup Modal -->
     <div class="modal-overlay" id="signupModal">
         <div class="modal">
-            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <button class="modal-close" data-close-modal>&times;</button>
             <h2>Create Account</h2>
             <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
             <form id="signupForm" onsubmit="handleSignup(event)">
@@ -587,7 +587,7 @@
     <!-- Credits Modal -->
     <div class="modal-overlay" id="creditsModal">
         <div class="modal">
-            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <button class="modal-close" data-close-modal>&times;</button>
             <h2>Buy Credits</h2>
             <p style="text-align: center; margin-bottom: 20px;">1 credit = 1 video transformation</p>
             <div class="credits-grid">
@@ -690,6 +690,8 @@
         // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM loaded, setting up...');
+
             // Get DOM elements
             uploadArea = document.getElementById('uploadArea');
             fileInput = document.getElementById('fileInput');
@@ -703,9 +705,55 @@
             noCredits = document.getElementById('noCredits');
             infoBox = document.getElementById('infoBox');
 
+            // Setup button event listeners
+            const loginBtn = document.getElementById('loginBtn');
+            const signupBtn = document.getElementById('signupBtn');
+            const creditsBtn = document.getElementById('creditsBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    console.log('Login button clicked');
+                    showModal('login');
+                });
+                console.log('Login button listener attached');
+            }
+
+            if (signupBtn) {
+                signupBtn.addEventListener('click', () => {
+                    console.log('Signup button clicked');
+                    showModal('signup');
+                });
+                console.log('Signup button listener attached');
+            }
+
+            if (creditsBtn) {
+                creditsBtn.addEventListener('click', () => showModal('credits'));
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => logout());
+            }
+
+            // Close modal buttons
+            document.querySelectorAll('[data-close-modal]').forEach(btn => {
+                btn.addEventListener('click', closeModals);
+            });
+
+            // Switch modal links
+            document.querySelectorAll('[data-switch-modal]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('data-switch-modal');
+                    closeModals();
+                    showModal(target);
+                });
+            });
+
             setupUploadHandlers();
             await checkAuth();
             checkPendingJob();
+            console.log('Setup complete');
         });
 
         async function checkAuth() {
