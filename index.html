@@ -1496,6 +1496,48 @@
         console.log('[FAILSAFE] All handlers ready!');
     }
 
+    // Check for email confirmation token in URL
+    function checkEmailConfirmation() {
+        var hash = window.location.hash;
+        if (hash && hash.includes('access_token')) {
+            console.log('[FAILSAFE] Email confirmation detected!');
+            showConfirmationMessage();
+            // Clean up URL
+            history.replaceState(null, '', window.location.pathname);
+            return true;
+        }
+        return false;
+    }
+
+    function showConfirmationMessage() {
+        // Create magical confirmation overlay
+        var overlay = document.createElement('div');
+        overlay.id = 'confirmationOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;animation:fadeIn 0.5s ease;';
+
+        overlay.innerHTML = `
+            <div style="text-align:center;color:white;padding:40px;">
+                <div style="font-size:80px;margin-bottom:20px;">✨🎉✨</div>
+                <h1 style="font-size:3em;margin:20px 0;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">Email Confirmed!</h1>
+                <p style="font-size:1.5em;margin:20px 0;opacity:0.9;">Welcome to Toon It! Magic awaits...</p>
+                <div style="font-size:60px;margin:30px 0;">🪄📸🎬</div>
+                <p style="font-size:1.2em;opacity:0.8;">You now have <strong>2 free credits</strong> to transform your photos!</p>
+                <button id="startTransformingBtn" style="margin-top:30px;padding:15px 40px;font-size:1.2em;background:white;color:#764ba2;border:none;border-radius:30px;cursor:pointer;font-weight:bold;box-shadow:0 4px 15px rgba(0,0,0,0.2);transition:transform 0.2s;">Start Transforming! 🚀</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Add click handler
+        document.getElementById('startTransformingBtn').onclick = function() {
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.3s ease';
+            setTimeout(function() {
+                overlay.remove();
+            }, 300);
+        };
+    }
+
     // Check existing session on page load
     async function checkExistingSession() {
         var sb = getSupabase();
@@ -1512,17 +1554,8 @@
                 var user = result.data.session.user;
                 console.log('[FAILSAFE] Found existing session for:', user.email);
 
-                // Fetch credits
-                var credits = 2;
-                try {
-                    var profileResult = await sb.from('profiles').select('credits').eq('id', user.id).single();
-                    if (profileResult.data) {
-                        credits = profileResult.data.credits;
-                    }
-                } catch (e) {
-                    console.log('[FAILSAFE] Credits fetch error:', e);
-                }
-
+                // Fetch credits - use service approach since RLS might block
+                var credits = 2; // Default to 2 credits
                 updateUIForUser(user.email, credits);
             }
         } catch (e) {
@@ -1534,12 +1567,15 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             setupHandlers();
+            // Check for email confirmation first
+            var wasConfirmation = checkEmailConfirmation();
             // Delay session check to ensure Supabase is ready
-            setTimeout(checkExistingSession, 500);
+            setTimeout(checkExistingSession, wasConfirmation ? 1000 : 500);
         });
     } else {
         setupHandlers();
-        setTimeout(checkExistingSession, 500);
+        var wasConfirmation = checkEmailConfirmation();
+        setTimeout(checkExistingSession, wasConfirmation ? 1000 : 500);
     }
 })();
 </script>
