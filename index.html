@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toon It! - Transform Your Photos into Storybook Videos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -18,669 +19,1088 @@
         .container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
-            max-width: 600px;
+            max-width: 500px;
             width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        h1 {
+        .header {
             text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-        .subtitle {
-            text-align: center;
-            color: #666;
             margin-bottom: 30px;
         }
-        .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .header h1 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* Auth Header Bar */
+        .auth-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
-        .upload-area:hover { background: #f8f9ff; border-color: #764ba2; }
-        .upload-area.dragover { background: #e8ebff; border-color: #764ba2; }
-        .upload-icon { font-size: 48px; margin-bottom: 15px; }
-        .upload-text { color: #666; font-size: 16px; }
-        #fileInput { display: none; }
-        .preview-container {
+        .credits-display {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .credits-display span {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-left: 5px;
+        }
+        .auth-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 8px;
+            transition: all 0.3s;
+        }
+        .btn-login {
+            background: #667eea;
+            color: white;
+        }
+        .btn-login:hover {
+            background: #5a6fd6;
+        }
+        .btn-signup {
+            background: #28a745;
+            color: white;
+        }
+        .btn-signup:hover {
+            background: #218838;
+        }
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-logout:hover {
+            background: #c82333;
+        }
+        .btn-credits {
+            background: #ffc107;
+            color: #000;
+        }
+        .btn-credits:hover {
+            background: #e0a800;
+        }
+        .user-email {
+            font-size: 0.85em;
+            color: #666;
+            margin-right: 10px;
+        }
+
+        /* Auth Modal */
+        .modal-overlay {
             display: none;
-            margin: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+        .modal h2 {
+            color: #667eea;
+            margin-bottom: 20px;
             text-align: center;
         }
-        .preview-container img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+        .modal-close:hover {
+            color: #333;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #333;
-            font-weight: 600;
+            font-weight: 500;
         }
         .form-group input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #ddd;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 1em;
             transition: border-color 0.3s;
         }
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
         }
-        .info-box {
-            background: #e8f5e9;
-            border: 1px solid #4caf50;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #2e7d32;
+        .form-error {
+            color: #dc3545;
+            font-size: 0.85em;
+            margin-top: 5px;
         }
-        .info-box strong { display: block; margin-bottom: 5px; }
-        .submit-btn {
+        .form-success {
+            color: #28a745;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        .modal-submit {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .modal-submit:hover {
+            background: #5a6fd6;
+        }
+        .modal-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .modal-switch {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+        }
+        .modal-switch a {
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Upload Area */
+        #uploadArea {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        #uploadArea:hover {
+            background: #f0f4ff;
+            border-color: #5a6fd6;
+        }
+        #uploadArea.dragover {
+            background: #e8edff;
+            border-color: #4a5fc6;
+        }
+        #uploadArea.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        #fileInput {
+            display: none;
+        }
+        #preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #667eea;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .login-required {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            text-align: center;
+        }
+        .no-credits {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            text-align: center;
+        }
+
+        /* Transform Button */
+        #transformBtn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 1.2em;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
         }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .status {
+        #transformBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        #transformBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status Section */
+        #status {
+            display: none;
             margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
+        }
+        #statusText {
             text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px 5px;
+            font-size: 0.75em;
+            color: #999;
+            position: relative;
+        }
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 50%;
+            height: 2px;
+            background: #e0e0e0;
+        }
+        .step:last-child::after {
             display: none;
         }
-        .status.processing {
-            background: linear-gradient(135deg, #e8f4f8 0%, #d4e5f7 100%);
-            border: 1px solid #667eea;
-            color: #333;
-            display: block;
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 50%;
+            height: 2px;
+            background: #e0e0e0;
         }
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
+        .step:first-child::before {
+            display: none;
         }
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-        .spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid #e0e0e0;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .progress-steps {
-            margin: 20px 0;
-            text-align: left;
-        }
-        .progress-step {
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            color: #666;
-        }
-        .progress-step.active {
+        .step.active {
             color: #667eea;
             font-weight: 600;
         }
-        .progress-step.done {
+        .step.completed {
             color: #28a745;
         }
-        .progress-step-icon {
-            width: 24px;
-            margin-right: 10px;
-            text-align: center;
-        }
-        .job-info {
-            font-size: 12px;
-            color: #888;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-        }
-        .poll-status {
-            font-size: 13px;
-            color: #667eea;
-            margin-top: 10px;
-        }
-        .result-container {
-            display: none;
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9ff;
-            border-radius: 15px;
-        }
-        .result-container h3 {
-            color: #333;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-        .video-wrapper video {
-            width: 100%;
+        .step-icon {
+            font-size: 1.5em;
             display: block;
+            margin-bottom: 5px;
         }
-        .video-actions {
+
+        /* Result Section */
+        #result {
+            display: none;
+            margin-top: 20px;
+        }
+        #resultVideo {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .result-buttons {
             display: flex;
             gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
         }
-        .video-btn {
-            padding: 12px 24px;
+        .result-buttons button {
+            flex: 1;
+            padding: 12px;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
             cursor: pointer;
+            font-size: 1em;
             transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
         }
-        .video-btn.play-btn {
+        #downloadBtn {
             background: #28a745;
             color: white;
         }
-        .video-btn.download-btn {
+        #downloadBtn:hover {
+            background: #218838;
+        }
+        #newBtn {
             background: #667eea;
             color: white;
         }
-        .video-btn.new-btn {
-            background: #6c757d;
-            color: white;
+        #newBtn:hover {
+            background: #5a6fd6;
         }
-        .video-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+
+        /* Credits Modal */
+        .credits-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .credit-bundle {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .credit-bundle:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .credit-bundle.popular {
+            border-color: #667eea;
+            background: #f8f9ff;
+            position: relative;
+        }
+        .credit-bundle.popular::before {
+            content: '⭐ BEST VALUE';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7em;
+        }
+        .bundle-credits {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .bundle-price {
+            font-size: 1.2em;
+            color: #333;
+            margin: 5px 0;
+        }
+        .bundle-per {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        /* Error/Message styling */
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>✨ Toon It!</h1>
-        <p class="subtitle">Transform your photos into magical storybook videos</p>
+        <!-- Auth Bar -->
+        <div class="auth-bar" id="authBar">
+            <div id="guestView">
+                <span style="color: #666;">Sign in to transform photos</span>
+            </div>
+            <div id="userView" style="display: none;">
+                <span class="credits-display">Credits: <span id="creditCount">0</span></span>
+            </div>
+            <div class="auth-buttons" id="guestButtons">
+                <button class="btn-login" onclick="showModal('login')">Log In</button>
+                <button class="btn-signup" onclick="showModal('signup')">Sign Up</button>
+            </div>
+            <div class="auth-buttons" id="userButtons" style="display: none;">
+                <span class="user-email" id="userEmail"></span>
+                <button class="btn-credits" onclick="showModal('credits')">Buy Credits</button>
+                <button class="btn-logout" onclick="logout()">Log Out</button>
+            </div>
+        </div>
 
-        <div class="upload-area" id="uploadArea">
+        <div class="header">
+            <h1>🎨 Toon It!</h1>
+            <p>Transform your photos into magical storybook videos</p>
+        </div>
+
+        <!-- Login Required Message -->
+        <div class="info-box login-required" id="loginRequired">
+            🔐 Please <a onclick="showModal('signup')" style="color: #667eea; cursor: pointer; text-decoration: underline;">sign up</a> or 
+            <a onclick="showModal('login')" style="color: #667eea; cursor: pointer; text-decoration: underline;">log in</a> to transform photos.
+            <br><strong>New users get 2 FREE credits!</strong>
+        </div>
+
+        <!-- No Credits Message -->
+        <div class="info-box no-credits" id="noCredits" style="display: none;">
+            ⚠️ You're out of credits! 
+            <a onclick="showModal('credits')" style="color: #667eea; cursor: pointer; text-decoration: underline;">Buy more</a> to continue.
+        </div>
+
+        <!-- Upload Area -->
+        <div id="uploadArea" class="disabled">
             <div class="upload-icon">📸</div>
-            <p class="upload-text">Drag & drop your photo here<br>or click to browse</p>
-            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+            <p><strong>Drop your photo here</strong></p>
+            <p style="color: #999; font-size: 0.9em;">or click to browse</p>
+            <input type="file" id="fileInput" accept="image/*">
+            <img id="preview" alt="Preview">
         </div>
 
-        <div class="preview-container" id="previewContainer">
-            <img id="previewImage" src="" alt="Preview">
+        <div class="info-box" id="infoBox" style="display: none;">
+            ✨ Processing typically takes 2-3 minutes. Your video will appear below when ready!
         </div>
 
-        
+        <button id="transformBtn" disabled>Toon It!</button>
 
-        <div class="info-box">
-            
-            Your request is processed in the background. You can safely wait on this page - 
-            we'll automatically show your video when it's ready (typically 2-3 minutes).
-        </div>
-
-        <button class="submit-btn" id="submitBtn" disabled>🎬 Toon It!</button>
-
-        <div class="status" id="status">
-            <div id="statusHeader">
-                <span class="spinner"></span>
-                <span id="statusText">Starting transformation...</span>
-            </div>
+        <!-- Status Section -->
+        <div id="status">
+            <div id="statusText">Starting transformation...</div>
             <div class="progress-steps" id="progressSteps">
-                <div class="progress-step" id="step1"><span class="progress-step-icon">⏳</span> Uploading photo...</div>
-                <div class="progress-step" id="step2"><span class="progress-step-icon">⏳</span> Analyzing image content...</div>
-                <div class="progress-step" id="step3"><span class="progress-step-icon">⏳</span> Creating storybook artwork...</div>
-                <div class="progress-step" id="step4"><span class="progress-step-icon">⏳</span> Generating video animation...</div>
-                <div class="progress-step" id="step5"><span class="progress-step-icon">⏳</span> Finalizing your video...</div>
+                <div class="step" data-step="1">
+                    <span class="step-icon">🔍</span>
+                    Analyzing
+                </div>
+                <div class="step" data-step="2">
+                    <span class="step-icon">✨</span>
+                    Generating
+                </div>
+                <div class="step" data-step="3">
+                    <span class="step-icon">🎬</span>
+                    Animating
+                </div>
+                <div class="step" data-step="4">
+                    <span class="step-icon">✅</span>
+                    Complete
+                </div>
             </div>
-            <p class="poll-status" id="pollStatus">Checking status...</p>
-            <p class="job-info" id="jobInfo"></p>
         </div>
 
-        <div class="result-container" id="resultContainer">
-            <h3>🎉 Your Storybook Video is Ready!</h3>
-            <div class="video-wrapper">
-                <video id="resultVideo" preload="auto" controls playsinline>
-                    Your browser does not support video playback.
-                </video>
-            </div>
-            <div class="video-actions">
-                <button class="video-btn play-btn" id="playBtn">▶️ Play Video</button>
-                <a class="video-btn download-btn" id="downloadBtn" download="toon_it_video.mp4">⬇️ Download Video</a>
-                <button class="video-btn new-btn" id="newBtn">🔄 Create Another</button>
+        <!-- Result Section -->
+        <div id="result">
+            <video id="resultVideo" controls autoplay loop></video>
+            <div class="result-buttons">
+                <button id="downloadBtn">⬇️ Download</button>
+                <button id="newBtn">🔄 Create Another</button>
             </div>
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <h2>Welcome Back!</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Your password">
+                </div>
+                <div id="loginError" class="form-error"></div>
+                <button type="submit" class="modal-submit" id="loginSubmit">Log In</button>
+            </form>
+            <div class="modal-switch">
+                Don't have an account? <a onclick="showModal('signup')">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <h2>Create Account</h2>
+            <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required placeholder="Min 6 characters" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="signupConfirm" required placeholder="Confirm password">
+                </div>
+                <div id="signupError" class="form-error"></div>
+                <div id="signupSuccess" class="form-success"></div>
+                <button type="submit" class="modal-submit" id="signupSubmit">Create Account</button>
+            </form>
+            <div class="modal-switch">
+                Already have an account? <a onclick="showModal('login')">Log in</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Modal -->
+    <div class="modal-overlay" id="creditsModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <h2>Buy Credits</h2>
+            <p style="text-align: center; margin-bottom: 20px;">1 credit = 1 video transformation</p>
+            <div class="credits-grid">
+                <div class="credit-bundle" onclick="buyCredits('starter')"> 
+                    <div class="bundle-credits">5</div>
+                    <div>credits</div>
+                    <div class="bundle-price">$5.00</div>
+                    <div class="bundle-per">$1.00 each</div>
+                </div>
+                <div class="credit-bundle popular" onclick="buyCredits('popular')">
+                    <div class="bundle-credits">12</div>
+                    <div>credits</div>
+                    <div class="bundle-price">$10.00</div>
+                    <div class="bundle-per">$0.83 each</div>
+                </div>
+                <div class="credit-bundle" onclick="buyCredits('pro')">
+                    <div class="bundle-credits">35</div>
+                    <div>credits</div>
+                    <div class="bundle-price">$25.00</div>
+                    <div class="bundle-per">$0.71 each</div>
+                </div>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe (coming soon)</p>
+        </div>
+    </div>
+
     <script>
-    // === JOB PERSISTENCE ===
-    const STORAGE_KEY = 'toonit_pending_job';
-    const STATUS_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status';
+        // ==========================================
+        // SUPABASE CONFIGURATION
+        // ==========================================
+        const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MzE4NzgsImV4cCI6MjA1NDEwNzg3OH0.EvqH6KfYeIvmYvkTk18Dw9BtejUYyuNguKVkbRKkuOA';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function saveJob(jobId) {
-        console.log('[PERSISTENCE DEBUG] saveJob called with:', jobId);
-        const jobData = {
-            jobId: jobId,
-            startedAt: new Date().toISOString()
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(jobData));
-        // Update URL for sharing
-        const url = new URL(window.location);
-        url.searchParams.set('job', jobId);
-        window.history.replaceState({}, '', url);
-        console.log('[PERSISTENCE DEBUG] Job saved to localStorage:', localStorage.getItem(STORAGE_KEY));
-    }
+        // Workflow endpoints
+        const WEBHOOK_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform';
+        const STATUS_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status';
 
-    function clearJob() {
-        localStorage.removeItem(STORAGE_KEY);
-        const url = new URL(window.location);
-        url.searchParams.delete('job');
-        window.history.replaceState({}, '', url);
-        console.log('[PERSISTENCE DEBUG] Job saved to localStorage:', localStorage.getItem(STORAGE_KEY));
-    }
-
-    function getPendingJob() {
-        console.log('[PERSISTENCE DEBUG] getPendingJob called');
-        // Check URL parameter first
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlJobId = urlParams.get('job');
-        if (urlJobId) return { jobId: urlJobId, source: 'url' };
-
-        // Check localStorage
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            try {
-                const jobData = JSON.parse(stored);
-                const startedAt = new Date(jobData.startedAt);
-                const ageMinutes = (Date.now() - startedAt.getTime()) / 60000;
-                if (ageMinutes < 30) {
-                    return { jobId: jobData.jobId, source: 'localStorage', ageMinutes };
-                }
-                clearJob();
-            } catch (e) { clearJob(); }
-        }
-        return null;
-    }
-
-
-        // Helper function to display video result
-        function showVideoResult(result) {
-            uploadArea.style.display = 'none';
-            previewContainer.style.display = 'none';
-            status.style.display = 'none';
-
-            resultVideo.src = result.video_url;
-            resultVideo.load();
-            downloadBtn.href = result.download_url;
-            resultContainer.style.display = 'block';
-
-            clearJob();
-            console.log('[VIDEO] Displayed video:', result.video_url);
-        }
-
-    async function checkPendingJob() {
-            console.log('[PERSISTENCE] checkPendingJob running...');
-            const pending = getPendingJob();
-            if (!pending) {
-                console.log('[PERSISTENCE] No pending job found');
-                return;
-            }
-
-            console.log('[PERSISTENCE] Found pending job:', pending.jobId);
-            currentJobId = pending.jobId;
-
-            // === FAST PATH: Check Cloudinary directly first ===
-            const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${pending.jobId}.mp4`;
-            console.log('[PERSISTENCE] Checking Cloudinary directly...');
-
-            try {
-                const headResponse = await fetch(cloudinaryUrl, { method: 'HEAD' });
-                if (headResponse.ok) {
-                    console.log('[PERSISTENCE] Video found! Showing immediately.');
-                    showVideoResult({
-                        video_url: cloudinaryUrl,
-                        download_url: cloudinaryUrl.replace('/upload/', '/upload/fl_attachment/'),
-                        job_id: pending.jobId
-                    });
-                    return;
-                }
-                console.log('[PERSISTENCE] Video not ready, starting polling...');
-            } catch (e) {
-                console.log('[PERSISTENCE] Cloudinary check failed:', e);
-            }
-
-            // Video not ready - show status and start polling
-            uploadArea.style.display = 'none';
-            status.style.display = 'block';
-            statusText.textContent = 'Resuming... checking video status';
-
-            checkStatus();
-        }
-
-    // Check for pending job on page load
-    document.addEventListener('DOMContentLoaded', checkPendingJob);
-
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const previewContainer = document.getElementById('previewContainer');
-        const previewImage = document.getElementById('previewImage');
-        const submitBtn = document.getElementById('submitBtn');
-        const status = document.getElementById('status');
-        const statusText = document.getElementById('statusText');
-        const pollStatus = document.getElementById('pollStatus');
-        const jobInfo = document.getElementById('jobInfo');
-        const resultContainer = document.getElementById('resultContainer');
-        const resultVideo = document.getElementById('resultVideo');
-        const playBtn = document.getElementById('playBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const newBtn = document.getElementById('newBtn');
-
+        // ==========================================
+        // STATE
+        // ==========================================
+        let currentUser = null;
+        let currentCredits = 0;
         let selectedFile = null;
-        let base64Image = null;
         let currentJobId = null;
         let pollInterval = null;
-        let pollCount = 0;
-const MAX_POLLS = 30; // Stop after ~10 minutes
 
-        // Drag and drop handlers
-        uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
+        // ==========================================
+        // DOM ELEMENTS
+        // ==========================================
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const transformBtn = document.getElementById('transformBtn');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const result = document.getElementById('result');
+        const resultVideo = document.getElementById('resultVideo');
+        const loginRequired = document.getElementById('loginRequired');
+        const noCredits = document.getElementById('noCredits');
+        const infoBox = document.getElementById('infoBox');
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            checkPendingJob();
+            setupUploadHandlers();
         });
-        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) handleFile(files[0]);
-        });
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFile(e.target.files[0]);
-        });
+
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                await loadUserCredits();
+                updateUIForUser();
+            } else {
+                updateUIForGuest();
+            }
+
+            // Listen for auth changes
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (session) {
+                    currentUser = session.user;
+                    await loadUserCredits();
+                    updateUIForUser();
+                } else {
+                    currentUser = null;
+                    currentCredits = 0;
+                    updateUIForGuest();
+                }
+            });
+        }
+
+        async function loadUserCredits() {
+            if (!currentUser) return;
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('credits')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (data) {
+                currentCredits = data.credits;
+                document.getElementById('creditCount').textContent = currentCredits;
+            }
+        }
+
+        // ==========================================
+        // UI STATE MANAGEMENT
+        // ==========================================
+        function updateUIForGuest() {
+            document.getElementById('guestView').style.display = '';
+            document.getElementById('userView').style.display = 'none';
+            document.getElementById('guestButtons').style.display = '';
+            document.getElementById('userButtons').style.display = 'none';
+            loginRequired.style.display = '';
+            noCredits.style.display = 'none';
+            infoBox.style.display = 'none';
+            uploadArea.classList.add('disabled');
+            transformBtn.disabled = true;
+        }
+
+        function updateUIForUser() {
+            document.getElementById('guestView').style.display = 'none';
+            document.getElementById('userView').style.display = '';
+            document.getElementById('guestButtons').style.display = 'none';
+            document.getElementById('userButtons').style.display = '';
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('creditCount').textContent = currentCredits;
+            loginRequired.style.display = 'none';
+
+            if (currentCredits > 0) {
+                noCredits.style.display = 'none';
+                infoBox.style.display = '';
+                uploadArea.classList.remove('disabled');
+            } else {
+                noCredits.style.display = '';
+                infoBox.style.display = 'none';
+                uploadArea.classList.add('disabled');
+            }
+            updateTransformButton();
+        }
+
+        function updateTransformButton() {
+            transformBtn.disabled = !selectedFile || !currentUser || currentCredits < 1;
+        }
+
+        // ==========================================
+        // MODAL MANAGEMENT
+        // ==========================================
+        function showModal(type) {
+            closeModals();
+            document.getElementById(type + 'Modal').classList.add('active');
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            // Clear error messages
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('signupError').textContent = '';
+            document.getElementById('signupSuccess').textContent = '';
+        }
+
+        // ==========================================
+        // AUTHENTICATION
+        // ==========================================
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            const submitBtn = document.getElementById('loginSubmit');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            errorEl.textContent = '';
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email, password
+            });
+
+            if (error) {
+                errorEl.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log In';
+            } else {
+                closeModals();
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log In';
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
+            const errorEl = document.getElementById('signupError');
+            const successEl = document.getElementById('signupSuccess');
+            const submitBtn = document.getElementById('signupSubmit');
+
+            errorEl.textContent = '';
+            successEl.textContent = '';
+
+            if (password !== confirm) {
+                errorEl.textContent = 'Passwords do not match';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+
+            const { data, error } = await supabase.auth.signUp({
+                email, password
+            });
+
+            if (error) {
+                errorEl.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            } else {
+                successEl.textContent = 'Account created! Check your email to confirm, then log in.';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+                // If email confirmation is disabled, user is automatically logged in
+                if (data.session) {
+                    closeModals();
+                }
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+        }
+
+        // ==========================================
+        // CREDITS (Placeholder for Stripe)
+        // ==========================================
+        function buyCredits(bundle) {
+            alert('Stripe payment integration coming soon!\n\nBundle: ' + bundle);
+            // TODO: Call n8n webhook to create Stripe checkout session
+        }
+
+        // ==========================================
+        // FILE UPLOAD
+        // ==========================================
+        function setupUploadHandlers() {
+            uploadArea.addEventListener('click', () => {
+                if (!uploadArea.classList.contains('disabled')) {
+                    fileInput.click();
+                }
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!uploadArea.classList.contains('disabled')) {
+                    uploadArea.classList.add('dragover');
+                }
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                if (!uploadArea.classList.contains('disabled') && e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+
+            transformBtn.addEventListener('click', startTransformation);
+
+            document.getElementById('downloadBtn').addEventListener('click', downloadVideo);
+            document.getElementById('newBtn').addEventListener('click', resetForNew);
+        }
 
         function handleFile(file) {
-            if (!file.type.match(/^image\/(jpeg|png|webp)$/)) {
-                alert('Please select a JPG, PNG, or WebP image.');
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
                 return;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Image must be less than 10MB.');
-                return;
-            }
-            selectedFile = file;
 
+            selectedFile = file;
             const reader = new FileReader();
             reader.onload = (e) => {
-                base64Image = e.target.result;
-                previewImage.src = base64Image;
-                previewContainer.style.display = 'block';
-                submitBtn.disabled = false;
+                preview.src = e.target.result;
+                preview.style.display = 'block';
             };
             reader.readAsDataURL(file);
+            updateTransformButton();
         }
 
-        function updateStep(stepNum, stepStatus) {
-            for (let i = 1; i <= 5; i++) {
-                const step = document.getElementById('step' + i);
-                const icon = step.querySelector('.progress-step-icon');
-                step.classList.remove('active', 'done');
+        // ==========================================
+        // TRANSFORMATION
+        // ==========================================
+        async function startTransformation() {
+            if (!selectedFile || !currentUser || currentCredits < 1) return;
 
-                if (i < stepNum) {
-                    step.classList.add('done');
-                    icon.textContent = '✅';
-                } else if (i === stepNum) {
-                    if (stepStatus === 'active') {
-                        step.classList.add('active');
-                        icon.textContent = '🔄';
-                    } else if (stepStatus === 'done') {
-                        step.classList.add('done');
-                        icon.textContent = '✅';
-                    }
-                } else {
-                    icon.textContent = '⏳';
-                }
-            }
-        }
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result;
 
-        async function checkStatus(jobId) {
-            pollCount++;
+                // Show status
+                uploadArea.style.display = 'none';
+                infoBox.style.display = 'none';
+                transformBtn.style.display = 'none';
+                status.style.display = 'block';
+                setStep(1);
 
-      // SAFEGUARD: Stop after MAX_POLLS to prevent infinite loops
-      if (pollCount > MAX_POLLS) {
-        clearInterval(pollInterval);
-        if (typeof clearJob === 'function') clearJob();
-        status.className = 'status error';
-        statusText.textContent = '⏱️ Request timed out. Please try again with a new photo.';
-        pollStatus.textContent = 'Timed out after maximum attempts.';
-        uploadArea.style.display = 'block';
-        progressSteps.style.display = 'none';
-        submitBtn.disabled = false;
-        return;
-      }
-            pollStatus.textContent = `Checking status... (attempt ${pollCount})`;
+                try {
+                    // Get auth token
+                    const { data: { session } } = await supabase.auth.getSession();
 
-            try {
-                const response = await fetch(
-                    `https://marcopthevene.app.n8n.cloud/webhook/toon-it-status?job_id=${jobId}`
-                );
+                    // Submit to webhook
+                    const response = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image: base64,
+                            user_id: currentUser.id,
+                            auth_token: session?.access_token || '',
+                            duration: 5
+                        })
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`Status check failed: ${response.status}`);
-                }
+                    const result = await response.json();
 
-                const result = await response.json();
-                console.log('Status result:', result);
-
-                if (result.status === 'complete' && result.video_url) {
-                    // Video is ready!
-                    clearInterval(pollInterval);
-
-                    // Mark all steps done
-                    for (let i = 1; i <= 5; i++) {
-                        updateStep(i, 'done');
-                    }
-
-                    status.className = 'status success';
-                    statusText.textContent = '✅ Your video is ready!';
-                    pollStatus.textContent = 'Video generation complete!';
-
-                    // Set video sources
-                    resultVideo.src = result.video_url;
-                            resultVideo.load(); // Start buffering immediately
-                    downloadBtn.href = result.download_url || result.video_url;
-
-                    resultContainer.style.display = 'block';
-                    setTimeout(() => { status.style.display = 'none'; }, 2000);
-
-                } else if (result.status === 'expired') {
-        // SAFEGUARD 2: Handle expired jobs
-        clearInterval(pollInterval);
-        clearJob();
-        status.className = 'status error';
-        statusText.textContent = '⏱️ This request has expired. Please upload a new photo.';
-        pollStatus.textContent = 'Job expired.';
-        uploadArea.style.display = 'block';
-        progressSteps.style.display = 'none';
-        submitBtn.disabled = false;
-
-      } else if (result.status === 'processing') {
-                    // Still processing - update UI based on time elapsed
-                    const elapsed = pollCount * 20; // 10 seconds per poll
-
-                    if (elapsed < 30) {
-                        updateStep(2, 'active');
-                        statusText.textContent = 'Analyzing your image with AI...';
-                    } else if (elapsed < 90) {
-                        updateStep(3, 'active');
-                        statusText.textContent = 'Creating storybook artwork...';
-                    } else if (elapsed < 600) {
-                        updateStep(4, 'active');
-                        statusText.textContent = 'Generating video animation...';
+                    if (result.job_id) {
+                        currentJobId = result.job_id;
+                        saveJob(currentJobId);
+                        startPolling();
                     } else {
-                        updateStep(5, 'active');
-                        statusText.textContent = 'Finalizing your video...';
+                        throw new Error(result.error || 'Failed to start transformation');
                     }
-
-                    pollStatus.textContent = `Processing... checking again in 10 seconds`;
-
-                } else if (result.status === 'error') {
-                    clearInterval(pollInterval);
-                    status.className = 'status error';
-                    statusText.textContent = `❌ Error: ${result.error || 'Unknown error'}`;
-                    submitBtn.disabled = false;
-                }
-
-            } catch (error) {
-                console.error('Status check error:', error);
-                pollStatus.textContent = `Check failed, retrying... (${error.message})`;
-                // Don't stop polling on network errors, just continue
-            }
-        }
-
-        submitBtn.addEventListener('click', async () => {
-            if (!base64Image) return;
-
-            submitBtn.disabled = true;
-            status.className = 'status processing';
-            status.style.display = 'block';
-            resultContainer.style.display = 'none';
-            pollCount = 0;
-
-            // Reset progress steps
-            for (let i = 1; i <= 5; i++) {
-                const step = document.getElementById('step' + i);
-                step.classList.remove('active', 'done');
-                step.querySelector('.progress-step-icon').textContent = '⏳';
-            }
-
-            updateStep(1, 'active');
-            statusText.textContent = 'Uploading your photo...';
-
-            const payload = {
-                image: base64Image,
-                filename: selectedFile.name,
-                user_id: 'anonymous',
-                preferences: {
-                    style: 'storybook',
-                    video_duration: 5,
-                    motion_intensity: 'medium'
+                } catch (error) {
+                    statusText.textContent = 'Error: ' + error.message;
                 }
             };
+            reader.readAsDataURL(selectedFile);
+        }
+
+        function startPolling() {
+            pollInterval = setInterval(checkStatus, 10000);
+            checkStatus(); // Check immediately
+        }
+
+        async function checkStatus() {
+            if (!currentJobId) return;
 
             try {
-                // Step 1: Submit the job
-                const response = await fetch('https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(`${STATUS_URL}?job_id=${currentJobId}`);
+                const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(`Upload failed: ${response.status}`);
-                }
-
-                const result = await response.json();
-                console.log('Submit result:', result);
-
-                if (result.success && result.job_id) {
-                    currentJobId = result.job_id;
-                    saveJob(result.job_id); // Save for page refresh persistence
-                    jobInfo.textContent = `Job ID: ${currentJobId}`;
-
-                    updateStep(1, 'done');
-                    updateStep(2, 'active');
-                    statusText.textContent = 'Photo uploaded! Starting analysis...';
-                    pollStatus.textContent = 'Will check status every 10 seconds...';
-
-                    // Start polling for status every 10 seconds
-                    pollInterval = setInterval(() => checkStatus(currentJobId), 10000);
-
-                    // Also check immediately after a short delay
-                    setTimeout(() => checkStatus(currentJobId), 5000);
-
+                if (data.status === 'complete' && data.video_url) {
+                    clearInterval(pollInterval);
+                    clearJob();
+                    showVideo(data.video_url);
+                    // Refresh credits
+                    await loadUserCredits();
+                    document.getElementById('creditCount').textContent = currentCredits;
+                } else if (data.status === 'failed' || data.status === 'expired') {
+                    clearInterval(pollInterval);
+                    clearJob();
+                    statusText.textContent = 'Transformation failed. Please try again.';
                 } else {
-                    throw new Error(result.error || 'Failed to start processing');
+                    // Update step based on status
+                    updateStepFromStatus(data.status);
                 }
-
             } catch (error) {
-                console.error('Submit error:', error);
-                status.className = 'status error';
-                statusText.textContent = `❌ ${error.message}`;
-                submitBtn.disabled = false;
+                console.error('Status check error:', error);
             }
-        });
+        }
 
-        // Video controls
-        playBtn.addEventListener('click', () => {
-            if (resultVideo.paused) {
-                resultVideo.play();
-                playBtn.textContent = '⏸️ Pause';
-            } else {
-                resultVideo.pause();
-                playBtn.textContent = '▶️ Play Video';
+        function updateStepFromStatus(status) {
+            if (status === 'analyzing' || status === 'processing') {
+                setStep(1);
+                statusText.textContent = 'Analyzing your image...';
+            } else if (status === 'generating') {
+                setStep(2);
+                statusText.textContent = 'Generating storybook image...';
+            } else if (status === 'animating') {
+                setStep(3);
+                statusText.textContent = 'Creating video animation...';
             }
-        });
+        }
 
-        resultVideo.addEventListener('ended', () => {
-            playBtn.textContent = '▶️ Play Video';
-        });
+        function setStep(stepNum) {
+            document.querySelectorAll('.step').forEach((step, i) => {
+                step.classList.remove('active', 'completed');
+                if (i + 1 < stepNum) step.classList.add('completed');
+                if (i + 1 === stepNum) step.classList.add('active');
+            });
+        }
 
-        newBtn.addEventListener('click', () => {
-            if (pollInterval) clearInterval(pollInterval);
-            selectedFile = null;
-            base64Image = null;
-            currentJobId = null;
-            pollCount = 0;
-            fileInput.value = '';
-            previewContainer.style.display = 'none';
-            resultContainer.style.display = 'none';
+        function showVideo(url) {
             status.style.display = 'none';
-            submitBtn.disabled = true;
-            resultVideo.src = '';
-            // Show upload area again
-            uploadArea.style.display = 'block';
-            // Clear any saved job from localStorage
+            result.style.display = 'block';
+            resultVideo.src = url;
+            setStep(4);
+        }
+
+        function downloadVideo() {
+            if (resultVideo.src) {
+                const a = document.createElement('a');
+                a.href = resultVideo.src;
+                a.download = 'toon-it-video.mp4';
+                a.click();
+            }
+        }
+
+        function resetForNew() {
+            selectedFile = null;
+            currentJobId = null;
+            preview.style.display = 'none';
+            preview.src = '';
+            fileInput.value = '';
+            result.style.display = 'none';
+            status.style.display = 'none';
+            uploadArea.style.display = '';
+            transformBtn.style.display = '';
+            transformBtn.disabled = true;
             clearJob();
-        });
-</script>
+            // Refresh UI based on credits
+            if (currentUser) {
+                loadUserCredits().then(() => updateUIForUser());
+            }
+        }
+
+        // ==========================================
+        // JOB PERSISTENCE
+        // ==========================================
+        function saveJob(jobId) {
+            const job = { jobId, timestamp: Date.now() };
+            localStorage.setItem('toonit_job', JSON.stringify(job));
+            // Update URL
+            const url = new URL(window.location);
+            url.searchParams.set('job', jobId);
+            window.history.replaceState({}, '', url);
+        }
+
+        function clearJob() {
+            localStorage.removeItem('toonit_job');
+            const url = new URL(window.location);
+            url.searchParams.delete('job');
+            window.history.replaceState({}, '', url);
+        }
+
+        function getPendingJob() {
+            // Check URL first
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlJobId = urlParams.get('job');
+            if (urlJobId) return { jobId: urlJobId, timestamp: Date.now() };
+
+            // Check localStorage
+            const stored = localStorage.getItem('toonit_job');
+            if (stored) {
+                const job = JSON.parse(stored);
+                // Expire after 30 minutes
+                if (Date.now() - job.timestamp < 30 * 60 * 1000) {
+                    return job;
+                }
+                clearJob();
+            }
+            return null;
+        }
+
+        async function checkPendingJob() {
+            const pending = getPendingJob();
+            if (!pending) return;
+
+            currentJobId = pending.jobId;
+
+            // Show status UI
+            uploadArea.style.display = 'none';
+            infoBox.style.display = 'none';
+            transformBtn.style.display = 'none';
+            loginRequired.style.display = 'none';
+            noCredits.style.display = 'none';
+            status.style.display = 'block';
+            statusText.textContent = 'Resuming... Checking status...';
+
+            // Check if video is ready
+            try {
+                const response = await fetch(`${STATUS_URL}?job_id=${currentJobId}`);
+                const data = await response.json();
+
+                if (data.status === 'complete' && data.video_url) {
+                    showVideo(data.video_url);
+                    clearJob();
+                } else if (data.status === 'failed' || data.status === 'expired') {
+                    clearJob();
+                    resetForNew();
+                } else {
+                    // Still processing, start polling
+                    startPolling();
+                }
+            } catch (error) {
+                console.error('Resume check error:', error);
+                startPolling();
+            }
+        }
+    </script>
 </body>
 </html>
