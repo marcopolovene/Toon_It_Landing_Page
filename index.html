@@ -340,75 +340,60 @@
         return null;
     }
 
-    async function checkPendingJob() {
-        console.log('[PERSISTENCE] checkPendingJob running...');
-        const pending = getPendingJob();
-        if (!pending) {
-            console.log('[PERSISTENCE] No pending job found');
-            return;
-        }
 
-        console.log('[PERSISTENCE] Found pending job:', pending.jobId);
+        // Helper function to display video result
+        function showVideoResult(result) {
+            uploadArea.style.display = 'none';
+            previewContainer.style.display = 'none';
+            status.style.display = 'none';
 
-        // Hide upload area, show status
-        const uploadAreaEl = document.getElementById('uploadArea');
-        const statusEl = document.getElementById('status');
-        const statusTextEl = document.getElementById('statusText');
-        const pollStatusEl = document.getElementById('pollStatus');
+            resultVideo.src = result.video_url;
+            resultVideo.load();
+            downloadBtn.href = result.download_url;
+            resultContainer.style.display = 'block';
 
-        if (uploadAreaEl) uploadAreaEl.style.display = 'none';
-        if (statusEl) statusEl.style.display = 'block';
-        if (statusTextEl) statusTextEl.textContent = 'Resuming your video generation...';
-        if (pollStatusEl) pollStatusEl.textContent = 'Checking status...';
-
-        try {
-            const response = await fetch(STATUS_URL + '?job_id=' + pending.jobId);
-            const data = await response.json();
-            console.log('[PERSISTENCE] Status response:', data);
-
-            if (data.status === 'complete' && data.video_url) {
-                // Video is ready - show it!
-                clearJob();
-                const resultVideo = document.getElementById('resultVideo');
-                const downloadBtn = document.getElementById('downloadBtn');
-                const resultContainer = document.getElementById('resultContainer');
-
-                resultVideo.src = data.video_url;
-                downloadBtn.href = data.download_url || data.video_url;
-                resultContainer.style.display = 'block';
-                statusEl.style.display = 'none';
-
-                // Mark all steps complete
-                for (let i = 1; i <= 5; i++) {
-                    const step = document.getElementById('step' + i);
-                    if (step) step.classList.add('completed');
-                }
-            } else if (data.status === 'processing') {
-                // Still processing - start polling
-                if (statusTextEl) statusTextEl.textContent = 'Resuming... Your video is still being generated!';
-                currentJobId = pending.jobId;
-                pollCount = 0;
-                // Start polling interval
-                if (pollInterval) clearInterval(pollInterval);
-                pollInterval = setInterval(() => checkStatus(pending.jobId), 10000);
-            } else if (data.status === 'error') {
-                clearJob();
-                if (statusTextEl) statusTextEl.textContent = 'Previous job failed: ' + (data.message || 'Unknown error');
-            } else {
-                // Unknown status - reset
-                clearJob();
-                if (uploadAreaEl) uploadAreaEl.style.display = 'block';
-                if (statusEl) statusEl.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('[PERSISTENCE] Error:', error);
             clearJob();
-            const uploadAreaEl = document.getElementById('uploadArea');
-            const statusEl = document.getElementById('status');
-            if (uploadAreaEl) uploadAreaEl.style.display = 'block';
-            if (statusEl) statusEl.style.display = 'none';
+            console.log('[VIDEO] Displayed video:', result.video_url);
         }
-    }
+
+    async async function checkPendingJob() {
+            console.log('[PERSISTENCE] checkPendingJob running...');
+            const pending = getPendingJob();
+            if (!pending) {
+                console.log('[PERSISTENCE] No pending job found');
+                return;
+            }
+
+            console.log('[PERSISTENCE] Found pending job:', pending.job_id);
+            currentJobId = pending.job_id;
+
+            // === FAST PATH: Check Cloudinary directly first ===
+            const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${pending.job_id}.mp4`;
+            console.log('[PERSISTENCE] Checking Cloudinary directly...');
+
+            try {
+                const headResponse = await fetch(cloudinaryUrl, { method: 'HEAD' });
+                if (headResponse.ok) {
+                    console.log('[PERSISTENCE] Video found! Showing immediately.');
+                    showVideoResult({
+                        video_url: cloudinaryUrl,
+                        download_url: cloudinaryUrl.replace('/upload/', '/upload/fl_attachment/'),
+                        job_id: pending.job_id
+                    });
+                    return;
+                }
+                console.log('[PERSISTENCE] Video not ready, starting polling...');
+            } catch (e) {
+                console.log('[PERSISTENCE] Cloudinary check failed:', e);
+            }
+
+            // Video not ready - show status and start polling
+            uploadArea.style.display = 'none';
+            status.style.display = 'block';
+            statusText.textContent = 'Resuming... checking video status';
+
+            checkStatus();
+        }
 
     // Check for pending job on page load
     document.addEventListener('DOMContentLoaded', checkPendingJob);
