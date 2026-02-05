@@ -691,6 +691,10 @@ const MAX_POLLS = 30; // Stop after ~10 minutes
             status.style.display = 'none';
             submitBtn.disabled = true;
             resultVideo.src = '';
+            // Show upload area again
+            uploadArea.style.display = 'block';
+            // Clear any saved job from localStorage
+            clearJob();
         });
 </script>
 </body>
