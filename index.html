@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toon It! - Transform Your Photos into Storybook Videos</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -614,6 +614,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
 
         // ==========================================
@@ -645,29 +646,16 @@
 
         let supabase = null;
 
-        // Initialize Supabase when library loads (async)
-        function initSupabase() {
+        // Initialize Supabase (script loads synchronously before this)
+        try {
             if (window.supabase && window.supabase.createClient) {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase initialized');
-                // Check auth after Supabase loads
-                checkAuth();
+                console.log('Supabase initialized successfully');
+            } else {
+                console.error('Supabase library not loaded');
             }
-        }
-
-        // Try to init immediately if already loaded
-        if (window.supabase) {
-            initSupabase();
-        } else {
-            // Wait for Supabase to load
-            const checkSupabase = setInterval(() => {
-                if (window.supabase) {
-                    clearInterval(checkSupabase);
-                    initSupabase();
-                }
-            }, 100);
-            // Give up after 10 seconds
-            setTimeout(() => clearInterval(checkSupabase), 10000);
+        } catch (e) {
+            console.error('Supabase init error:', e);
         }
 
         // Workflow endpoints
@@ -691,7 +679,7 @@
         // ==========================================
         // INITIALIZATION
         // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Get DOM elements
             uploadArea = document.getElementById('uploadArea');
             fileInput = document.getElementById('fileInput');
@@ -706,14 +694,7 @@
             infoBox = document.getElementById('infoBox');
 
             setupUploadHandlers();
-            // checkAuth is called by initSupabase when library loads
-            // If Supabase already loaded, check auth now
-            if (supabase) {
-                checkAuth();
-            } else {
-                // Show guest UI while waiting for Supabase
-                updateUIForGuest();
-            }
+            await checkAuth();
             checkPendingJob();
         });
 
