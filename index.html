@@ -1341,7 +1341,19 @@
             } else if (result.data && result.data.session) {
                 console.log('[FAILSAFE] Login successful!');
                 closeAllModals();
-                updateUIForUser(email, 2);
+
+                // Fetch credits from profile
+                var credits = 2; // default
+                try {
+                    var profileResult = await sb.from('profiles').select('credits').eq('id', result.data.user.id).single();
+                    if (profileResult.data) {
+                        credits = profileResult.data.credits;
+                    }
+                } catch (profileErr) {
+                    console.log('[FAILSAFE] Could not fetch credits:', profileErr);
+                }
+
+                updateUIForUser(email, credits);
             }
         } catch (err) {
             console.error('[FAILSAFE] Login error:', err);
@@ -1484,11 +1496,50 @@
         console.log('[FAILSAFE] All handlers ready!');
     }
 
+    // Check existing session on page load
+    async function checkExistingSession() {
+        var sb = getSupabase();
+        if (!sb) {
+            console.log('[FAILSAFE] Supabase not ready for session check');
+            return;
+        }
+
+        try {
+            var result = await sb.auth.getSession();
+            console.log('[FAILSAFE] Session check:', result);
+
+            if (result.data && result.data.session) {
+                var user = result.data.session.user;
+                console.log('[FAILSAFE] Found existing session for:', user.email);
+
+                // Fetch credits
+                var credits = 2;
+                try {
+                    var profileResult = await sb.from('profiles').select('credits').eq('id', user.id).single();
+                    if (profileResult.data) {
+                        credits = profileResult.data.credits;
+                    }
+                } catch (e) {
+                    console.log('[FAILSAFE] Credits fetch error:', e);
+                }
+
+                updateUIForUser(user.email, credits);
+            }
+        } catch (e) {
+            console.error('[FAILSAFE] Session check error:', e);
+        }
+    }
+
     // Run when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupHandlers);
+        document.addEventListener('DOMContentLoaded', function() {
+            setupHandlers();
+            // Delay session check to ensure Supabase is ready
+            setTimeout(checkExistingSession, 500);
+        });
     } else {
         setupHandlers();
+        setTimeout(checkExistingSession, 500);
     }
 })();
 </script>
