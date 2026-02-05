@@ -278,7 +278,7 @@
         <div class="result-container" id="resultContainer">
             <h3>🎉 Your Storybook Video is Ready!</h3>
             <div class="video-wrapper">
-                <video id="resultVideo" controls playsinline>
+                <video id="resultVideo" preload="auto" controls playsinline>
                     Your browser does not support video playback.
                 </video>
             </div>
@@ -390,7 +390,7 @@
                 pollCount = 0;
                 // Start polling interval
                 if (pollInterval) clearInterval(pollInterval);
-                pollInterval = setInterval(() => checkStatus(pending.jobId), 20000);
+                pollInterval = setInterval(() => checkStatus(pending.jobId), 10000);
             } else if (data.status === 'error') {
                 clearJob();
                 if (statusTextEl) statusTextEl.textContent = 'Previous job failed: ' + (data.message || 'Unknown error');
@@ -540,6 +540,7 @@ const MAX_POLLS = 30; // Stop after ~10 minutes
 
                     // Set video sources
                     resultVideo.src = result.video_url;
+                            resultVideo.load(); // Start buffering immediately
                     downloadBtn.href = result.download_url || result.video_url;
 
                     resultContainer.style.display = 'block';
@@ -558,7 +559,7 @@ const MAX_POLLS = 30; // Stop after ~10 minutes
 
       } else if (result.status === 'processing') {
                     // Still processing - update UI based on time elapsed
-                    const elapsed = pollCount * 20; // 20 seconds per poll
+                    const elapsed = pollCount * 20; // 10 seconds per poll
 
                     if (elapsed < 30) {
                         updateStep(2, 'active');
@@ -574,7 +575,7 @@ const MAX_POLLS = 30; // Stop after ~10 minutes
                         statusText.textContent = 'Finalizing your video...';
                     }
 
-                    pollStatus.textContent = `Processing... checking again in 20 seconds`;
+                    pollStatus.textContent = `Processing... checking again in 10 seconds`;
 
                 } else if (result.status === 'error') {
                     clearInterval(pollInterval);
@@ -643,10 +644,10 @@ const MAX_POLLS = 30; // Stop after ~10 minutes
                     updateStep(1, 'done');
                     updateStep(2, 'active');
                     statusText.textContent = 'Photo uploaded! Starting analysis...';
-                    pollStatus.textContent = 'Will check status every 20 seconds...';
+                    pollStatus.textContent = 'Will check status every 10 seconds...';
 
-                    // Start polling for status every 20 seconds
-                    pollInterval = setInterval(() => checkStatus(currentJobId), 20000);
+                    // Start polling for status every 10 seconds
+                    pollInterval = setInterval(() => checkStatus(currentJobId), 10000);
 
                     // Also check immediately after a short delay
                     setTimeout(() => checkStatus(currentJobId), 5000);
