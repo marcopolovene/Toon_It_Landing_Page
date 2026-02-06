@@ -784,6 +784,7 @@
 
             try {
                 const { data: { session } } = await supabase.auth.getSession();
+                if (session) { currentUser = session.user; }
                 if (session) {
                     currentUser = session.user;
                     await loadUserCredits();
@@ -1114,6 +1115,7 @@
                     let authToken = '';
                     if (supabase) {
                         const { data: { session } } = await supabase.auth.getSession();
+                if (session) { currentUser = session.user; }
                         authToken = session?.access_token || '';
                     }
 
