@@ -627,7 +627,7 @@
                     <div class="bundle-per">$0.71 each</div>
                 </div>
             </div>
-            <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe (coming soon)</p>
+            <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe</p>
         </div>
     </div>
 
@@ -1055,8 +1055,53 @@
         // ==========================================
         // CREDITS (Placeholder for Stripe)
         // ==========================================
-        function buyCredits(bundle) {
-            alert('Stripe payment integration coming soon!\n\nBundle: ' + bundle);
+        async function buyCredits(bundle) {
+            const user = window.currentUser || currentUser;
+            if (!user) {
+                showModal('loginModal');
+                return;
+            }
+
+            // Map bundle to price details
+            const bundles = {
+                'starter': { credits: 5, price: '$5.00' },
+                'popular': { credits: 12, price: '$10.00' },
+                'pro': { credits: 35, price: '$25.00' }
+            };
+
+            const selected = bundles[bundle];
+            if (!selected) { alert('Invalid bundle'); return; }
+
+            try {
+                // Show loading state
+                const buttons = document.querySelectorAll('.credit-bundle');
+                buttons.forEach(b => b.style.opacity = '0.5');
+
+                // Call n8n create-checkout endpoint
+                const response = await fetch('https://marcopthevene.app.n8n.cloud/webhook/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bundle: bundle,
+                        user_id: user.id,
+                        email: user.email
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    // Redirect to Stripe Checkout
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+            } catch (error) {
+                console.error('[CHECKOUT] Error:', error);
+                alert('Payment error: ' + error.message + '. Please try again.');
+                const buttons = document.querySelectorAll('.credit-bundle');
+                buttons.forEach(b => b.style.opacity = '1');
+            }
         }
 
         // ==========================================
