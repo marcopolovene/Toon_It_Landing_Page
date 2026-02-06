@@ -847,6 +847,14 @@
             if (guestButtons) guestButtons.style.display = 'none';
             if (userButtons) userButtons.style.display = '';
             if (userEmail) userEmail.textContent = currentUser.email;
+    // Enable upload for logged-in users
+    const uploadArea = document.getElementById('uploadArea');
+    const loginRequired = document.getElementById('loginRequired');
+    if (uploadArea) {
+      uploadArea.style.display = 'block';
+      uploadArea.classList.remove('disabled');
+    }
+    if (loginRequired) loginRequired.style.display = 'none';
             if (creditCount) creditCount.textContent = currentCredits;
             if (loginRequired) loginRequired.style.display = 'none';
 
