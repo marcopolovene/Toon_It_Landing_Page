@@ -542,7 +542,7 @@
             'cW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MjQ0NjYsImV4cCI6' + 
             'MjA1NDIwMDQ2Nn0.0El22LXHZ3FJ8M3aTBUMGPPgFSJMeECKPp5bjmZj9WQ';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
 
@@ -562,7 +562,7 @@
 
         async function checkAuth() {
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
 
                 if (error) {
                     console.error('Auth error:', error);
@@ -733,7 +733,7 @@
         });
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 
