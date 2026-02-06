@@ -1212,13 +1212,24 @@
             reader.readAsDataURL(selectedFile);
         }
 
+        let pollCount = 0;
+        const MAX_POLLS = 60;
+
         function startPolling() {
+            pollCount = 0;
             pollInterval = setInterval(checkStatus, 10000);
             checkStatus();
         }
 
         async function checkStatus() {
             if (!currentJobId) return;
+            pollCount++;
+            if (pollCount > MAX_POLLS) {
+                clearInterval(pollInterval);
+                clearJob();
+                if (statusText) statusText.textContent = 'Processing timed out after 10 minutes. Please try again.';
+                return;
+            }
 
             try {
                 const response = await fetch(`${STATUS_URL}?job_id=${currentJobId}`);
