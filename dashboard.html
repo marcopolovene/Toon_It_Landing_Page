@@ -552,15 +552,22 @@
         });
 
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
 
-            if (!session) {
-                // Not logged in - redirect to landing page
-                window.location.href = 'index.html';
-                return;
-            }
+                if (error) {
+                    console.error('Auth error:', error);
+                    window.location.href = 'index.html';
+                    return;
+                }
 
-            currentUser = session.user;
+                if (!session) {
+                    // Not logged in - redirect to landing page
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                currentUser = session.user;
             document.getElementById('userEmail').textContent = currentUser.email.split('@')[0];
 
             // Load dashboard data
@@ -572,6 +579,11 @@
 
             // Hide loading screen
             document.getElementById('loadingScreen').classList.add('hidden');
+            } catch (err) {
+                console.error('Dashboard error:', err);
+                // Show error or redirect
+                document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center;color:#ff6b6b;"><p>Error loading dashboard</p><a href="index.html" style="color:#feca57;">Return to Home</a></div>';
+            }
         }
 
         async function loadCredits() {
