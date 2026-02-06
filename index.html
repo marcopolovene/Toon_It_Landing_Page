@@ -225,7 +225,7 @@
         #uploadArea.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            pointer-events: none;
+            pointer-events: auto /* was none */;
         }
         .upload-icon {
             font-size: 3em;
@@ -846,7 +846,7 @@
             if (loginRequired) loginRequired.style.display = '';
             if (noCredits) noCredits.style.display = 'none';
             if (infoBox) infoBox.style.display = 'none';
-            if (uploadArea) uploadArea.classList.add('disabled');
+            // REMOVED: if (uploadArea) uploadArea.classList.add('disabled');
             if (transformBtn) transformBtn.disabled = true;
         }
 
