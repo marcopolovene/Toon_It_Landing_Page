@@ -996,9 +996,7 @@
 
         async function logout() {
       console.log('Logging out...');
-      if (supabase) {
-        await supabase.auth.signOut();
-      }
+      if (supabase) { await supabase.auth.signOut(); }
       currentUser = null;
       currentCredits = 0;
       window.location.reload();
