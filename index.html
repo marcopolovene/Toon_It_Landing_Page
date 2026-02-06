@@ -1299,14 +1299,18 @@
         var guestView = document.getElementById('guestView');
         var userView = document.getElementById('userView');
         var userEmail = document.getElementById('userEmail');
-        var userCredits = document.getElementById('userCredits');
+        var creditCount = document.getElementById('creditCount');
+ var guestButtons = document.getElementById('guestButtons');
+ var userButtons = document.getElementById('userButtons');
         var loginRequired = document.getElementById('loginRequired');
         var uploadArea = document.getElementById('uploadArea');
 
         if (guestView) guestView.style.display = 'none';
         if (userView) userView.style.display = 'flex';
         if (userEmail) userEmail.textContent = email;
-        if (userCredits) userCredits.textContent = credits + ' credits';
+        if (creditCount) creditCount.textContent = credits;
+ if (guestButtons) guestButtons.style.display = 'none';
+ if (userButtons) userButtons.style.display = 'flex';
         if (loginRequired) loginRequired.style.display = 'none';
         if (uploadArea) uploadArea.style.display = 'block';
     }
