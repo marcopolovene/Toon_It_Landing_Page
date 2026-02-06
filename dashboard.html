@@ -617,7 +617,7 @@
                 const { data, error } = await supabase
                     .from('generations')
                     .select('*')
-                    .eq('user_id', currentUser.id)
+                    .eq('id', currentUser.id)
                     .order('created_at', { ascending: false })
                     .limit(10);
 
@@ -664,7 +664,7 @@
                 const { data, error } = await supabase
                     .from('credit_transactions')
                     .select('*')
-                    .eq('user_id', currentUser.id)
+                    .eq('id', currentUser.id)
                     .order('created_at', { ascending: false })
                     .limit(20);
 
