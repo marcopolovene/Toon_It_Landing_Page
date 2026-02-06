@@ -1340,6 +1340,23 @@
                         console.log('[CREDITS] Deducted 1 credit. Remaining:', currentCredits);
                     }
                 }
+
+                // Save generation record for video history
+                try {
+                    const user = window.currentUser || currentUser;
+                    await supabaseClient
+                        .from('generations')
+                        .insert({
+                            user_id: user.id,
+                            video_url: url,
+                            cloudinary_url: url,
+                            status: 'complete',
+                            job_id: currentJobId || 'unknown'
+                        });
+                    console.log('[HISTORY] Video generation saved to history');
+                } catch (histErr) {
+                    console.error('[HISTORY] Save error:', histErr);
+                }
             } catch (e) {
                 console.error('[CREDITS] Deduction error:', e);
             }
