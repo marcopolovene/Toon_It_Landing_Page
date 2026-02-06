@@ -995,14 +995,10 @@
         }
 
         async function logout() {
-      console.log('Logging out...');
-      if (supabase) {
-        await supabase.auth.signOut();
-      }
-      currentUser = null;
-      userCredits = 0;
-      window.location.reload();
-    }
+            if (supabase) {
+                await supabase.auth.signOut();
+            }
+        }
 
         // ==========================================
         // CREDITS (Placeholder for Stripe)
