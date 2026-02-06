@@ -1312,10 +1312,7 @@
  if (guestButtons) guestButtons.style.display = 'none';
  if (userButtons) userButtons.style.display = 'flex';
         if (loginRequired) loginRequired.style.display = 'none';
-        if (uploadArea) {
- uploadArea.style.display = 'block';
- uploadArea.classList.remove('disabled');
- }
+        if (uploadArea) uploadArea.style.display = 'block';
     }
 
     async function handleLoginSubmit(e) {
