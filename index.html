@@ -476,7 +476,7 @@
                 <button class="btn-signup" id="signupBtn">Sign Up</button>
             </div>
             <div class="auth-buttons" id="userButtons" style="display: none;">
-            <a href="dashboard.html" class="dashboard-link">📊 Dashboard</a>
+            <a href="dashboard.html" class="dashboard-link" onclick="event.stopPropagation(); window.location.href='dashboard.html'; return false;">📊 Dashboard</a>
                 <span class="user-email" id="userEmail"></span>
                 <button class="btn-credits" id="creditsBtn">Buy Credits</button>
                 <button class="btn-logout" id="logoutBtn">Log Out</button>
@@ -908,8 +908,12 @@
         }
 
         function updateTransformButton() {
-            if (transformBtn) {
-                transformBtn.disabled = !selectedFile || !currentUser || currentCredits < 1;
+            if (transformBtn && selectedFile) {
+                // Enable if file selected and user logged in
+                // Credits check happens at transformation time
+                const hasUser = window.currentUser || currentUser;
+                transformBtn.disabled = !hasUser;
+                transformBtn.style.display = 'inline-block';
             }
         }
 
@@ -1134,6 +1138,18 @@
                 }
             };
             reader.readAsDataURL(file);
+
+            // Show transform section
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) uploadArea.style.display = 'none';
+            const status = document.getElementById('status');
+            if (status) status.style.display = 'block';
+
+            // Ensure button is enabled
+            if (transformBtn) {
+                transformBtn.style.display = 'inline-block';
+                transformBtn.disabled = false;
+            }
             updateTransformButton();
         }
 
@@ -1141,7 +1157,14 @@
         // TRANSFORMATION
         // ==========================================
         async function startTransformation() {
-            if (!selectedFile || !currentUser || currentCredits < 1) return;
+            if (!selectedFile) { alert('Please select a photo first'); return; }
+            const hasUser = window.currentUser || currentUser;
+            if (!hasUser) { showModal('loginModal'); return; }
+            if (currentCredits < 1) {
+                // Try loading credits first
+                await loadUserCredits();
+                if (currentCredits < 1) { alert('No credits remaining. Please buy more!'); return; }
+            }
 
             const reader = new FileReader();
             reader.onload = async (e) => {
