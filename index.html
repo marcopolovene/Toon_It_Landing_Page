@@ -859,14 +859,14 @@
             if (loginRequired) loginRequired.style.display = 'none';
 
             if (currentCredits > 0) {
-                if (noCredits) noCredits.style.display = 'none';
-                if (infoBox) infoBox.style.display = '';
-                if (uploadArea) uploadArea.classList.remove('disabled');
-            } else {
-                if (noCredits) noCredits.style.display = '';
-                if (infoBox) infoBox.style.display = 'none';
-                if (uploadArea) uploadArea.classList.add('disabled');
-            }
+      if (noCredits) noCredits.style.display = 'none';
+      if (infoBox) infoBox.style.display = '';
+      if (uploadArea) uploadArea.classList.remove('disabled');
+    } else {
+      if (noCredits) noCredits.style.display = '';
+      if (infoBox) infoBox.style.display = 'none';
+      // Don't disable - let user try anyway, backend will check
+    }
             updateTransformButton();
         }
 
@@ -995,9 +995,14 @@
         }
 
         async function logout() {
-            if (supabase) {
-                await supabase.auth.signOut();
-            }
+      console.log('Logging out...');
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      currentUser = null;
+      currentCredits = 0;
+      window.location.reload();
+    }
         }
 
         // ==========================================
