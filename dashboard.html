@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toon It! - Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -597,7 +597,7 @@
 
         async function loadCredits() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('profiles')
                     .select('credits')
                     .eq('id', currentUser.id)
@@ -614,7 +614,7 @@
 
         async function loadVideos() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('generations')
                     .select('*')
                     .eq('user_id', currentUser.id)
@@ -661,7 +661,7 @@
 
         async function loadTransactions() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('credit_transactions')
                     .select('*')
                     .eq('user_id', currentUser.id)
