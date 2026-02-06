@@ -833,7 +833,7 @@
             if (!currentUser || !supabaseClient) return;
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('profiles')
                     .select('credits')
                     .eq('id', currentUser.id)
