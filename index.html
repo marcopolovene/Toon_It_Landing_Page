@@ -942,9 +942,11 @@
                 // Set global user and update UI
                 currentUser = data.session.user;
                 window.currentUser = data.session.user;
+                console.log('[LOGIN] Success! User:', data.session.user.email);
                 closeModals();
                 updateUIForUser();
                 loadUserCredits();
+                console.log('[LOGIN] UI updated');
             }
             } catch (e) {
                 if (errorEl) errorEl.textContent = 'Login failed. Please try again.';
@@ -1058,12 +1060,26 @@
             if (!uploadArea || !fileInput) return;
 
             uploadArea.addEventListener('click', async () => {
-            // Direct session check - most reliable
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                fileInput.click();
-            } else {
-                showModal('loginModal');
+            console.log('[UPLOAD] Click detected');
+            try {
+                if (!supabase) {
+                    console.error('[UPLOAD] Supabase not initialized!');
+                    alert('Service not ready. Please refresh.');
+                    return;
+                }
+                console.log('[UPLOAD] Checking session...');
+                const { data, error } = await supabase.auth.getSession();
+                console.log('[UPLOAD] Session result:', data, error);
+                if (data && data.session) {
+                    console.log('[UPLOAD] Session valid, opening file picker');
+                    fileInput.click();
+                } else {
+                    console.log('[UPLOAD] No session, showing login');
+                    showModal('loginModal');
+                }
+            } catch (e) {
+                console.error('[UPLOAD] Error:', e);
+                alert('Error checking login. Please refresh.');
             }
         });
 
