@@ -1064,7 +1064,9 @@
         function setupUploadHandlers() {
             if (!uploadArea || !fileInput) return;
 
-            uploadArea.addEventListener('click', async () => {
+            uploadArea.addEventListener('click', async (e) => {
+            // Prevent loop: ignore clicks from fileInput itself
+            if (e.target === fileInput) return;
             console.log('[UPLOAD] Click detected');
             try {
                 if (!supabaseClient) {
@@ -1072,21 +1074,20 @@
                     alert('Service not ready. Please refresh.');
                     return;
                 }
-                console.log('[UPLOAD] Checking session...');
                 const { data, error } = await supabaseClient.auth.getSession();
-                console.log('[UPLOAD] Session result:', data, error);
                 if (data && data.session) {
-                    console.log('[UPLOAD] Session valid, opening file picker');
                     fileInput.click();
                 } else {
-                    console.log('[UPLOAD] No session, showing login');
                     showModal('loginModal');
                 }
-            } catch (e) {
-                console.error('[UPLOAD] Error:', e);
+            } catch (e2) {
+                console.error('[UPLOAD] Error:', e2);
                 alert('Error checking login. Please refresh.');
             }
         });
+
+        // Stop fileInput clicks from bubbling to uploadArea
+        fileInput.addEventListener('click', (e) => e.stopPropagation());
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -1139,11 +1140,11 @@
             };
             reader.readAsDataURL(file);
 
-            // Show transform section
-            const uploadArea = document.getElementById('uploadArea');
-            if (uploadArea) uploadArea.style.display = 'none';
-            const status = document.getElementById('status');
-            if (status) status.style.display = 'block';
+            // Show preview and transform button (keep upload area visible with preview)
+            if (uploadArea) {
+                uploadArea.innerHTML = '<img id="preview" src="' + URL.createObjectURL(file) + '" style="max-width:100%;max-height:300px;border-radius:10px;">' +
+                    '<p style="margin-top:10px;color:#667eea;">Photo selected! Click Toon It! below</p>';
+            }
 
             // Ensure button is enabled
             if (transformBtn) {
