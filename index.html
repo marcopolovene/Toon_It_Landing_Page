@@ -674,12 +674,12 @@
         const _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
         const SUPABASE_ANON_KEY = _k1 + _k2 + _k3;
 
-        let supabase = null;
+        let supabaseClient = null;
 
         // Initialize Supabase (script loads synchronously before this)
         try {
-            if (window.supabase && window.supabase.createClient) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            if (window.supabase && window.window.supabase.createClient) {
+                supabaseClient = window.window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('Supabase initialized successfully');
             } else {
                 console.error('Supabase library not loaded');
@@ -714,7 +714,7 @@
         // RELIABLE: Check session on page load and update UI
         async function initAuth() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) {
                     currentUser = session.user;
                     window.currentUser = session.user;
@@ -794,14 +794,14 @@
         });
 
         async function checkAuth() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 console.log('Supabase not available, showing guest UI');
                 updateUIForGuest();
                 return;
             }
 
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) { currentUser = session.user; }
                 if (session) {
                     currentUser = session.user;
@@ -812,7 +812,7 @@
                 }
 
                 // Listen for auth changes
-                supabase.auth.onAuthStateChange(async (event, session) => {
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     if (session) {
                         currentUser = session.user;
                         await loadUserCredits();
@@ -830,7 +830,7 @@
         }
 
         async function loadUserCredits() {
-            if (!currentUser || !supabase) return;
+            if (!currentUser || !supabaseClient) return;
 
             try {
                 const { data, error } = await supabase
@@ -918,7 +918,7 @@
         // ==========================================
         async function handleLogin(event) {
             event.preventDefault();
-            if (!supabase) {
+            if (!supabaseClient) {
                 alert('Authentication service not available. Please refresh the page.');
                 return;
             }
@@ -933,7 +933,7 @@
             if (errorEl) errorEl.textContent = '';
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email, password
                 });
 
@@ -959,7 +959,7 @@
 
         async function handleSignup(event) {
             event.preventDefault();
-            if (!supabase) {
+            if (!supabaseClient) {
                 alert('Authentication service not available. Please refresh the page.');
                 return;
             }
@@ -983,7 +983,7 @@
             submitBtn.textContent = 'Creating account...';
 
             try {
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await supabaseClient.auth.signUp({
                     email, password
                 });
 
@@ -1014,7 +1014,7 @@
                 // Small delay then try to login
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                const { data: loginData, error: loginError } = await supabaseClient.auth.signInWithPassword({
                     email, password
                 });
 
@@ -1040,7 +1040,7 @@
 
         async function logout() {
       console.log('Logging out...');
-      if (supabase) { await supabase.auth.signOut(); }
+      if (supabaseClient) { await supabaseClient.auth.signOut(); }
       currentUser = null;
       currentCredits = 0;
       window.location.reload();
@@ -1063,13 +1063,13 @@
             uploadArea.addEventListener('click', async () => {
             console.log('[UPLOAD] Click detected');
             try {
-                if (!supabase) {
+                if (!supabaseClient) {
                     console.error('[UPLOAD] Supabase not initialized!');
                     alert('Service not ready. Please refresh.');
                     return;
                 }
                 console.log('[UPLOAD] Checking session...');
-                const { data, error } = await supabase.auth.getSession();
+                const { data, error } = await supabaseClient.auth.getSession();
                 console.log('[UPLOAD] Session result:', data, error);
                 if (data && data.session) {
                     console.log('[UPLOAD] Session valid, opening file picker');
@@ -1155,8 +1155,8 @@
 
                 try {
                     let authToken = '';
-                    if (supabase) {
-                        const { data: { session } } = await supabase.auth.getSession();
+                    if (supabaseClient) {
+                        const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) { currentUser = session.user; }
                         authToken = session?.access_token || '';
                     }
