@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — Toon It!</title>
+    <style>
+        :root {
+            --bg-light: #faf6f0;
+            --bg-white: #ffffff;
+            --bg-card: #fff8ee;
+            --primary: #d4a04a;
+            --secondary: #a06840;
+            --accent: #e8c078;
+            --text-main: #2a2015;
+            --text-muted: #8a7a60;
+            --border: #e0d4c0;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* ── Navigation ── */
+        .nav {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .nav-brand span { font-size: 1.6rem; }
+        .nav-back {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: .95rem;
+            padding: .5rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all .2s;
+        }
+        .nav-back:hover {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-light) 100%);
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+            padding: 3rem 2rem 2.5rem;
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            color: var(--primary);
+            margin-bottom: .5rem;
+        }
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        .hero .effective {
+            display: inline-block;
+            margin-top: 1rem;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: .35rem 1.2rem;
+            font-size: .85rem;
+            color: var(--secondary);
+        }
+
+        /* ── Content ── */
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .section {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: box-shadow .2s;
+        }
+        .section:hover {
+            box-shadow: 0 4px 20px rgba(42, 32, 21, .06);
+        }
+
+        .section h2 {
+            color: var(--primary);
+            font-size: 1.35rem;
+            margin-bottom: 1rem;
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .section h2 .num {
+            background: var(--primary);
+            color: var(--bg-white);
+            font-size: .8rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .section h3 {
+            color: var(--secondary);
+            font-size: 1.05rem;
+            margin: 1.2rem 0 .5rem;
+        }
+
+        .section p {
+            margin-bottom: .8rem;
+            color: var(--text-main);
+        }
+
+        .section ul, .section ol {
+            margin: .5rem 0 1rem 1.5rem;
+        }
+        .section li {
+            margin-bottom: .4rem;
+        }
+
+        /* third-party provider cards */
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .provider-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+        }
+        .provider-card h4 {
+            color: var(--primary);
+            margin-bottom: .4rem;
+            font-size: 1rem;
+        }
+        .provider-card p {
+            font-size: .9rem;
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+        /* info callout */
+        .callout {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            font-size: .95rem;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: .85rem;
+            border-top: 1px solid var(--border);
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .footer a:hover { text-decoration: underline; }
+        .footer-links { margin-top: .5rem; }
+        .footer-links a { margin: 0 .8rem; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 1.7rem; }
+            .section { padding: 1.4rem; }
+            .container { padding: 1.5rem 1rem 3rem; }
+            .nav { padding: .8rem 1rem; }
+            .nav-brand { font-size: 1.2rem; }
+            .provider-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+    <a href="index.html" class="nav-brand"><span>&#x2728;</span> Toon It!</a>
+    <a href="index.html" class="nav-back">&larr; Back to Home</a>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">Your privacy matters to us. Here&rsquo;s how we handle your data.</p>
+    <span class="effective">Effective Date: February 6, 2026</span>
+</header>
+
+<!-- Content -->
+<main class="container">
+
+    <!-- 1. Information We Collect -->
+    <section class="section">
+        <h2><span class="num">1</span> Information We Collect</h2>
+        <p>We collect information necessary to provide and improve the Toon It! Service. This includes:</p>
+
+        <h3>Account Information</h3>
+        <ul>
+            <li><strong>Email address</strong> &mdash; used for authentication, communication, and account recovery.</li>
+            <li><strong>Password hash</strong> &mdash; your password is cryptographically hashed; we never store plaintext passwords.</li>
+            <li><strong>Account metadata</strong> &mdash; creation date, credit balance, and usage history.</li>
+        </ul>
+
+        <h3>Content Data</h3>
+        <ul>
+            <li><strong>Uploaded photographs</strong> &mdash; images you submit for transformation.</li>
+            <li><strong>Generated videos &amp; images</strong> &mdash; the storybook-style outputs created by our AI pipeline.</li>
+            <li><strong>Transformation metadata</strong> &mdash; timestamps, processing parameters, and status information.</li>
+        </ul>
+
+        <h3>Technical Data</h3>
+        <ul>
+            <li>Browser type and version, device type, operating system.</li>
+            <li>IP address and approximate geographic location.</li>
+            <li>Pages visited, features used, and interaction patterns.</li>
+        </ul>
+
+        <h3>Payment Data</h3>
+        <ul>
+            <li>Transaction IDs and purchase history (managed by Stripe).</li>
+            <li>We do <strong>not</strong> store full credit card numbers, CVVs, or banking details on our servers.</li>
+        </ul>
+    </section>
+
+    <!-- 2. How We Use Information -->
+    <section class="section">
+        <h2><span class="num">2</span> How We Use Information</h2>
+        <p>We use the information we collect to:</p>
+        <ul>
+            <li><strong>Provide the Service</strong> &mdash; process your photo transformations and deliver generated content.</li>
+            <li><strong>Manage your account</strong> &mdash; authenticate your identity, track credit balances, and process payments.</li>
+            <li><strong>Improve the Service</strong> &mdash; analyze usage patterns to enhance performance, features, and user experience.</li>
+            <li><strong>Communicate with you</strong> &mdash; send transactional emails (receipts, account alerts) and, with your consent, product updates.</li>
+            <li><strong>Ensure safety &amp; security</strong> &mdash; detect fraud, prevent abuse, and enforce our Terms of Service.</li>
+            <li><strong>Comply with legal obligations</strong> &mdash; respond to lawful requests and protect our legal rights.</li>
+        </ul>
+    </section>
+
+    <!-- 3. Third-Party Services -->
+    <section class="section">
+        <h2><span class="num">3</span> Third-Party Services</h2>
+        <p>Toon It! relies on trusted third-party providers to deliver the Service. Each provider has access only to the data necessary for their specific function:</p>
+
+        <div class="provider-grid">
+            <div class="provider-card">
+                <h4>&#x1F512; Supabase</h4>
+                <p><strong>Purpose:</strong> Authentication &amp; Database</p>
+                <p>Stores your account credentials (hashed), profile data, credit balances, and transformation records.</p>
+            </div>
+            <div class="provider-card">
+                <h4>&#x2601; Cloudinary</h4>
+                <p><strong>Purpose:</strong> Media Storage &amp; Delivery</p>
+                <p>Stores and delivers your generated storybook videos and transformed images via a secure CDN.</p>
+            </div>
+            <div class="provider-card">
+                <h4>&#x1F4B3; Stripe</h4>
+                <p><strong>Purpose:</strong> Payment Processing</p>
+                <p>Handles all credit purchases, payment card processing, and billing. Stripe is PCI DSS Level 1 certified.</p>
+            </div>
+            <div class="provider-card">
+                <h4>&#x1F3A8; Venice AI</h4>
+                <p><strong>Purpose:</strong> Image Analysis &amp; Generation</p>
+                <p>Your uploaded photos are sent to Venice AI for content analysis and storybook-style transformation. Venice AI processes images to generate creative outputs.</p>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Important:</strong> When you upload a photo for transformation, it is transmitted to Venice AI&rsquo;s servers for processing. We recommend not uploading images containing sensitive personal information, documents, or content you wish to keep strictly private.
+        </div>
+
+        <p>Each third-party service operates under its own privacy policy. We encourage you to review them:</p>
+        <ul>
+            <li><a href="https://supabase.com/privacy" target="_blank" rel="noopener">Supabase Privacy Policy</a></li>
+            <li><a href="https://cloudinary.com/privacy" target="_blank" rel="noopener">Cloudinary Privacy Policy</a></li>
+            <li><a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe Privacy Policy</a></li>
+            <li><a href="https://venice.ai/privacy" target="_blank" rel="noopener">Venice AI Privacy Policy</a></li>
+        </ul>
+    </section>
+
+    <!-- 4. Data Storage & Security -->
+    <section class="section">
+        <h2><span class="num">4</span> Data Storage &amp; Security</h2>
+        <p>We take the security of your data seriously and implement industry-standard measures to protect it:</p>
+        <ul>
+            <li><strong>Encryption in transit</strong> &mdash; all data transmitted between your browser and our services uses TLS (HTTPS).</li>
+            <li><strong>Encryption at rest</strong> &mdash; stored data is encrypted using AES-256 or equivalent standards provided by our infrastructure partners.</li>
+            <li><strong>Password security</strong> &mdash; passwords are hashed using strong, salted cryptographic algorithms; plaintext passwords are never stored.</li>
+            <li><strong>Access controls</strong> &mdash; internal access to user data is restricted to authorized personnel on a need-to-know basis.</li>
+            <li><strong>Infrastructure security</strong> &mdash; our third-party providers (Supabase, Cloudinary, Stripe) maintain SOC 2, ISO 27001, or equivalent certifications.</li>
+        </ul>
+        <p>While we strive to protect your information, no method of electronic storage or transmission is 100% secure. We cannot guarantee absolute security but will notify affected users promptly in the event of a data breach.</p>
+    </section>
+
+    <!-- 5. User Rights -->
+    <section class="section">
+        <h2><span class="num">5</span> User Rights</h2>
+        <p>You have the following rights regarding your personal data:</p>
+
+        <h3>Right to Access</h3>
+        <p>You may request a copy of the personal data we hold about you. We will provide this information in a commonly used electronic format within 30 days of your request.</p>
+
+        <h3>Right to Delete</h3>
+        <p>You may request deletion of your account and associated personal data. Upon request, we will:</p>
+        <ul>
+            <li>Delete your account and authentication credentials.</li>
+            <li>Remove your uploaded photographs from our systems.</li>
+            <li>Remove your generated videos and images from our storage.</li>
+            <li>Anonymize or delete associated usage records.</li>
+        </ul>
+        <p>Note: Some data may be retained as required by law (e.g., financial transaction records for tax compliance).</p>
+
+        <h3>Right to Export</h3>
+        <p>You may download your generated content (videos and images) at any time through your account dashboard. You may also request a full data export by contacting us.</p>
+
+        <h3>Right to Correction</h3>
+        <p>You may update your email address and account information through your account settings or by contacting support.</p>
+
+        <p>To exercise any of these rights, contact <a href="mailto:privacy@toonit.app">privacy@toonit.app</a>.</p>
+    </section>
+
+    <!-- 6. Cookies & Local Storage -->
+    <section class="section">
+        <h2><span class="num">6</span> Cookies &amp; Local Storage</h2>
+        <p>Toon It! uses a minimal set of cookies and browser local storage to operate the Service:</p>
+
+        <h3>Essential Cookies &amp; Storage</h3>
+        <ul>
+            <li><strong>Authentication tokens</strong> &mdash; session and refresh tokens stored in local storage or secure cookies to keep you logged in.</li>
+            <li><strong>CSRF protection</strong> &mdash; security tokens to prevent cross-site request forgery.</li>
+        </ul>
+
+        <h3>Functional Storage</h3>
+        <ul>
+            <li><strong>User preferences</strong> &mdash; theme settings and UI preferences stored locally.</li>
+            <li><strong>Session state</strong> &mdash; temporary data to maintain your workflow during a session.</li>
+        </ul>
+
+        <h3>Analytics (if applicable)</h3>
+        <ul>
+            <li>We may use privacy-respecting analytics to understand aggregate usage patterns. No personally identifiable information is shared with analytics providers.</li>
+        </ul>
+
+        <p>We do <strong>not</strong> use advertising cookies or sell your data to advertisers.</p>
+    </section>
+
+    <!-- 7. Children's Privacy -->
+    <section class="section">
+        <h2><span class="num">7</span> Children&rsquo;s Privacy</h2>
+        <p>Toon It! is not intended for use by children under the age of <strong>13</strong>. We do not knowingly collect personal information from children under 13.</p>
+        <p>If we become aware that we have inadvertently collected data from a child under 13, we will take immediate steps to delete that information from our systems.</p>
+        <p>If you are a parent or guardian and believe your child under 13 has provided us with personal information, please contact us at <a href="mailto:privacy@toonit.app">privacy@toonit.app</a> so we can take appropriate action.</p>
+        <p>Users between the ages of 13 and 18 should review these terms with a parent or guardian before using the Service.</p>
+    </section>
+
+    <!-- 8. Data Retention -->
+    <section class="section">
+        <h2><span class="num">8</span> Data Retention</h2>
+        <p>We retain your data only as long as necessary to provide the Service and fulfill the purposes described in this policy:</p>
+        <ul>
+            <li><strong>Account data</strong> &mdash; retained while your account is active, deleted within 30 days of account deletion request.</li>
+            <li><strong>Uploaded photos</strong> &mdash; retained during the transformation process and for up to 30 days after for troubleshooting, then automatically deleted.</li>
+            <li><strong>Generated content</strong> &mdash; retained in your account until you delete it or close your account.</li>
+            <li><strong>Payment records</strong> &mdash; retained for up to 7 years as required by financial regulations and tax laws.</li>
+            <li><strong>Server logs</strong> &mdash; retained for up to 90 days for security and debugging purposes, then automatically purged.</li>
+            <li><strong>Inactive accounts</strong> &mdash; accounts inactive for more than 24 months may be flagged for deletion. We will send a notification email before taking action.</li>
+        </ul>
+    </section>
+
+    <!-- 9. Changes to Policy -->
+    <section class="section">
+        <h2><span class="num">9</span> Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. When we make changes:</p>
+        <ul>
+            <li>We will update the "Effective Date" at the top of this page.</li>
+            <li>For material changes, we will notify registered users via email at least <strong>30 days</strong> before the changes take effect.</li>
+            <li>A summary of changes will be posted prominently on the Service.</li>
+        </ul>
+        <p>We encourage you to review this Privacy Policy periodically. Your continued use of the Service after changes take effect constitutes acceptance of the revised policy.</p>
+    </section>
+
+    <!-- 10. Contact -->
+    <section class="section">
+        <h2><span class="num">10</span> Contact Information</h2>
+        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:</p>
+        <p style="text-align:center; margin: 1rem 0;">
+            <strong>Privacy Inquiries:</strong> <a href="mailto:privacy@toonit.app">privacy@toonit.app</a><br>
+            <strong>General Support:</strong> <a href="mailto:support@toonit.app">support@toonit.app</a>
+        </p>
+        <p>We aim to respond to all privacy-related inquiries within <strong>30 days</strong>. For data access or deletion requests, we will confirm receipt within 5 business days and fulfill the request within 30 days.</p>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; 2026 Toon It! &mdash; All rights reserved.</p>
+    <p class="footer-links">
+        <a href="terms.html">Terms of Service</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="index.html">Home</a>
+    </p>
+    <p style="margin-top:.5rem;">Last Updated: February 6, 2026</p>
+</footer>
+
+</body>
+</html>
