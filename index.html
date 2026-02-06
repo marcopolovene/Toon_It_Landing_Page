@@ -443,6 +443,21 @@
             margin-bottom: 15px;
             text-align: center;
         }
+    
+        .dashboard-link {
+            color: #feca57;
+            text-decoration: none;
+            margin-right: 15px;
+            font-weight: 500;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        .dashboard-link:hover {
+            background: rgba(254,202,87,0.2);
+        }
+    
     </style>
 </head>
 <body>
@@ -460,6 +475,7 @@
                 <button class="btn-signup" id="signupBtn">Sign Up</button>
             </div>
             <div class="auth-buttons" id="userButtons" style="display: none;">
+            <a href="dashboard.html" class="dashboard-link">📊 Dashboard</a>
                 <span class="user-email" id="userEmail"></span>
                 <button class="btn-credits" id="creditsBtn">Buy Credits</button>
                 <button class="btn-logout" id="logoutBtn">Log Out</button>
