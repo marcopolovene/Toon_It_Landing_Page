@@ -690,7 +690,8 @@
 
         // Workflow endpoints
         const WEBHOOK_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-transform';
-        const STATUS_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status';
+        // const STATUS_URL = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status'; // Replaced with direct Cloudinary check
+        const CLOUDINARY_BASE = 'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos';
 
         // ==========================================
         // STATE
@@ -1232,23 +1233,46 @@
             }
 
             try {
-                const response = await fetch(`${STATUS_URL}?job_id=${currentJobId}`);
-                const data = await response.json();
+                // Check Cloudinary directly - NO n8n execution needed!
+                const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}.mp4`;
+                const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
 
-                if (data.status === 'complete' && data.video_url) {
+                if (response.ok) {
+                    // Video is ready!
                     clearInterval(pollInterval);
                     clearJob();
-                    showVideo(data.video_url);
+                    showVideo(cloudinaryUrl);
                     await loadUserCredits();
-                } else if (data.status === 'failed' || data.status === 'expired') {
-                    clearInterval(pollInterval);
-                    clearJob();
-                    if (statusText) statusText.textContent = 'Transformation failed. Please try again.';
                 } else {
-                    updateStepFromStatus(data.status);
+                    // Still processing - update progress based on time elapsed
+                    if (pollCount <= 3) {
+                        setStep(1);
+                        if (statusText) statusText.textContent = 'Analyzing your image...';
+                    } else if (pollCount <= 6) {
+                        setStep(2);
+                        if (statusText) statusText.textContent = 'Generating storybook image...';
+                    } else {
+                        setStep(3);
+                        if (statusText) statusText.textContent = 'Creating video animation...';
+                    }
                 }
             } catch (error) {
                 console.error('Status check error:', error);
+                // CORS error on HEAD? Try with no-cors mode
+                try {
+                    const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}.mp4`;
+                    const img = new Image();
+                    img.onload = function() {
+                        clearInterval(pollInterval);
+                        clearJob();
+                        showVideo(cloudinaryUrl);
+                        loadUserCredits();
+                    };
+                    // Use video poster as existence check
+                    img.src = cloudinaryUrl.replace('.mp4', '.jpg') + '?_t=' + Date.now();
+                } catch (e2) {
+                    console.error('Fallback check error:', e2);
+                }
             }
         }
 
