@@ -1203,6 +1203,41 @@
         // ==========================================
         // TRANSFORMATION
         // ==========================================
+        
+        // Compress image to reduce payload size and prevent n8n memory issues
+        function compressImage(file, maxWidth = 1024, quality = 0.8) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Scale down if larger than maxWidth
+                        if (width > maxWidth) {
+                            height = Math.round(height * maxWidth / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Convert to JPEG base64
+                        const compressed = canvas.toDataURL('image/jpeg', quality);
+                        console.log(`[COMPRESS] ${img.width}x${img.height} -> ${width}x${height}, ${(compressed.length/1024).toFixed(0)}KB`);
+                        resolve(compressed);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         async function startTransformation() {
             if (!selectedFile) { alert('Please select a photo first'); return; }
             const hasUser = window.currentUser || currentUser;
@@ -1213,9 +1248,10 @@
                 if (currentCredits < 1) { alert('No credits remaining. Please buy more!'); return; }
             }
 
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64 = e.target.result;
+            // Compress image before sending (reduces 10MB+ to ~300KB)
+            const base64 = await compressImage(selectedFile);
+            const processImage = async () => {
+                // base64 is already compressed
 
                 if (uploadArea) uploadArea.style.display = 'none';
                 if (infoBox) infoBox.style.display = 'none';
@@ -1255,7 +1291,7 @@
                     if (statusText) statusText.textContent = 'Error: ' + error.message;
                 }
             };
-            reader.readAsDataURL(selectedFile);
+            processImage();
         }
 
         let pollCount = 0;
