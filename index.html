@@ -1263,19 +1263,46 @@
         // Check URL for password reset token
         function checkForPasswordReset() {
             const hash = window.location.hash;
-            const params = new URLSearchParams(window.location.search);
 
-            // Check for recovery (password reset) tokens first
-            if (hash && hash.includes('type=recovery')) {
-                console.log('[RESET] Recovery token detected!');
-                // Clear any confirmation overlays
-                const overlays = document.querySelectorAll('[style*="position: fixed"]');
-                overlays.forEach(o => { if (o.id !== 'resetModal') o.remove(); });
+            if (!hash || !hash.includes('type=recovery')) return;
 
-                setTimeout(() => {
+            console.log('[RESET] Recovery token detected!');
+
+            // Remove any confirmation overlays that might have been created
+            document.querySelectorAll('.confirmation-overlay').forEach(el => el.remove());
+
+            // Parse the hash to get access_token and refresh_token
+            const hashParams = new URLSearchParams(hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+
+            async function setupResetSession() {
+                try {
+                    const sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : null;
+                    if (!sb) {
+                        console.error('[RESET] No supabase client');
+                        return;
+                    }
+
+                    // Set the session from the recovery tokens
+                    if (accessToken && refreshToken) {
+                        const { data, error } = await sb.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken
+                        });
+
+                        if (error) {
+                            console.error('[RESET] Session error:', error);
+                        } else {
+                            console.log('[RESET] Session established for recovery');
+                        }
+                    }
+
+                    // Show reset modal
                     closeModals();
                     showModal('reset');
-                    // Attach form handler 
+
+                    // Attach form handler
                     const resetForm = document.getElementById('resetForm');
                     if (resetForm) {
                         resetForm.onsubmit = async function(e) {
@@ -1295,31 +1322,28 @@
                             }
 
                             try {
-                                // Use whichever supabase client is available
-                                const sb = supabaseClient || window.supabaseClient;
-                                if (!sb) {
-                                    if (errorEl) { errorEl.textContent = 'Service not ready. Please refresh.'; errorEl.style.display = 'block'; }
-                                    return;
-                                }
                                 const { error } = await sb.auth.updateUser({ password: newPass });
                                 if (error) {
                                     if (errorEl) { errorEl.textContent = error.message; errorEl.style.display = 'block'; }
                                     return;
                                 }
                                 // Success!
-                                document.getElementById('resetForm').style.display = 'none';
+                                resetForm.style.display = 'none';
                                 document.getElementById('resetSuccess').style.display = 'block';
-                                // Clean URL
                                 history.replaceState(null, '', window.location.pathname);
                             } catch (err) {
                                 if (errorEl) { errorEl.textContent = 'Error: ' + err.message; errorEl.style.display = 'block'; }
                             }
                         };
-                        console.log('[RESET] Form handler attached');
                     }
-                }, 800);
-                return; // Don't process as confirmation
+                } catch (err) {
+                    console.error('[RESET] Setup error:', err);
+                }
             }
+
+            // Wait for DOM and Supabase to be ready
+            setTimeout(setupResetSession, 1000);
+        }
         }
 
         async function buyCredits(bundle) {
@@ -2046,6 +2070,11 @@
 
     // Check for email confirmation token in URL
     function checkEmailConfirmation() {
+            // Skip if this is a password recovery, not email confirmation
+            if (window.location.hash && window.location.hash.includes('type=recovery')) {
+                console.log('[EMAIL] Skipping confirmation - this is a recovery token');
+                return;
+            }
         var hash = window.location.hash;
         if (hash && hash.includes('access_token')) {
             console.log('[FAILSAFE] Email confirmation detected!');
