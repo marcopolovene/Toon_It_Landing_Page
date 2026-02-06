@@ -1279,14 +1279,14 @@
 
             try {
                 // Check Cloudinary directly - NO n8n execution needed!
-                const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}.mp4`;
+                const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
                 const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
 
                 if (response.ok) {
                     // Video is ready!
                     clearInterval(pollInterval);
                     clearJob();
-                    showVideo(cloudinaryUrl);
+                    showVideo(cloudinaryUrl + '.mp4');
                     await loadUserCredits();
                 } else {
                     // Still processing - update progress based on time elapsed
@@ -1305,7 +1305,7 @@
                 console.error('Status check error:', error);
                 // CORS error on HEAD? Try with no-cors mode
                 try {
-                    const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}.mp4`;
+                    const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
                     const img = new Image();
                     img.onload = function() {
                         clearInterval(pollInterval);
@@ -1314,7 +1314,7 @@
                         loadUserCredits();
                     };
                     // Use video poster as existence check
-                    img.src = cloudinaryUrl.replace('.mp4', '.jpg') + '?_t=' + Date.now();
+                    img.src = cloudinaryUrl + '.jpg' + '?_t=' + Date.now();
                 } catch (e2) {
                     console.error('Fallback check error:', e2);
                 }
