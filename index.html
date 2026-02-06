@@ -741,11 +741,13 @@
     <div class="modal-overlay" id="resetModal">
         <div class="modal">
             <h2>🔐 Set New Password</h2>
-            <form id="resetForm" onsubmit="handleResetPassword(event)">
-                <input type="password" id="newPassword" placeholder="New password (min 6 characters)" minlength="6" required>
-                <input type="password" id="confirmPassword" placeholder="Confirm new password" minlength="6" required>
+            <form id="resetForm">
+                <label for="newPassword" style="display:block;color:var(--text-muted);font-size:0.85em;margin-bottom:4px;">New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password (min 6 characters)" minlength="6" required style="margin-bottom:12px;">
+                <label for="confirmPassword" style="display:block;color:var(--text-muted);font-size:0.85em;margin-bottom:4px;">Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="Re-enter new password" minlength="6" required style="margin-bottom:12px;">
                 <div id="resetError" style="color:var(--error);font-size:0.85em;margin-bottom:10px;display:none;"></div>
-                <button type="submit">Update Password</button>
+                <button type="submit" style="width:100%;background:var(--primary);color:var(--text-dark);border:none;padding:12px;border-radius:10px;font-size:1em;font-weight:600;cursor:pointer;">Update Password</button>
             </form>
             <div id="resetSuccess" style="display:none;text-align:center;">
                 <div style="font-size:3em;margin-bottom:15px;">✅</div>
@@ -1263,19 +1265,60 @@
             const hash = window.location.hash;
             const params = new URLSearchParams(window.location.search);
 
-            // Supabase sends recovery tokens in the URL hash
+            // Check for recovery (password reset) tokens first
             if (hash && hash.includes('type=recovery')) {
-                // Show reset password modal
-                setTimeout(() => {
-                    showModal('reset');
-                }, 500);
-            }
+                console.log('[RESET] Recovery token detected!');
+                // Clear any confirmation overlays
+                const overlays = document.querySelectorAll('[style*="position: fixed"]');
+                overlays.forEach(o => { if (o.id !== 'resetModal') o.remove(); });
 
-            // Also check for our ?reset=true parameter with hash token
-            if (params.get('reset') === 'true' && hash.includes('access_token')) {
                 setTimeout(() => {
+                    closeModals();
                     showModal('reset');
-                }, 500);
+                    // Attach form handler 
+                    const resetForm = document.getElementById('resetForm');
+                    if (resetForm) {
+                        resetForm.onsubmit = async function(e) {
+                            e.preventDefault();
+                            const newPass = document.getElementById('newPassword').value;
+                            const confirmPass = document.getElementById('confirmPassword').value;
+                            const errorEl = document.getElementById('resetError');
+                            if (errorEl) errorEl.style.display = 'none';
+
+                            if (newPass !== confirmPass) {
+                                if (errorEl) { errorEl.textContent = 'Passwords do not match.'; errorEl.style.display = 'block'; }
+                                return;
+                            }
+                            if (newPass.length < 6) {
+                                if (errorEl) { errorEl.textContent = 'Password must be at least 6 characters.'; errorEl.style.display = 'block'; }
+                                return;
+                            }
+
+                            try {
+                                // Use whichever supabase client is available
+                                const sb = supabaseClient || window.supabaseClient;
+                                if (!sb) {
+                                    if (errorEl) { errorEl.textContent = 'Service not ready. Please refresh.'; errorEl.style.display = 'block'; }
+                                    return;
+                                }
+                                const { error } = await sb.auth.updateUser({ password: newPass });
+                                if (error) {
+                                    if (errorEl) { errorEl.textContent = error.message; errorEl.style.display = 'block'; }
+                                    return;
+                                }
+                                // Success!
+                                document.getElementById('resetForm').style.display = 'none';
+                                document.getElementById('resetSuccess').style.display = 'block';
+                                // Clean URL
+                                history.replaceState(null, '', window.location.pathname);
+                            } catch (err) {
+                                if (errorEl) { errorEl.textContent = 'Error: ' + err.message; errorEl.style.display = 'block'; }
+                            }
+                        };
+                        console.log('[RESET] Form handler attached');
+                    }
+                }, 800);
+                return; // Don't process as confirmation
             }
         }
 
