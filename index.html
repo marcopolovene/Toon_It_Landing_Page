@@ -459,7 +459,139 @@
             background: rgba(254,202,87,0.2);
         }
     
-    </style>
+    
+        /* ==========================================
+           MOBILE RESPONSIVE STYLES
+           ========================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 10px;
+                max-width: 100%;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .header p {
+                font-size: 0.95em;
+            }
+            .auth-bar {
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px;
+                text-align: center;
+            }
+            .auth-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: center;
+            }
+            .auth-buttons button,
+            .auth-buttons a {
+                font-size: 0.85em;
+                padding: 8px 12px;
+                min-height: 44px;
+            }
+            #uploadArea {
+                padding: 25px 15px;
+            }
+            #uploadArea img {
+                max-width: 100%;
+                max-height: 200px;
+            }
+            .info-box {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            #transformBtn {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.1em;
+                min-height: 48px;
+            }
+            .progress-steps {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .step {
+                flex-direction: row;
+                gap: 8px;
+                padding: 8px 12px;
+            }
+            #result video {
+                max-width: 100%;
+                max-height: 50vh;
+                border-radius: 10px;
+            }
+            .result-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .result-buttons button {
+                width: 100%;
+                min-height: 48px;
+            }
+            /* Credits modal */
+            .modal {
+                width: 95vw;
+                max-width: 95vw;
+                padding: 15px;
+                margin: 10px;
+            }
+            .credits-grid {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .credit-bundle {
+                padding: 15px;
+                min-height: 48px;
+            }
+            .bundle-credits {
+                font-size: 2em;
+            }
+            /* Login/Signup modals */
+            .modal input {
+                font-size: 16px; /* Prevents iOS zoom on focus */
+                padding: 12px;
+                min-height: 48px;
+            }
+            .modal button[type="submit"] {
+                width: 100%;
+                min-height: 48px;
+                font-size: 1em;
+            }
+            .modal h2 {
+                font-size: 1.3em;
+            }
+            /* User info */
+            .user-email {
+                font-size: 0.8em;
+                max-width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .credits-display {
+                font-size: 0.85em;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .auth-buttons button {
+                font-size: 0.8em;
+                padding: 6px 10px;
+            }
+            .bundle-credits {
+                font-size: 1.5em;
+            }
+        }
+
+        </style>
 </head>
 <body>
     <div class="container">
