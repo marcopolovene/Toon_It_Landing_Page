@@ -501,7 +501,7 @@
         </div>
 
         <!-- Upload Area -->
-        <div id="uploadArea" class="disabled">
+        <div id="uploadArea">
             <div class="upload-icon">📸</div>
             <p><strong>Drop your photo here</strong></p>
             <p style="color: #999; font-size: 0.9em;">or click to browse</p>
@@ -851,6 +851,9 @@
         }
 
         function updateUIForUser() {
+            // Always enable upload for logged-in users
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) uploadArea.classList.remove('disabled');
             const guestView = document.getElementById('guestView');
             const userView = document.getElementById('userView');
             const guestButtons = document.getElementById('guestButtons');
@@ -1033,14 +1036,14 @@
             if (!uploadArea || !fileInput) return;
 
             uploadArea.addEventListener('click', () => {
-                if (!uploadArea.classList.contains('disabled')) {
+                if (currentUser) { // Check if logged in instead of disabled class
                     fileInput.click();
                 }
             });
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                if (!uploadArea.classList.contains('disabled')) {
+                if (currentUser) { // Check if logged in instead of disabled class
                     uploadArea.classList.add('dragover');
                 }
             });
