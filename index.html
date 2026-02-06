@@ -695,6 +695,7 @@
         // STATE
         // ==========================================
         let currentUser = null;
+        window.currentUser = null; // Sync with global
         let currentCredits = 0;
         let selectedFile = null;
         let currentJobId = null;
@@ -1037,14 +1038,14 @@
             if (!uploadArea || !fileInput) return;
 
             uploadArea.addEventListener('click', () => {
-                if (currentUser) { // Check if logged in instead of disabled class
+                if (window.currentUser || currentUser) { // Check global or local
                     fileInput.click();
                 }
             });
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                if (currentUser) { // Check if logged in instead of disabled class
+                if (window.currentUser || currentUser) { // Check global or local
                     uploadArea.classList.add('dragover');
                 }
             });
@@ -1375,6 +1376,7 @@
             if (result.error) {
                 if (errorEl) errorEl.textContent = result.error.message;
             } else if (result.data && result.data.session) {
+                window.currentUser = result.data.session.user; // Set global currentUser
                 console.log('[FAILSAFE] Login successful!');
                 closeAllModals();
 
@@ -1459,6 +1461,10 @@
 
             var loginResult = await sb.auth.signInWithPassword({ email: email, password: password });
             console.log('[FAILSAFE] Auto-login result:', loginResult);
+
+            if (loginResult.data && loginResult.data.session) {
+                window.currentUser = loginResult.data.session.user; // Set global currentUser
+            }
 
             if (loginResult.error) {
                 if (successEl) successEl.textContent = 'Account created! Please check your email to confirm, then log in.';
