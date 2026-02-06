@@ -710,6 +710,22 @@
         // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
+        // RELIABLE: Check session on page load and update UI
+        async function initAuth() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    window.currentUser = session.user;
+                    updateUIForUser();
+                    loadUserCredits();
+                }
+            } catch (e) {
+                console.log('Auth init error:', e);
+            }
+        }
+        initAuth();
+
             console.log('DOM loaded, setting up...');
 
             // Get DOM elements
@@ -1041,11 +1057,15 @@
         function setupUploadHandlers() {
             if (!uploadArea || !fileInput) return;
 
-            uploadArea.addEventListener('click', () => {
-                if (window.currentUser || currentUser) { // Check global or local
-                    fileInput.click();
-                }
-            });
+            uploadArea.addEventListener('click', async () => {
+            // Direct session check - most reliable
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                fileInput.click();
+            } else {
+                showModal('loginModal');
+            }
+        });
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
