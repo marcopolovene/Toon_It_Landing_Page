@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service — Toon It!</title>
+    <style>
+        :root {
+            --bg-light: #faf6f0;
+            --bg-white: #ffffff;
+            --bg-card: #fff8ee;
+            --primary: #d4a04a;
+            --secondary: #a06840;
+            --accent: #e8c078;
+            --text-main: #2a2015;
+            --text-muted: #8a7a60;
+            --border: #e0d4c0;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* ── Navigation ── */
+        .nav {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .nav-brand span { font-size: 1.6rem; }
+        .nav-back {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: .95rem;
+            padding: .5rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all .2s;
+        }
+        .nav-back:hover {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-light) 100%);
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+            padding: 3rem 2rem 2.5rem;
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            color: var(--primary);
+            margin-bottom: .5rem;
+        }
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        .hero .effective {
+            display: inline-block;
+            margin-top: 1rem;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: .35rem 1.2rem;
+            font-size: .85rem;
+            color: var(--secondary);
+        }
+
+        /* ── Content ── */
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .section {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: box-shadow .2s;
+        }
+        .section:hover {
+            box-shadow: 0 4px 20px rgba(42, 32, 21, .06);
+        }
+
+        .section h2 {
+            color: var(--primary);
+            font-size: 1.35rem;
+            margin-bottom: 1rem;
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .section h2 .num {
+            background: var(--primary);
+            color: var(--bg-white);
+            font-size: .8rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .section h3 {
+            color: var(--secondary);
+            font-size: 1.05rem;
+            margin: 1.2rem 0 .5rem;
+        }
+
+        .section p {
+            margin-bottom: .8rem;
+            color: var(--text-main);
+        }
+
+        .section ul, .section ol {
+            margin: .5rem 0 1rem 1.5rem;
+        }
+        .section li {
+            margin-bottom: .4rem;
+        }
+
+        /* pricing table */
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: .95rem;
+        }
+        .pricing-table th {
+            background: var(--bg-card);
+            color: var(--secondary);
+            padding: .65rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+        .pricing-table td {
+            padding: .6rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .pricing-table tr:last-child td { border-bottom: none; }
+        .pricing-table .badge {
+            background: var(--accent);
+            color: var(--text-main);
+            font-size: .7rem;
+            padding: .15rem .5rem;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-left: .4rem;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: .85rem;
+            border-top: 1px solid var(--border);
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .footer a:hover { text-decoration: underline; }
+        .footer-links { margin-top: .5rem; }
+        .footer-links a { margin: 0 .8rem; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 1.7rem; }
+            .section { padding: 1.4rem; }
+            .container { padding: 1.5rem 1rem 3rem; }
+            .nav { padding: .8rem 1rem; }
+            .nav-brand { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+    <a href="index.html" class="nav-brand"><span>&#x2728;</span> Toon It!</a>
+    <a href="index.html" class="nav-back">&larr; Back to Home</a>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+    <h1>Terms of Service</h1>
+    <p class="subtitle">Please read these terms carefully before using Toon&nbsp;It!</p>
+    <span class="effective">Effective Date: February 6, 2026</span>
+</header>
+
+<!-- Content -->
+<main class="container">
+
+    <!-- 1. Acceptance -->
+    <section class="section">
+        <h2><span class="num">1</span> Acceptance of Terms</h2>
+        <p>By accessing or using the Toon It! application ("Service"), available at <strong>marcopolovene.github.io/Toon_It_Landing_Page/</strong>, you agree to be bound by these Terms of Service ("Terms"). If you do not agree with any part of these Terms, you must not use the Service.</p>
+        <p>These Terms constitute a legally binding agreement between you ("User," "you") and Toon It! ("we," "us," "our"). We reserve the right to update these Terms at any time, and continued use of the Service constitutes acceptance of any modifications.</p>
+    </section>
+
+    <!-- 2. Service Description -->
+    <section class="section">
+        <h2><span class="num">2</span> Service Description</h2>
+        <p>Toon It! is an AI-powered creative platform that transforms your photographs into enchanting storybook-style illustrations and short animated videos. The Service operates through the following pipeline:</p>
+        <ol>
+            <li><strong>Photo Upload</strong> &mdash; You capture or select a photograph.</li>
+            <li><strong>Smart Analysis</strong> &mdash; A multi-modal AI model analyzes the image content, subjects, and environment to generate context-aware prompts.</li>
+            <li><strong>Style Transformation</strong> &mdash; AI image-generation models convert the photo into a Storybook / Fantasy art style.</li>
+            <li><strong>Video Animation</strong> &mdash; The transformed image is animated into a short video (approximately 5&ndash;7 seconds) with subtle, whimsical motion.</li>
+            <li><strong>Delivery &amp; Storage</strong> &mdash; The finished video is delivered to you and stored in your account.</li>
+        </ol>
+        <p>Results may vary depending on input quality, content, and the inherent nature of AI processing. We do not guarantee specific artistic outcomes.</p>
+    </section>
+
+    <!-- 3. Accounts -->
+    <section class="section">
+        <h2><span class="num">3</span> User Accounts &amp; Authentication</h2>
+        <p>To use the Service you must create an account. Authentication is managed through <strong>Supabase</strong>, a third-party authentication provider.</p>
+        <ul>
+            <li>You must provide a valid email address and create a secure password.</li>
+            <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+            <li>You must notify us immediately of any unauthorized access to your account.</li>
+            <li>You may not create multiple accounts to circumvent restrictions or abuse the Service.</li>
+            <li>We reserve the right to suspend or terminate accounts that violate these Terms.</li>
+        </ul>
+    </section>
+
+    <!-- 4. Credits & Payments -->
+    <section class="section">
+        <h2><span class="num">4</span> Credit System &amp; Payments</h2>
+        <p>Toon It! operates on a <strong>credit-based system</strong>. Each transformation (photo &rarr; storybook video) consumes <strong>1 credit</strong>. Credits must be purchased before use and do not expire.</p>
+
+        <h3>Credit Bundles</h3>
+        <table class="pricing-table">
+            <thead>
+                <tr><th>Bundle</th><th>Price (USD)</th><th>Credits</th><th>Per Credit</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Starter</td><td>$5.00</td><td>5</td><td>$1.00</td></tr>
+                <tr><td>Popular <span class="badge">BEST VALUE</span></td><td>$10.00</td><td>12</td><td>$0.83</td></tr>
+                <tr><td>Pro</td><td>$25.00</td><td>35</td><td>$0.71</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Payment Processing</h3>
+        <p>All payments are securely processed through <strong>Stripe</strong>. We do not store your full credit card details on our servers. By making a purchase you agree to Stripe&rsquo;s <a href="https://stripe.com/legal" target="_blank" rel="noopener">Terms of Service</a>.</p>
+        <ul>
+            <li>Credits are added to your account immediately upon successful payment.</li>
+            <li>All prices are listed in US Dollars (USD).</li>
+            <li>Applicable taxes may be added at checkout depending on your jurisdiction.</li>
+        </ul>
+    </section>
+
+    <!-- 5. Content & Usage -->
+    <section class="section">
+        <h2><span class="num">5</span> Content &amp; Usage</h2>
+        <h3>Your Content</h3>
+        <p>You retain ownership of the photographs you upload and the AI-generated storybook images and videos produced by the Service ("Generated Content"). By using the Service, you grant us a limited, non-exclusive, worldwide, royalty-free license to:</p>
+        <ul>
+            <li>Process and transform your uploaded photos as necessary to deliver the Service.</li>
+            <li>Display Generated Content for promotional, portfolio, or marketing purposes (e.g., showcasing transformations on our website or social media), unless you opt out by contacting us.</li>
+            <li>Store your content on our infrastructure and third-party providers for delivery purposes.</li>
+        </ul>
+
+        <h3>Your Responsibilities</h3>
+        <p>You represent and warrant that you have the right to upload any photograph you submit, and that your use of the Service does not infringe upon the rights of any third party.</p>
+    </section>
+
+    <!-- 6. Prohibited Uses -->
+    <section class="section">
+        <h2><span class="num">6</span> Prohibited Uses</h2>
+        <p>You agree <strong>not</strong> to use the Service for any of the following:</p>
+        <ul>
+            <li><strong>NSFW Content</strong> &mdash; Uploading or generating sexually explicit, pornographic, or obscene material.</li>
+            <li><strong>Illegal Activity</strong> &mdash; Any use that violates applicable local, state, national, or international law.</li>
+            <li><strong>Harassment &amp; Abuse</strong> &mdash; Creating content intended to harass, bully, threaten, or defame any individual or group.</li>
+            <li><strong>Copyright Violations</strong> &mdash; Uploading images you do not own or have rights to, or using the Service to infringe on intellectual property rights.</li>
+            <li><strong>Deception &amp; Fraud</strong> &mdash; Creating misleading deepfakes or content designed to deceive others.</li>
+            <li><strong>System Abuse</strong> &mdash; Attempting to reverse-engineer, exploit, or overload the Service infrastructure.</li>
+        </ul>
+        <p>Violation of these rules may result in immediate account termination without refund.</p>
+    </section>
+
+    <!-- 7. AI Disclaimer -->
+    <section class="section">
+        <h2><span class="num">7</span> AI-Generated Content Disclaimer</h2>
+        <p>Toon It! uses artificial intelligence models to analyze and transform your images. Please be aware that:</p>
+        <ul>
+            <li>AI-generated results are non-deterministic &mdash; the same input photo may produce slightly different outputs on different occasions.</li>
+            <li>Generated content may occasionally contain unexpected artifacts, distortions, or interpretations.</li>
+            <li>We do not guarantee that the output will meet any specific artistic, aesthetic, or accuracy standard.</li>
+            <li>AI models are provided by third-party services and may change or improve over time, which can affect output quality or style.</li>
+            <li>You are solely responsible for reviewing Generated Content before sharing or publishing it.</li>
+        </ul>
+    </section>
+
+    <!-- 8. Refund Policy -->
+    <section class="section">
+        <h2><span class="num">8</span> Refund Policy</h2>
+        <p>Due to the digital nature of our product, <strong>all credit purchases are generally non-refundable</strong>. Credits are delivered instantly upon payment and represent access to a digital transformation service.</p>
+        <p>However, we review refund requests on a <strong>case-by-case basis</strong>. You may be eligible for a refund or credit if:</p>
+        <ul>
+            <li>A technical error on our end prevented your transformation from completing and credits were deducted.</li>
+            <li>You were charged multiple times for the same purchase due to a payment processing error.</li>
+            <li>The Service experienced significant downtime that prevented you from using purchased credits.</li>
+        </ul>
+        <p>To request a refund, contact <a href="mailto:support@toonit.app">support@toonit.app</a> within <strong>14 days</strong> of your purchase with your transaction details.</p>
+    </section>
+
+    <!-- 9. IP -->
+    <section class="section">
+        <h2><span class="num">9</span> Intellectual Property</h2>
+        <p>The Toon It! name, logo, branding, website design, underlying code, AI pipeline, and all associated intellectual property are owned by Toon It! and protected by applicable intellectual property laws.</p>
+        <p>You may not reproduce, distribute, modify, or create derivative works from any part of the Service (excluding your own Generated Content) without our prior written consent.</p>
+    </section>
+
+    <!-- 10. Limitation of Liability -->
+    <section class="section">
+        <h2><span class="num">10</span> Limitation of Liability</h2>
+        <p>To the maximum extent permitted by applicable law:</p>
+        <ul>
+            <li>The Service is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind, either express or implied.</li>
+            <li>We do not warrant that the Service will be uninterrupted, secure, or error-free.</li>
+            <li>In no event shall Toon It!, its operators, or affiliates be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill.</li>
+            <li>Our total liability for any claim arising from or related to the Service shall not exceed the amount you paid to us in the <strong>12 months</strong> preceding the claim.</li>
+        </ul>
+    </section>
+
+    <!-- 11. Termination -->
+    <section class="section">
+        <h2><span class="num">11</span> Termination</h2>
+        <p>We may suspend or terminate your access to the Service at any time, with or without cause, and with or without notice. Grounds for termination include but are not limited to:</p>
+        <ul>
+            <li>Violation of these Terms of Service.</li>
+            <li>Engaging in prohibited uses as outlined in Section 6.</li>
+            <li>Fraudulent or suspicious payment activity.</li>
+            <li>Extended inactivity (accounts unused for more than 24 months).</li>
+        </ul>
+        <p>You may delete your account at any time through your account settings. Upon termination, unused credits are forfeited unless a refund is approved under our Refund Policy.</p>
+    </section>
+
+    <!-- 12. Changes -->
+    <section class="section">
+        <h2><span class="num">12</span> Changes to Terms</h2>
+        <p>We reserve the right to modify these Terms at any time. When we make changes, we will:</p>
+        <ul>
+            <li>Update the "Effective Date" at the top of this page.</li>
+            <li>Notify registered users via email for material changes.</li>
+            <li>Post a prominent notice on the Service for at least 30 days.</li>
+        </ul>
+        <p>Your continued use of the Service after changes take effect constitutes acceptance of the revised Terms. If you do not agree with the updated Terms, you must stop using the Service.</p>
+    </section>
+
+    <!-- 13. Contact -->
+    <section class="section">
+        <h2><span class="num">13</span> Contact Information</h2>
+        <p>If you have any questions, concerns, or requests regarding these Terms of Service, please contact us at:</p>
+        <p style="text-align:center; margin: 1rem 0;">
+            <strong>Email:</strong> <a href="mailto:support@toonit.app">support@toonit.app</a>
+        </p>
+        <p>We aim to respond to all inquiries within 48 business hours.</p>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; 2026 Toon It! &mdash; All rights reserved.</p>
+    <p class="footer-links">
+        <a href="terms.html">Terms of Service</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="index.html">Home</a>
+    </p>
+    <p style="margin-top:.5rem;">Last Updated: February 6, 2026</p>
+</footer>
+
+</body>
+</html>
