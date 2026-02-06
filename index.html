@@ -443,6 +443,152 @@
             margin-bottom: 15px;
             text-align: center;
         }
+    
+        /* Buy Credits Modal */
+        .credits-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .credits-modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .credits-modal h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .credits-modal .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .bundle-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bundle-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bundle-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+
+        .bundle-card.popular {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .bundle-info h3 {
+            color: #fff;
+            margin: 0 0 5px 0;
+            font-size: 1.2em;
+        }
+
+        .bundle-info .credits-amount {
+            color: #6366f1;
+            font-weight: bold;
+        }
+
+        .bundle-info .per-credit {
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        .bundle-price {
+            font-size: 1.5em;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .bundle-badge {
+            background: #fbbf24;
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .credits-modal .close-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5em;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .credits-modal .close-btn:hover {
+            color: #fff;
+        }
+
+        .buy-credits-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .buy-credits-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Payment Success Banner */
+        .payment-success-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: bold;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
     </style>
 </head>
 <body>
@@ -1322,6 +1468,9 @@
         if (creditCount) creditCount.textContent = credits;
  if (guestButtons) guestButtons.style.display = 'none';
  if (userButtons) userButtons.style.display = 'flex';
+            // Show buy button if logged in
+            const buyBtn = document.getElementById('buyCreditsBtn');
+            if (buyBtn) buyBtn.style.display = 'inline-block';
         if (loginRequired) loginRequired.style.display = 'none';
         if (uploadArea) uploadArea.style.display = 'block';
     }
@@ -1593,6 +1742,134 @@
         setTimeout(checkExistingSession, wasConfirmation ? 1000 : 500);
     }
 })();
-</script>
+
+
+    // ========== BUY CREDITS FUNCTIONALITY ==========
+    const CHECKOUT_URL = 'https://marcopthevene.app.n8n.cloud/webhook/create-checkout';
+
+    function showCreditsModal() {
+        document.getElementById('creditsModalOverlay').style.display = 'flex';
+    }
+
+    function closeCreditsModal() {
+        document.getElementById('creditsModalOverlay').style.display = 'none';
+    }
+
+    // Close modal on overlay click
+    document.getElementById('creditsModalOverlay')?.addEventListener('click', function(e) {
+        if (e.target === this) closeCreditsModal();
+    });
+
+    async function purchaseCredits(bundle) {
+        if (!currentUser) {
+            alert('Please log in to purchase credits');
+            return;
+        }
+
+        // Show loading state
+        const cards = document.querySelectorAll('.bundle-card');
+        cards.forEach(c => c.style.pointerEvents = 'none');
+
+        try {
+            const response = await fetch(CHECKOUT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    bundle: bundle,
+                    user_id: currentUser.id,
+                    email: currentUser.email
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                // Redirect to Stripe Checkout
+                window.location.href = data.url;
+            } else {
+                throw new Error('No checkout URL received');
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+            alert('Failed to start checkout. Please try again.');
+            cards.forEach(c => c.style.pointerEvents = 'auto');
+        }
+    }
+
+    // Handle payment success/cancel from URL params
+    function handlePaymentReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const payment = params.get('payment');
+
+        if (payment === 'success') {
+            // Show success banner
+            const banner = document.createElement('div');
+            banner.className = 'payment-success-banner';
+            banner.innerHTML = '🎉 Payment successful! Your credits have been added.';
+            document.body.insertBefore(banner, document.body.firstChild);
+
+            // Refresh credits display
+            if (currentUser) {
+                loadUserCredits(currentUser.id);
+            }
+
+            // Remove param from URL
+            window.history.replaceState({}, '', window.location.pathname);
+
+            // Auto-hide banner after 5 seconds
+            setTimeout(() => banner.remove(), 5000);
+        } else if (payment === 'cancelled') {
+            // Just remove the param
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }
+
+    // Call on page load
+    handlePaymentReturn();
+
+    </script>
+
+    <!-- Buy Credits Modal -->
+    <div id="creditsModalOverlay" class="credits-modal-overlay">
+        <div class="credits-modal" style="position: relative;">
+            <button class="close-btn" onclick="closeCreditsModal()">&times;</button>
+            <h2>💎 Buy Credits</h2>
+            <p class="subtitle">Each credit = 1 photo transformation</p>
+
+            <div class="bundle-options">
+                <div class="bundle-card" onclick="purchaseCredits('starter')">
+                    <div class="bundle-info">
+                        <h3>⭐ Starter</h3>
+                        <span class="credits-amount">5 Credits</span>
+                        <span class="per-credit">($1.00 per credit)</span>
+                    </div>
+                    <span class="bundle-price">$5</span>
+                </div>
+
+                <div class="bundle-card popular" onclick="purchaseCredits('popular')">
+                    <div class="bundle-info">
+                        <h3>🌟 Popular <span class="bundle-badge">BEST VALUE</span></h3>
+                        <span class="credits-amount">12 Credits</span>
+                        <span class="per-credit">($0.83 per credit)</span>
+                    </div>
+                    <span class="bundle-price">$10</span>
+                </div>
+
+                <div class="bundle-card" onclick="purchaseCredits('pro')">
+                    <div class="bundle-info">
+                        <h3>💎 Pro</h3>
+                        <span class="credits-amount">35 Credits</span>
+                        <span class="per-credit">($0.71 per credit)</span>
+                    </div>
+                    <span class="bundle-price">$25</span>
+                </div>
+            </div>
+
+            <p style="text-align: center; color: #666; margin-top: 20px; font-size: 0.85em;">
+                🔒 Secure payment via Stripe
+            </p>
+        </div>
+    </div>
+
 </body>
 </html>
