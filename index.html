@@ -922,10 +922,15 @@
                 });
 
                 if (error) {
-                    if (errorEl) errorEl.textContent = error.message;
-                } else {
-                    closeModals();
-                }
+                if (errorEl) errorEl.textContent = error.message;
+            } else {
+                // Set global user and update UI
+                currentUser = data.session.user;
+                window.currentUser = data.session.user;
+                closeModals();
+                updateUIForUser();
+                loadUserCredits();
+            }
             } catch (e) {
                 if (errorEl) errorEl.textContent = 'Login failed. Please try again.';
             }
