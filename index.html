@@ -647,6 +647,7 @@
                 </div>
                 <div id="loginError" class="form-error"></div>
                 <button type="submit" class="modal-submit" id="loginSubmit">Log In</button>
+                <p style="text-align:center;margin-top:12px;"><a onclick="showForgotPassword()" style="color:var(--primary);cursor:pointer;font-size:0.9em;">Forgot your password?</a></p>
             </form>
             <div class="modal-switch">
                 Don't have an account? <a onclick="showModal('signup')">Sign up</a>
@@ -710,6 +711,48 @@
                 </div>
             </div>
             <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe</p>
+        </div>
+    </div>
+
+    
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotModal">
+        <div class="modal">
+            <button class="modal-close" data-close-modal>&times;</button>
+            <h2>🔑 Reset Password</h2>
+            <div id="forgotStep1">
+                <p style="color:var(--text-muted);margin-bottom:15px;">Enter your email and we'll send you a password reset link.</p>
+                <form id="forgotForm" onsubmit="handleForgotPassword(event)">
+                    <input type="email" id="forgotEmail" placeholder="Your email address" required>
+                    <div id="forgotError" style="color:var(--error);font-size:0.85em;margin-bottom:10px;display:none;"></div>
+                    <button type="submit">Send Reset Link</button>
+                </form>
+            </div>
+            <div id="forgotStep2" style="display:none;text-align:center;">
+                <div style="font-size:3em;margin-bottom:15px;">📧</div>
+                <h3 style="color:var(--primary);margin-bottom:10px;">Check Your Email!</h3>
+                <p style="color:var(--text-muted);">We've sent a password reset link to your email. Click the link to set a new password.</p>
+                <p style="color:var(--text-muted);font-size:0.85em;margin-top:15px;">Didn't receive it? Check your spam folder or <a onclick="showForgotPassword()" style="color:var(--primary);cursor:pointer;">try again</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal (shown after clicking email link) -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal">
+            <h2>🔐 Set New Password</h2>
+            <form id="resetForm" onsubmit="handleResetPassword(event)">
+                <input type="password" id="newPassword" placeholder="New password (min 6 characters)" minlength="6" required>
+                <input type="password" id="confirmPassword" placeholder="Confirm new password" minlength="6" required>
+                <div id="resetError" style="color:var(--error);font-size:0.85em;margin-bottom:10px;display:none;"></div>
+                <button type="submit">Update Password</button>
+            </form>
+            <div id="resetSuccess" style="display:none;text-align:center;">
+                <div style="font-size:3em;margin-bottom:15px;">✅</div>
+                <h3 style="color:var(--success);margin-bottom:10px;">Password Updated!</h3>
+                <p style="color:var(--text-muted);">You can now log in with your new password.</p>
+                <button onclick="closeModals();showModal('loginModal')" style="margin-top:15px;background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:10px;cursor:pointer;font-weight:600;">Log In</button>
+            </div>
         </div>
     </div>
 
@@ -809,6 +852,7 @@
             }
         }
         initAuth();
+            checkForPasswordReset();
 
             console.log('DOM loaded, setting up...');
 
@@ -1137,6 +1181,104 @@
         // ==========================================
         // CREDITS (Placeholder for Stripe)
         // ==========================================
+        
+
+        // ==========================================
+        // PASSWORD RESET
+        // ==========================================
+        function showForgotPassword() {
+            closeModals();
+            document.getElementById('forgotStep1').style.display = 'block';
+            document.getElementById('forgotStep2').style.display = 'none';
+            document.getElementById('forgotError').style.display = 'none';
+            document.getElementById('forgotEmail').value = '';
+            showModal('forgotModal');
+        }
+
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            const errorEl = document.getElementById('forgotError');
+            errorEl.style.display = 'none';
+
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + window.location.pathname + '?reset=true'
+                });
+
+                if (error) {
+                    errorEl.textContent = error.message;
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                // Show success step
+                document.getElementById('forgotStep1').style.display = 'none';
+                document.getElementById('forgotStep2').style.display = 'block';
+            } catch (e) {
+                errorEl.textContent = 'An error occurred. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        async function handleResetPassword(event) {
+            event.preventDefault();
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            const errorEl = document.getElementById('resetError');
+            errorEl.style.display = 'none';
+
+            if (newPass !== confirmPass) {
+                errorEl.textContent = 'Passwords do not match.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (newPass.length < 6) {
+                errorEl.textContent = 'Password must be at least 6 characters.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.auth.updateUser({ password: newPass });
+
+                if (error) {
+                    errorEl.textContent = error.message;
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                // Show success
+                document.getElementById('resetForm').style.display = 'none';
+                document.getElementById('resetSuccess').style.display = 'block';
+            } catch (e) {
+                errorEl.textContent = 'An error occurred. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Check URL for password reset token
+        function checkForPasswordReset() {
+            const hash = window.location.hash;
+            const params = new URLSearchParams(window.location.search);
+
+            // Supabase sends recovery tokens in the URL hash
+            if (hash && hash.includes('type=recovery')) {
+                // Show reset password modal
+                setTimeout(() => {
+                    showModal('resetModal');
+                }, 500);
+            }
+
+            // Also check for our ?reset=true parameter with hash token
+            if (params.get('reset') === 'true' && hash.includes('access_token')) {
+                setTimeout(() => {
+                    showModal('resetModal');
+                }, 500);
+            }
+        }
+
         async function buyCredits(bundle) {
             const user = window.currentUser || currentUser;
             if (!user) {
