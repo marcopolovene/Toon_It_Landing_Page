@@ -548,6 +548,15 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+        // Failsafe: Hide loading screen after 5 seconds no matter what
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                console.warn('Loading timeout - redirecting to login');
+                loadingScreen.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#ff6b6b;margin-bottom:15px;">Session expired or not logged in</p><a href="index.html" style="color:#feca57;text-decoration:underline;">Click here to login</a></div>';
+            }
+        }, 5000);
+
             await checkAuth();
         });
 
