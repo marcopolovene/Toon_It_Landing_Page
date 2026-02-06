@@ -1297,11 +1297,52 @@
             });
         }
 
-        function showVideo(url) {
+        async function showVideo(url) {
             if (status) status.style.display = 'none';
             if (result) result.style.display = 'block';
             if (resultVideo) resultVideo.src = url;
             setStep(4);
+
+            // Deduct 1 credit after successful video generation
+            try {
+                if (supabaseClient && (window.currentUser || currentUser)) {
+                    const user = window.currentUser || currentUser;
+
+                    // Get current credits
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('credits')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (profile && profile.credits > 0) {
+                        // Deduct 1 credit
+                        await supabaseClient
+                            .from('profiles')
+                            .update({ credits: profile.credits - 1 })
+                            .eq('id', user.id);
+
+                        // Log transaction
+                        await supabaseClient
+                            .from('credit_transactions')
+                            .insert({
+                                user_id: user.id,
+                                amount: -1,
+                                type: 'purchase',
+                                description: 'Toon It! video generation'
+                            });
+
+                        // Update UI
+                        currentCredits = profile.credits - 1;
+                        const creditEl = document.getElementById('creditCount');
+                        if (creditEl) creditEl.textContent = currentCredits;
+
+                        console.log('[CREDITS] Deducted 1 credit. Remaining:', currentCredits);
+                    }
+                }
+            } catch (e) {
+                console.error('[CREDITS] Deduction error:', e);
+            }
         }
 
         function downloadVideo() {
