@@ -6,440 +6,316 @@
     <title>Toon It! - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ==========================================
+           TOON IT! DASHBOARD - BRAND DESIGN
+           ========================================== */
+        :root {
+            --bg-dark: #1a1408;
+            --bg-surface: #2a2015;
+            --bg-card: #342a1a;
+            --primary: #d4a04a;
+            --primary-hover: #e8b060;
+            --secondary: #a06840;
+            --accent: #e8c078;
+            --text-main: #f0e8d8;
+            --text-muted: #8a7a60;
+            --text-dark: #1a1408;
+            --border: #4a3a28;
+            --success: #6abf69;
+            --error: #e85a5a;
+            --glow: rgba(212, 160, 74, 0.3);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
             min-height: 100vh;
-            color: #fff;
-        }
-
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .loading-screen.hidden {
-            display: none;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255,255,255,0.2);
-            border-top-color: #ff6b6b;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* Header */
         header {
-            background: rgba(0,0,0,0.3);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--primary);
+            font-size: 1.5em;
+            font-weight: 700;
             text-decoration: none;
+            text-shadow: 0 0 15px var(--glow);
         }
-
+        .logo:hover {
+            color: var(--accent);
+        }
         .header-right {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 15px;
         }
-
         .credit-badge {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--primary);
             border-radius: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            padding: 6px 14px;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9em;
         }
-
         .user-menu {
-            position: relative;
-        }
-
-        .user-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
+        }
+        .user-menu span {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+        .user-menu button {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .user-menu button:hover {
+            border-color: var(--error);
+            color: var(--error);
         }
 
-        .user-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: #1a1a2e;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 0.5rem 0;
-            min-width: 150px;
-            display: none;
-            z-index: 100;
-        }
-
-        .user-dropdown.show {
-            display: block;
-        }
-
-        .user-dropdown a, .user-dropdown button {
-            display: block;
+        /* Main content */
+        .main-content {
             width: 100%;
-            text-align: left;
-            padding: 0.75rem 1rem;
-            color: white;
-            text-decoration: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .user-dropdown a:hover, .user-dropdown button:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        /* Main Content */
-        main {
-            max-width: 100%; max-width: 1200px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 30px 20px;
         }
 
-        .page-title {
-            font-size: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-        }
-
-        /* Cards */
-        .card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .card-action {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            text-decoration: none;
-        }
-
-        .card-action:hover {
-            opacity: 0.9;
-        }
-
-        /* Stats */
+        /* Stats grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 15px;
+            margin-bottom: 30px;
         }
-
-        .stat-item {
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
             text-align: center;
-            padding: 1rem;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            transition: all 0.3s;
         }
-
+        .stat-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 20px var(--glow);
+        }
+        .stat-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
         .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--primary);
         }
-
         .stat-label {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.6);
-            margin-top: 0.25rem;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-top: 4px;
         }
 
-        /* Video List */
-        .video-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-height: 400px;
-            overflow-y: auto;
+        /* Sections */
+        .section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: var(--primary);
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
         }
 
+        /* Video items */
         .video-item {
             display: flex;
-            gap: 1rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            gap: 15px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s;
+            background: var(--bg-card);
         }
-
         .video-item:hover {
-            background: rgba(255,255,255,0.1);
+            border-color: var(--primary);
+            box-shadow: 0 3px 15px var(--glow);
         }
-
         .video-thumbnail {
             width: 120px;
-            height: 68px;
-            background: rgba(0,0,0,0.3);
+            height: 80px;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
+            flex-shrink: 0;
+            background: var(--bg-dark);
         }
-
         .video-thumbnail video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .video-info {
             flex: 1;
         }
-
         .video-title {
-            font-weight: 500;
-            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
         }
-
         .video-date {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.5);
+            color: var(--text-muted);
+            font-size: 0.85em;
         }
-
         .video-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 10px;
             display: inline-block;
-            margin-top: 0.5rem;
+            margin-top: 4px;
         }
-
         .status-complete {
-            background: rgba(46, 213, 115, 0.2);
-            color: #2ed573;
+            background: rgba(106, 191, 105, 0.2);
+            color: var(--success);
         }
-
         .status-processing {
-            background: rgba(254, 202, 87, 0.2);
-            color: #feca57;
+            background: rgba(212, 160, 74, 0.2);
+            color: var(--primary);
         }
 
-        /* Transaction List */
-        .transaction-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
+        /* Transaction items */
         .transaction-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1rem;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .tx-type {
+            font-weight: 600;
+        }
+        .tx-amount {
+            font-weight: 700;
+        }
+        .tx-amount.positive {
+            color: var(--success);
+        }
+        .tx-amount.negative {
+            color: var(--error);
+        }
+        .tx-date {
+            color: var(--text-muted);
+            font-size: 0.85em;
+        }
+        .tx-description {
+            color: var(--text-muted);
+            font-size: 0.85em;
         }
 
-        .transaction-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .transaction-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-        .transaction-icon.purchase {
-            background: rgba(46, 213, 115, 0.2);
-        }
-
-        .transaction-icon.use {
-            background: rgba(255, 107, 107, 0.2);
-        }
-
-        .transaction-details {
-            font-size: 0.9rem;
-        }
-
-        .transaction-desc {
-            color: rgba(255,255,255,0.7);
-        }
-
-        .transaction-date {
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.4);
-        }
-
-        .transaction-amount {
-            font-weight: bold;
-        }
-
-        .transaction-amount.positive {
-            color: #2ed573;
-        }
-
-        .transaction-amount.negative {
-            color: #ff6b6b;
-        }
-
-        /* Empty State */
+        /* Empty state */
         .empty-state {
             text-align: center;
-            padding: 2rem;
-            color: rgba(255,255,255,0.5);
+            padding: 30px;
+            color: var(--text-muted);
         }
-
         .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .empty-state a {
+            color: var(--primary);
+            text-decoration: none;
         }
 
-        /* Video Modal */
+        /* Video modal */
         .video-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
             display: none;
-            align-items: center;
-            justify-content: center;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
             z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
         }
-
         .video-modal.show {
             display: flex;
         }
-
         .video-modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
             max-width: 90vw;
             max-height: 90vh;
         }
-
-        .video-modal video {
+        .video-modal-content video {
             max-width: 100%;
-            max-height: 80vh;
-            border-radius: 12px;
+            max-height: 70vh;
+            border-radius: 10px;
         }
 
-        .video-modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
+        /* Loading screen */
+        .loading-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .loading-screen.hidden {
+            display: none;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
             border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            header {
-                padding: 1rem;
-                flex-direction: column;
-                gap: 1rem;
-            }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
+        .hidden { display: none; }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .video-item {
-                flex-direction: column;
-            }
-
-            .video-thumbnail {
-                width: 100%;
-                height: 150px;
-            }
-        }
-    
-        /* Enhanced Mobile Styles */
+/* Enhanced Mobile Styles */
         @media (max-width: 768px) {
             header {
                 padding: 1rem;
@@ -511,331 +387,5 @@
             }
         }
 
+        
         </style>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="spinner"></div>
-    </div>
-
-    <!-- Header -->
-    <header>
-        <a href="index.html" class="logo">✨ Toon It!</a>
-        <div class="header-right">
-            <div class="credit-badge">
-                <span>💎</span>
-                <span id="headerCredits">0</span> Credits
-            </div>
-            <div class="user-menu">
-                <button class="user-btn" onclick="toggleUserMenu()">
-                    <span id="userEmail">User</span>
-                    <span>▼</span>
-                </button>
-                <div class="user-dropdown" id="userDropdown">
-                    <a href="index.html">🎨 Create Video</a>
-                    <button onclick="handleLogout()">🚪 Logout</button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main>
-        <h1 class="page-title">📊 Dashboard</h1>
-
-        <div class="dashboard-grid">
-            <!-- Overview Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">📈 Overview</h2>
-                    <a href="index.html" class="card-action">+ Create Video</a>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="statCredits">0</div>
-                        <div class="stat-label">Credits</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statVideos">0</div>
-                        <div class="stat-label">Videos</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statPurchases">0</div>
-                        <div class="stat-label">Purchases</div>
-                    </div>
-                </div>
-                <button class="card-action" style="width:100%" onclick="window.location.href='index.html'">
-                    🎨 Transform a New Photo
-                </button>
-            </div>
-
-            <!-- Video History Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">🎬 Video History</h2>
-                </div>
-                <div class="video-list" id="videoList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🎬</div>
-                        <p>No videos yet</p>
-                        <p>Create your first storybook video!</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Transaction History Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">💳 Credit History</h2>
-                </div>
-                <div class="transaction-list" id="transactionList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">💳</div>
-                        <p>No transactions yet</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Video Modal -->
-    <div class="video-modal" id="videoModal">
-        <button class="video-modal-close" onclick="closeVideoModal()">×</button>
-        <div class="video-modal-content">
-            <video id="modalVideo" controls></video>
-        </div>
-    </div>
-
-    <script>
-        // Supabase config
-        const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
-        const _dk1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
-    const _dk2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
-    const _dk3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
-    const SUPABASE_KEY = _dk1 + _dk2 + _dk3;
-
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let currentUser = null;
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-        // Failsafe: Hide loading screen after 5 seconds no matter what
-        setTimeout(() => {
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-                console.warn('Loading timeout - redirecting to login');
-                loadingScreen.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#ff6b6b;margin-bottom:15px;">Session expired or not logged in</p><a href="index.html" style="color:#feca57;text-decoration:underline;">Click here to login</a></div>';
-            }
-        }, 5000);
-
-            await checkAuth();
-        });
-
-        async function checkAuth() {
-            try {
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-                if (error) {
-                    console.error('Auth error:', error);
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                if (!session) {
-                    // Not logged in - redirect to landing page
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                currentUser = session.user;
-            document.getElementById('userEmail').textContent = currentUser.email.split('@')[0];
-
-            // Load dashboard data
-            await Promise.all([
-                loadCredits(),
-                loadVideos(),
-                loadTransactions()
-            ]);
-
-            // Hide loading screen
-            document.getElementById('loadingScreen').classList.add('hidden');
-            } catch (err) {
-                console.error('Dashboard error:', err);
-                // Show error or redirect
-                document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center;color:#ff6b6b;"><p>Error loading dashboard</p><a href="index.html" style="color:#feca57;">Return to Home</a></div>';
-            }
-        }
-
-        async function loadCredits() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('profiles')
-                    .select('credits')
-                    .eq('id', currentUser.id)
-                    .single();
-
-                if (data) {
-                    document.getElementById('headerCredits').textContent = data.credits;
-                    document.getElementById('statCredits').textContent = data.credits;
-                }
-            } catch (err) {
-                console.error('Error loading credits:', err);
-            }
-        }
-
-        async function loadVideos() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('generations')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-
-                const videoList = document.getElementById('videoList');
-
-                if (data && data.length > 0) {
-                    document.getElementById('statVideos').textContent = data.length;
-
-                    videoList.innerHTML = data.map(video => `
-                        <div class="video-item" onclick="playVideo('${(video.video_url || video.cloudinary_url) || ''}')">
-                            <div class="video-thumbnail">
-                                ${(video.video_url || video.cloudinary_url) ? 
-                                    `<video src="${(video.video_url || video.cloudinary_url)}" muted></video>` : 
-                                    '<span>🎬</span>'
-                                }
-                            </div>
-                            <div class="video-info">
-                                <div class="video-title">Storybook Video</div>
-                                <div class="video-date">${formatDate(video.created_at)}</div>
-                                <span class="video-status ${video.status === 'complete' ? 'status-complete' : 'status-processing'}">
-                                    ${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}
-                                </span>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    videoList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🎬</div>
-                            <p>No videos yet</p>
-                            <a href="index.html" class="card-action" style="margin-top:1rem;display:inline-block">
-                                Create Your First Video
-                            </a>
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                console.error('Error loading videos:', err);
-            }
-        }
-
-        async function loadTransactions() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('credit_transactions')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false })
-                    .limit(20);
-
-                const txList = document.getElementById('transactionList');
-
-                // Count purchases
-                const purchases = data ? data.filter(t => t.type === 'purchase').length : 0;
-                document.getElementById('statPurchases').textContent = purchases;
-
-                if (data && data.length > 0) {
-                    txList.innerHTML = data.map(tx => {
-                        const isPositive = tx.amount > 0 && tx.type !== 'use';
-                        return `
-                            <div class="transaction-item">
-                                <div class="transaction-info">
-                                    <div class="transaction-icon ${tx.type}">
-                                        ${tx.type === 'purchase' ? '💳' : tx.type === 'use' ? '🎬' : '🎁'}
-                                    </div>
-                                    <div class="transaction-details">
-                                        <div class="transaction-desc">${tx.description || tx.type}</div>
-                                        <div class="transaction-date">${formatDate(tx.created_at)}</div>
-                                    </div>
-                                </div>
-                                <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
-                                    ${isPositive ? '+' : ''}${tx.amount} credits
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    txList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💳</div>
-                            <p>No transactions yet</p>
-                            <p>Purchase credits to get started!</p>
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                console.error('Error loading transactions:', err);
-            }
-        }
-
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const now = new Date();
-            const diff = now - date;
-
-            if (diff < 60000) return 'Just now';
-            if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
-            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
-            if (diff < 604800000) return Math.floor(diff / 86400000) + ' days ago';
-
-            return date.toLocaleDateString();
-        }
-
-        function toggleUserMenu() {
-            document.getElementById('userDropdown').classList.toggle('show');
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('show');
-            }
-        });
-
-        async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
-        }
-
-        function playVideo(url) {
-            if (!url) return;
-            const modal = document.getElementById('videoModal');
-            const video = document.getElementById('modalVideo');
-            video.src = url;
-            modal.classList.add('show');
-            video.play();
-        }
-
-        function closeVideoModal() {
-            const modal = document.getElementById('videoModal');
-            const video = document.getElementById('modalVideo');
-            video.pause();
-            video.src = '';
-            modal.classList.remove('show');
-        }
-
-        // Close modal on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeVideoModal();
-        });
-
-        // Close modal on background click
-        document.getElementById('videoModal').addEventListener('click', (e) => {
-            if (e.target.id === 'videoModal') closeVideoModal();
-        });
-    </script>
-</body>
-</html>
