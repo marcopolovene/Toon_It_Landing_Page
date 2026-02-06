@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toon It! - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-screen.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Header */
+        header {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .credit-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 0.5rem 0;
+            min-width: 150px;
+            display: none;
+            z-index: 100;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a, .user-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            color: white;
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .user-dropdown a:hover, .user-dropdown button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-action {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .card-action:hover {
+            opacity: 0.9;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 0.25rem;
+        }
+
+        /* Video List */
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .video-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .video-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .video-thumbnail {
+            width: 120px;
+            height: 68px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .video-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-info {
+            flex: 1;
+        }
+
+        .video-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .video-date {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .video-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .status-complete {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .status-processing {
+            background: rgba(254, 202, 87, 0.2);
+            color: #feca57;
+        }
+
+        /* Transaction List */
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .transaction-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .transaction-icon.purchase {
+            background: rgba(46, 213, 115, 0.2);
+        }
+
+        .transaction-icon.use {
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .transaction-details {
+            font-size: 0.9rem;
+        }
+
+        .transaction-desc {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .transaction-date {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+        }
+
+        .transaction-amount.positive {
+            color: #2ed573;
+        }
+
+        .transaction-amount.negative {
+            color: #ff6b6b;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Video Modal */
+        .video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .video-modal.show {
+            display: flex;
+        }
+
+        .video-modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .video-modal video {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 12px;
+        }
+
+        .video-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .video-item {
+                flex-direction: column;
+            }
+
+            .video-thumbnail {
+                width: 100%;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <a href="index.html" class="logo">✨ Toon It!</a>
+        <div class="header-right">
+            <div class="credit-badge">
+                <span>💎</span>
+                <span id="headerCredits">0</span> Credits
+            </div>
+            <div class="user-menu">
+                <button class="user-btn" onclick="toggleUserMenu()">
+                    <span id="userEmail">User</span>
+                    <span>▼</span>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="index.html">🎨 Create Video</a>
+                    <button onclick="handleLogout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1 class="page-title">📊 Dashboard</h1>
+
+        <div class="dashboard-grid">
+            <!-- Overview Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📈 Overview</h2>
+                    <a href="index.html" class="card-action">+ Create Video</a>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statCredits">0</div>
+                        <div class="stat-label">Credits</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statVideos">0</div>
+                        <div class="stat-label">Videos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statPurchases">0</div>
+                        <div class="stat-label">Purchases</div>
+                    </div>
+                </div>
+                <button class="card-action" style="width:100%" onclick="window.location.href='index.html'">
+                    🎨 Transform a New Photo
+                </button>
+            </div>
+
+            <!-- Video History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🎬 Video History</h2>
+                </div>
+                <div class="video-list" id="videoList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎬</div>
+                        <p>No videos yet</p>
+                        <p>Create your first storybook video!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💳 Credit History</h2>
+                </div>
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💳</div>
+                        <p>No transactions yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Video Modal -->
+    <div class="video-modal" id="videoModal">
+        <button class="video-modal-close" onclick="closeVideoModal()">×</button>
+        <div class="video-modal-content">
+            <video id="modalVideo" controls></video>
+        </div>
+    </div>
+
+    <script>
+        // Supabase config
+        const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + 
+            'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dy' + 
+            'cW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MjQ0NjYsImV4cCI6' + 
+            'MjA1NDIwMDQ2Nn0.0El22LXHZ3FJ8M3aTBUMGPPgFSJMeECKPp5bjmZj9WQ';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+        });
+
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                // Not logged in - redirect to landing page
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email.split('@')[0];
+
+            // Load dashboard data
+            await Promise.all([
+                loadCredits(),
+                loadVideos(),
+                loadTransactions()
+            ]);
+
+            // Hide loading screen
+            document.getElementById('loadingScreen').classList.add('hidden');
+        }
+
+        async function loadCredits() {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('credits')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (data) {
+                    document.getElementById('headerCredits').textContent = data.credits;
+                    document.getElementById('statCredits').textContent = data.credits;
+                }
+            } catch (err) {
+                console.error('Error loading credits:', err);
+            }
+        }
+
+        async function loadVideos() {
+            try {
+                const { data, error } = await supabase
+                    .from('generations')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                const videoList = document.getElementById('videoList');
+
+                if (data && data.length > 0) {
+                    document.getElementById('statVideos').textContent = data.length;
+
+                    videoList.innerHTML = data.map(video => `
+                        <div class="video-item" onclick="playVideo('${video.video_url || ''}')">
+                            <div class="video-thumbnail">
+                                ${video.video_url ? 
+                                    `<video src="${video.video_url}" muted></video>` : 
+                                    '<span>🎬</span>'
+                                }
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">Storybook Video</div>
+                                <div class="video-date">${formatDate(video.created_at)}</div>
+                                <span class="video-status ${video.status === 'complete' ? 'status-complete' : 'status-processing'}">
+                                    ${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    videoList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎬</div>
+                            <p>No videos yet</p>
+                            <a href="index.html" class="card-action" style="margin-top:1rem;display:inline-block">
+                                Create Your First Video
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error loading videos:', err);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const { data, error } = await supabase
+                    .from('credit_transactions')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                const txList = document.getElementById('transactionList');
+
+                // Count purchases
+                const purchases = data ? data.filter(t => t.type === 'purchase').length : 0;
+                document.getElementById('statPurchases').textContent = purchases;
+
+                if (data && data.length > 0) {
+                    txList.innerHTML = data.map(tx => {
+                        const isPositive = tx.amount > 0 && tx.type !== 'use';
+                        return `
+                            <div class="transaction-item">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon ${tx.type}">
+                                        ${tx.type === 'purchase' ? '💳' : tx.type === 'use' ? '🎬' : '🎁'}
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-desc">${tx.description || tx.type}</div>
+                                        <div class="transaction-date">${formatDate(tx.created_at)}</div>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                                    ${isPositive ? '+' : ''}${tx.amount} credits
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    txList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💳</div>
+                            <p>No transactions yet</p>
+                            <p>Purchase credits to get started!</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error loading transactions:', err);
+            }
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + ' days ago';
+
+            return date.toLocaleDateString();
+        }
+
+        function toggleUserMenu() {
+            document.getElementById('userDropdown').classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userDropdown').classList.remove('show');
+            }
+        });
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        function playVideo(url) {
+            if (!url) return;
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            video.src = url;
+            modal.classList.add('show');
+            video.play();
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            video.pause();
+            video.src = '';
+            modal.classList.remove('show');
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeVideoModal();
+        });
+
+        // Close modal on background click
+        document.getElementById('videoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'videoModal') closeVideoModal();
+        });
+    </script>
+</body>
+</html>
