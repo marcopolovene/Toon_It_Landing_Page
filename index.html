@@ -1383,6 +1383,44 @@
             setTimeout(setupResetSession, 1000);
         }
 
+        
+
+        // ==========================================
+        // ERROR HANDLING & RETRY
+        // ==========================================
+        function retryTransformation() {
+            if (selectedFile) {
+                if (statusText) statusText.textContent = 'Retrying...';
+                setStep(1);
+                startTransformation();
+            } else {
+                resetForNew();
+            }
+        }
+
+        function resetForNew() {
+            selectedFile = null;
+            currentJobId = null;
+            if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
+            clearJob();
+
+            if (uploadArea) {
+                uploadArea.style.display = 'block';
+                // Clear preview if any
+                var previewInUpload = uploadArea.querySelector('img');
+                if (previewInUpload) previewInUpload.remove();
+                var textInUpload = uploadArea.querySelector('.upload-text');
+                if (textInUpload) textInUpload.style.display = 'block';
+            }
+            if (status) status.style.display = 'none';
+            if (result) result.style.display = 'none';
+            if (transformBtn) transformBtn.style.display = 'none';
+
+            var infoBoxEl = document.querySelector('.info-box');
+            if (infoBoxEl) infoBoxEl.style.display = 'block';
+            if (fileInput) fileInput.value = '';
+        }
+
         async function buyCredits(bundle) {
             const user = window.currentUser || currentUser;
             if (!user) {
@@ -1637,7 +1675,12 @@
             if (pollCount > MAX_POLLS) {
                 clearInterval(pollInterval);
                 clearJob();
-                if (statusText) statusText.textContent = 'Processing timed out after 10 minutes. Please try again.';
+                if (statusText) {
+                    statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">⏱️ Processing is taking longer than expected.</div>' +
+                        '<p style="color:var(--text-muted);margin-bottom:15px;">Your video may still be generating. You can check your dashboard for completed videos.</p>' +
+                        '<button onclick="retryTransformation()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;margin-right:10px;">🔄 Try Again</button>' +
+                        '<a href="dashboard.html" style="color:var(--primary);text-decoration:none;font-weight:500;">📊 Check Dashboard</a>';
+                }
                 return;
             }
 
@@ -1667,6 +1710,7 @@
                 }
             } catch (error) {
                 console.error('Status check error:', error);
+                // Network error - don't stop polling, just skip this check
                 // CORS error on HEAD? Try with no-cors mode
                 try {
                     const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
