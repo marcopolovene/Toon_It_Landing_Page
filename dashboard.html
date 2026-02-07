@@ -609,12 +609,17 @@
                     .select('*')
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: false })
-                    .limit(10);
+                    .limit(20);
 
                 const videoList = document.getElementById('videoList');
 
                 if (data && data.length > 0) {
-                    document.getElementById('statVideos').textContent = data.length;
+                    // Get actual total count
+                const { count: totalVideos } = await supabaseClient
+                    .from('generations')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id);
+                document.getElementById('statVideos').textContent = totalVideos || data.length;
 
                     videoList.innerHTML = data.map(video => `
                         <div class="video-item" onclick="playVideo('${(video.video_url || video.cloudinary_url) || ''}')">
