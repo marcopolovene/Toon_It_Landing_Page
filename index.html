@@ -2147,7 +2147,7 @@
             if (shareSection) shareSection.style.display = 'block';
 
             // Deduct 1 credit after successful video generation
-            try {
+            (async () => { try {
                 if (supabaseClient && (window.currentUser || currentUser)) {
                     const user = window.currentUser || currentUser;
 
@@ -2208,7 +2208,7 @@
                 }
             } catch (e) {
                 console.error('[CREDITS] Deduction error:', e);
-            }
+            } })();
         }
 
         function downloadVideo() {
