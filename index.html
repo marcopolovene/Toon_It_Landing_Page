@@ -568,6 +568,55 @@
         }
 
         
+        
+        /* Gallery */
+        .gallery-item {
+            cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+            position: relative;
+        }
+        .gallery-item:hover {
+            border-color: var(--primary);
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(212,160,74,0.2);
+        }
+        .gallery-thumb {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3/2;
+            background: var(--bg-card);
+        }
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .play-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .gallery-item:hover .play-overlay {
+            opacity: 1;
+            background: var(--primary);
+        }
+        @media (max-width: 768px) {
+            .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
         </style>
 </head>
 <body>
@@ -659,6 +708,56 @@
     </div>
 
     
+    
+    <!-- Example Gallery -->
+    <div class="gallery-section" style="max-width:580px;margin:30px auto 0;padding:0 20px;">
+        <h2 style="text-align:center;color:var(--primary);font-size:1.4em;margin-bottom:5px;">✨ See the Magic</h2>
+        <p style="text-align:center;color:var(--text-muted);margin-bottom:15px;font-size:0.95em;">Real transformations from our users — click to play</p>
+        <div class="gallery-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            
+                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/v1770415502/toon_it_videos/job_1770415436299_wo02wt1xj.mp4')">
+                    <div class="gallery-thumb">
+                        <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,w_300,h_200,c_fill/toon_it_videos/job_1770415436299_wo02wt1xj.jpg" alt="Storybook transformation example" loading="lazy">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/v1770407567/toon_it_videos/job_1770407490966_4rae8ztug.mp4')">
+                    <div class="gallery-thumb">
+                        <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,w_300,h_200,c_fill/toon_it_videos/job_1770407490966_4rae8ztug.jpg" alt="Storybook transformation example" loading="lazy">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/v1770406540/toon_it_videos/job_1770406447707_qfqphb5ln.mp4')">
+                    <div class="gallery-thumb">
+                        <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,w_300,h_200,c_fill/toon_it_videos/job_1770406447707_qfqphb5ln.jpg" alt="Storybook transformation example" loading="lazy">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/v1770405039/toon_it_videos/job_1770404839127_zsrpxn8yg.mp4')">
+                    <div class="gallery-thumb">
+                        <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,w_300,h_200,c_fill/toon_it_videos/job_1770404839127_zsrpxn8yg.jpg" alt="Storybook transformation example" loading="lazy">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/v1770403655/toon_it_videos/job_1770403558414_ajxit2dib.mp4')">
+                    <div class="gallery-thumb">
+                        <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,w_300,h_200,c_fill/toon_it_videos/job_1770403558414_ajxit2dib.jpg" alt="Storybook transformation example" loading="lazy">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                </div>
+                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/v1770403335/toon_it_videos/job_1770403166996_0vcinl39w.mp4')">
+                    <div class="gallery-thumb">
+                        <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,w_300,h_200,c_fill/toon_it_videos/job_1770403166996_0vcinl39w.jpg" alt="Storybook transformation example" loading="lazy">
+                        <div class="play-overlay">▶</div>
+                    </div>
+                </div>
+        </div>
+        <div id="galleryPlayer" style="display:none;margin-top:15px;text-align:center;">
+            <video id="galleryVideo" controls autoplay playsinline style="max-width:100%;border-radius:12px;box-shadow:0 5px 20px rgba(42,32,21,0.15);"></video>
+            <button onclick="closeGalleryPlayer()" style="margin-top:10px;background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:8px 20px;border-radius:20px;cursor:pointer;">Close</button>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85em;border-top:1px solid var(--border);margin-top:30px;">
         <p>© 2026 Toon It! — Transform your photos into magical storybook videos</p>
@@ -1388,6 +1487,23 @@
         // ==========================================
         // ERROR HANDLING & RETRY
         // ==========================================
+        
+        function playGalleryVideo(item, url) {
+            var player = document.getElementById('galleryPlayer');
+            var video = document.getElementById('galleryVideo');
+            if (player && video) {
+                video.src = url;
+                player.style.display = 'block';
+                player.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        function closeGalleryPlayer() {
+            var player = document.getElementById('galleryPlayer');
+            var video = document.getElementById('galleryVideo');
+            if (player) player.style.display = 'none';
+            if (video) { video.pause(); video.src = ''; }
+        }
+
         function retryTransformation() {
             if (selectedFile) {
                 if (statusText) statusText.textContent = 'Retrying...';
