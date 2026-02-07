@@ -2071,6 +2071,7 @@
             try {
                 // Check Cloudinary directly - NO n8n execution needed!
                 const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
+                console.log('[POLL] Checking:', cloudinaryUrl, 'attempt:', pollCount);
                 const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
 
                 if (response.ok) {
@@ -2083,7 +2084,7 @@
                     // Still processing - update progress based on time elapsed
                     if (pollCount <= 3) {
                         setStep(1);
-                        if (statusText) statusText.textContent = 'Analyzing your image...';
+                        if (statusText) statusText.textContent = 'Processing your photo...';
                     } else if (pollCount <= 6) {
                         setStep(2);
                         if (statusText) statusText.textContent = 'Generating storybook image...';
@@ -2093,7 +2094,7 @@
                     }
                 }
             } catch (error) {
-                console.error('Status check error:', error);
+                console.error('Status check error:', error, 'URL:', cloudinaryUrl);
                 // Network error - don't stop polling, just skip this check
                 // CORS error on HEAD? Try with no-cors mode
                 try {
@@ -2116,7 +2117,7 @@
         function updateStepFromStatus(status) {
             if (status === 'analyzing' || status === 'processing') {
                 setStep(1);
-                if (statusText) statusText.textContent = 'Analyzing your image...';
+                if (statusText) statusText.textContent = 'Processing your photo...';
             } else if (status === 'generating') {
                 setStep(2);
                 if (statusText) statusText.textContent = 'Generating storybook image...';
