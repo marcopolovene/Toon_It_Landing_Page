@@ -1430,6 +1430,7 @@
                 // Check if session was created (email confirmation disabled)
                 if (data.session) {
                     trackEvent('signup', { method: 'email' });
+                    sendEmailNotification('welcome', email);
                     console.log('Signup successful with immediate session');
                     if (successEl) successEl.textContent = 'Account created! Logging you in...';
                     currentUser = data.session.user;
@@ -1784,6 +1785,26 @@
         // ==========================================
         
         // ==========================================
+        
+        // ==========================================
+        // EMAIL NOTIFICATIONS
+        // ==========================================
+        var EMAIL_WEBHOOK = 'https://marcopthevene.app.n8n.cloud/webhook/send-email';
+
+        function sendEmailNotification(type, email) {
+            try {
+                fetch(EMAIL_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: type, email: email })
+                }).then(function() {
+                    console.log('[EMAIL] Sent:', type, 'to', email);
+                }).catch(function(e) {
+                    console.log('[EMAIL] Failed:', e.message);
+                });
+            } catch(e) {}
+        }
+
         // ANALYTICS - Lightweight event tracking
         // ==========================================
         function trackEvent(eventType, eventData) {
@@ -2155,6 +2176,11 @@
                             job_id: currentJobId || 'unknown'
                         });
                     console.log('[HISTORY] Video generation saved to history');
+                    // Send video ready notification
+                    try {
+                        var emailUser = window.currentUser || currentUser;
+                        if (emailUser && emailUser.email) sendEmailNotification('video_ready', emailUser.email);
+                    } catch(e) {}
                 } catch (histErr) {
                     console.error('[HISTORY] Save error:', histErr);
                 }
