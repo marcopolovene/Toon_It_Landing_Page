@@ -2072,7 +2072,8 @@
                 // Check Cloudinary directly - NO n8n execution needed!
                 const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
                 console.log('[POLL] Checking:', cloudinaryUrl, 'attempt:', pollCount);
-                const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
+                const cacheBuster = '?_t=' + Date.now() + '_' + pollCount;
+                const response = await fetch(cloudinaryUrl + cacheBuster, { method: 'HEAD', cache: 'no-store' });
 
                 if (response.ok) {
                     // Video is ready!
