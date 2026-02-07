@@ -1789,8 +1789,7 @@
         // ==========================================
         // EMAIL NOTIFICATIONS
         // ==========================================
-        var _ek = 're_3wh6698E_' + 'NqbL9naExhEx' + 'vkfaW3KNGcGS';
-
+        
         function sendEmailNotification(type, email) {
             try {
                 var subject, htmlBody;
@@ -1805,15 +1804,13 @@
                     return;
                 }
 
-                fetch('https://api.resend.com/emails', {
+                fetch('https://marcopthevene.app.n8n.cloud/webhook/toon-it-email', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + _ek,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        from: 'Toon It! <hello@toonit.ai>',
-                        to: email,
+                        email: email,
                         subject: subject,
                         html: htmlBody
                     })
