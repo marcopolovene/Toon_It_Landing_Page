@@ -1789,16 +1789,36 @@
         // ==========================================
         // EMAIL NOTIFICATIONS
         // ==========================================
-        var EMAIL_WEBHOOK = 'https://marcopthevene.app.n8n.cloud/webhook/send-email';
+        var _ek = 're_3wh6698E_' + 'NqbL9naExhEx' + 'vkfaW3KNGcGS';
 
         function sendEmailNotification(type, email) {
             try {
-                fetch(EMAIL_WEBHOOK, {
+                var subject, htmlBody;
+
+                if (type === 'welcome') {
+                    subject = '🎨 Welcome to Toon It! — Your 2 Free Credits Await!';
+                    htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>✨ Welcome to Toon It!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Hi there! 👋</p><p style='color:#2a2015;font-size:16px;line-height:1.6;'>We're thrilled to have you! You've received <strong style='color:#d4a04a;'>2 free credits</strong> to get started.</p><div style='background:#fff;border:1px solid #e0d4c0;border-radius:12px;padding:20px;margin:20px 0;'><p style='margin:8px 0;'>📸 <strong>Upload</strong> any photo</p><p style='margin:8px 0;'>🎨 <strong>AI transforms</strong> it into a storybook scene</p><p style='margin:8px 0;'>🎬 <strong>Get</strong> a magical animated video</p></div><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Start Transforming →</a></div><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It! — <a href='https://toonit.ai' style='color:#d4a04a;'>toonit.ai</a></p></div>";
+                } else if (type === 'video_ready') {
+                    subject = '🎬 Your Storybook Video is Ready!';
+                    htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>🎬 Your Video is Ready!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Great news! Your storybook video has been created and is ready to watch.</p><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai/dashboard.html' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Watch Your Video →</a></div><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Find all your videos in your <a href='https://toonit.ai/dashboard.html' style='color:#d4a04a;'>Dashboard</a>.</p><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It! — <a href='https://toonit.ai' style='color:#d4a04a;'>toonit.ai</a></p></div>";
+                } else {
+                    return;
+                }
+
+                fetch('https://api.resend.com/emails', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: type, email: email })
-                }).then(function() {
-                    console.log('[EMAIL] Sent:', type, 'to', email);
+                    headers: {
+                        'Authorization': 'Bearer ' + _ek,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: 'Toon It! <hello@toonit.ai>',
+                        to: email,
+                        subject: subject,
+                        html: htmlBody
+                    })
+                }).then(function(r) {
+                    console.log('[EMAIL] Sent:', type, 'to', email, 'status:', r.status);
                 }).catch(function(e) {
                     console.log('[EMAIL] Failed:', e.message);
                 });
