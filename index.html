@@ -1429,6 +1429,7 @@
 
                 // Check if session was created (email confirmation disabled)
                 if (data.session) {
+                    trackEvent('signup', { method: 'email' });
                     console.log('Signup successful with immediate session');
                     if (successEl) successEl.textContent = 'Account created! Logging you in...';
                     currentUser = data.session.user;
@@ -1731,6 +1732,7 @@
         }
 
         async function buyCredits(bundle) {
+            trackEvent('buy_credits_click', { bundle: bundle });
             const user = window.currentUser || currentUser;
             if (!user) {
                 showModal('loginModal');
@@ -1780,6 +1782,37 @@
         }
 
         // ==========================================
+        
+        // ==========================================
+        // ANALYTICS - Lightweight event tracking
+        // ==========================================
+        function trackEvent(eventType, eventData) {
+            try {
+                var sb = (typeof supabaseClient !== 'undefined') ? supabaseClient : null;
+                if (!sb) return;
+
+                var userId = null;
+                try {
+                    var user = window.currentUser || currentUser;
+                    if (user) userId = user.id;
+                } catch(e) {}
+
+                sb.from('analytics_events').insert({
+                    event_type: eventType,
+                    event_data: eventData || {},
+                    user_id: userId,
+                    page: window.location.pathname
+                }).then(function() {
+                    console.log('[ANALYTICS]', eventType);
+                }).catch(function() {});
+            } catch(e) {}
+        }
+
+        // Track page view on load
+        setTimeout(function() {
+            trackEvent('page_view', { referrer: document.referrer, url: window.location.href });
+        }, 1000);
+
         // FILE UPLOAD
         // ==========================================
         function setupUploadHandlers() {
@@ -1904,6 +1937,7 @@
 
                         // Convert to JPEG base64
                         const compressed = canvas.toDataURL('image/jpeg', quality);
+                        trackEvent('transform_start', {});
                         console.log(`[COMPRESS] ${img.width}x${img.height} -> ${width}x${height}, ${(compressed.length/1024).toFixed(0)}KB`);
                         resolve(compressed);
                     };
@@ -2103,6 +2137,7 @@
                         const creditEl = document.getElementById('creditCount');
                         if (creditEl) creditEl.textContent = currentCredits;
 
+                        trackEvent('transform_complete', { credits_remaining: currentCredits });
                         console.log('[CREDITS] Deducted 1 credit. Remaining:', currentCredits);
                     }
                 }
@@ -2302,6 +2337,7 @@
             } else if (result.data && result.data.session) {
                 window.currentUser = result.data.session.user; // Set global currentUser
                 console.log('[FAILSAFE] Login successful!');
+                    trackEvent('login', { method: 'email' });
                 closeAllModals();
 
                 // Fetch credits from profile
