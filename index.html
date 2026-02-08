@@ -1712,6 +1712,7 @@
         function resetForNew() {
             selectedFile = null;
             currentJobId = null;
+            videoAlreadyShown = false;
             if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
             clearJob();
 
@@ -1986,6 +1987,7 @@
         }
 
         async function startTransformation() {
+            videoAlreadyShown = false;
             if (!selectedFile) { alert('Please select a photo first'); return; }
             const hasUser = window.currentUser || currentUser;
             if (!hasUser) { showModal('loginModal'); return; }
@@ -2134,6 +2136,12 @@
         }
 
         async function showVideo(url) {
+            // Guard against double calls (race condition from polling)
+            if (videoAlreadyShown) {
+                console.log('[SHOW_VIDEO] Already shown, skipping duplicate call');
+                return;
+            }
+            videoAlreadyShown = true;
             if (status) status.style.display = 'none';
             if (result) result.style.display = 'block';
             if (resultVideo) resultVideo.src = url;
