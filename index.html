@@ -1060,6 +1060,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        var videoAlreadyShown = false;
         // Global error handler
         window.onerror = function(msg, url, line, col, error) {
             console.error('JS ERROR:', msg, 'at line', line);
