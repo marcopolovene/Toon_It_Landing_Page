@@ -788,7 +788,7 @@
             <div class="upload-icon">📸</div>
             <p><strong>Drop your photo here</strong></p>
             <p style="color: #999; font-size: 0.9em;">or click to browse</p>
-            <input type="file" id="fileInput" accept="image/*">
+            <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;">
             <img id="preview" alt="Preview">
         </div>
 
@@ -1143,7 +1143,9 @@
         // RELIABLE: Check session on page load and update UI
         async function initAuth() {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                // Sync check for iOS compatibility
+                var hasUser = window.currentUser;
+                if (!hasUser) { showModal('login'); return; }
                 if (session) {
                     currentUser = session.user;
                     window.currentUser = session.user;
@@ -1231,7 +1233,9 @@
             }
 
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                // Sync check for iOS compatibility
+                var hasUser = window.currentUser;
+                if (!hasUser) { showModal('login'); return; }
                 if (session) { currentUser = session.user; }
                 if (session) {
                     currentUser = session.user;
@@ -1858,7 +1862,7 @@
         function setupUploadHandlers() {
             if (!uploadArea || !fileInput) return;
 
-            uploadArea.addEventListener('click', async (e) => {
+            uploadArea.addEventListener('click', function(e) {
             // Prevent loop: ignore clicks from fileInput itself
             if (e.target === fileInput) return;
             console.log('[UPLOAD] Click detected');
@@ -2012,7 +2016,9 @@
                 try {
                     let authToken = '';
                     if (supabaseClient) {
-                        const { data: { session } } = await supabaseClient.auth.getSession();
+                        // Sync check for iOS compatibility
+                var hasUser = window.currentUser;
+                if (!hasUser) { showModal('login'); return; }
                 if (session) { currentUser = session.user; }
                         authToken = session?.access_token || '';
                     }
@@ -2562,6 +2568,27 @@
         var hash = window.location.hash;
         if (hash && hash.includes('access_token')) {
             console.log('[FAILSAFE] Email confirmation detected!');
+                // Auto-login: extract tokens and set session
+                try {
+                    var hashParams = new URLSearchParams(hash.substring(1));
+                    var accessToken = hashParams.get('access_token');
+                    var refreshToken = hashParams.get('refresh_token');
+                    if (accessToken && refreshToken && supabaseClient) {
+                        supabaseClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(function(result) {
+                            if (result.data && result.data.session) {
+                                window.currentUser = result.data.session.user;
+                                console.log('[FAILSAFE] Auto-logged in after confirmation:', result.data.session.user.email);
+                                // Update UI for logged in user
+                                var fn = window.updateUIForUser || updateUIForUser;
+                                if (typeof fn === 'function') fn(result.data.session.user.email);
+                                // Clean URL
+                                history.replaceState(null, '', window.location.pathname);
+                            }
+                        });
+                    }
+                } catch(autoLoginErr) {
+                    console.log('[FAILSAFE] Auto-login failed:', autoLoginErr);
+                }
             showConfirmationMessage();
             // Clean up URL
             history.replaceState(null, '', window.location.pathname);
