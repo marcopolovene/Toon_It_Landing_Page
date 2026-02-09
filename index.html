@@ -1505,6 +1505,18 @@
                     sendEmailNotification('welcome', email);
                     console.log('Signup successful with immediate session');
                     if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                    // Hide form fields, show only success message
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var errEl = document.getElementById('signupError');
+                        if (errEl) errEl.style.display = 'none';
+                        var switchEl = sf.parentElement.querySelector('.modal-switch');
+                        if (switchEl) switchEl.style.display = 'none';
+                    }
                     currentUser = data.session.user;
                     await loadUserCredits();
                     updateUIForUser();
@@ -1517,6 +1529,18 @@
                 // If no session, try to auto-login (in case email confirmation is disabled)
                 console.log('No immediate session, attempting auto-login...');
                 if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                    // Hide form fields, show only success message
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var errEl = document.getElementById('signupError');
+                        if (errEl) errEl.style.display = 'none';
+                        var switchEl = sf.parentElement.querySelector('.modal-switch');
+                        if (switchEl) switchEl.style.display = 'none';
+                    }
 
                 // Small delay then try to login
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -1529,6 +1553,18 @@
                     console.log('Auto-login failed:', loginError.message);
                     // Email confirmation might be required
                     if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
+                    // Hide form fields, show only success message
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var errEl = document.getElementById('signupError');
+                        if (errEl) errEl.style.display = 'none';
+                        var switchEl = sf.parentElement.querySelector('.modal-switch');
+                        if (switchEl) switchEl.style.display = 'none';
+                    }
                     // Hide form fields after success
                     var sf = document.getElementById('signupForm');
                     if (sf) {
@@ -2630,6 +2666,18 @@
 
             // Try auto-login
             if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                    // Hide form fields, show only success message
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var errEl = document.getElementById('signupError');
+                        if (errEl) errEl.style.display = 'none';
+                        var switchEl = sf.parentElement.querySelector('.modal-switch');
+                        if (switchEl) switchEl.style.display = 'none';
+                    }
 
             var loginResult = await sb.auth.signInWithPassword({ email: email, password: password });
             console.log('[FAILSAFE] Auto-login result:', loginResult);
@@ -2640,6 +2688,18 @@
 
             if (loginResult.error) {
                 if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
+                    // Hide form fields, show only success message
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var errEl = document.getElementById('signupError');
+                        if (errEl) errEl.style.display = 'none';
+                        var switchEl = sf.parentElement.querySelector('.modal-switch');
+                        if (switchEl) switchEl.style.display = 'none';
+                    }
                     // Hide form fields after success
                     var sf = document.getElementById('signupForm');
                     if (sf) {
