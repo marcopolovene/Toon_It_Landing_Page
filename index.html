@@ -2321,8 +2321,9 @@
                             var videoUrl = data.video_url || data.cloudinary_url;
                             console.log('[POLL] Video found in Supabase:', videoUrl);
                             clearInterval(pollInterval);
+                            var savedJobId = currentJobId;
                             clearJob();
-                            showVideo(videoUrl);
+                            showVideo(videoUrl, savedJobId);
                             await loadUserCredits();
                             return;
                         }
@@ -2541,7 +2542,7 @@
                 const data = await response.json();
 
                 if (data.status === 'complete' && data.video_url) {
-                    showVideo(data.video_url);
+                    showVideo(data.video_url, data.job_id || null);
                     clearJob();
                 } else if (data.status === 'failed' || data.status === 'expired') {
                     clearJob();
