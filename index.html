@@ -1863,26 +1863,33 @@
             if (!uploadArea || !fileInput) return;
 
             uploadArea.addEventListener('click', function(e) {
-            // Prevent loop: ignore clicks from fileInput itself
-            if (e.target === fileInput) return;
-            console.log('[UPLOAD] Click detected');
-            try {
-                if (!supabaseClient) {
-                    console.error('[UPLOAD] Supabase not initialized!');
-                    alert('Service not ready. Please refresh.');
+                // Prevent loop: ignore clicks from fileInput itself
+                if (e.target === fileInput) return;
+                console.log('[UPLOAD] Click detected');
+
+                // iOS requires synchronous fileInput.click() in user gesture
+                // Check cached user first (set on login/page load)
+                if (window.currentUser) {
+                    fileInput.click();
                     return;
                 }
-                const { data, error } = await supabaseClient.auth.getSession();
-                if (data && data.session) {
-                    fileInput.click();
+
+                // No cached user - check session asynchronously
+                if (supabaseClient) {
+                    supabaseClient.auth.getSession().then(function(result) {
+                        if (result.data && result.data.session) {
+                            window.currentUser = result.data.session.user;
+                            fileInput.click();
+                        } else {
+                            showModal('login');
+                        }
+                    }).catch(function() {
+                        showModal('login');
+                    });
                 } else {
-                    showModal('loginModal');
+                    showModal('login');
                 }
-            } catch (e2) {
-                console.error('[UPLOAD] Error:', e2);
-                alert('Error checking login. Please refresh.');
-            }
-        });
+            });
 
         // Stop fileInput clicks from bubbling to uploadArea
         fileInput.addEventListener('click', (e) => e.stopPropagation());
