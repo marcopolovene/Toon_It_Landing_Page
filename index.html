@@ -2880,8 +2880,15 @@
                 var user = result.data.session.user;
                 console.log('[FAILSAFE] Found existing session for:', user.email);
 
-                // Fetch credits - use service approach since RLS might block
-                var credits = 2; // Default to 2 credits
+                // Fetch actual credits from database
+                var credits = 0;
+                try {
+                    var sb = getSupabase();
+                    if (sb && user.id) {
+                        var profileResult = await sb.from('profiles').select('credits').eq('id', user.id).single();
+                        if (profileResult.data) credits = profileResult.data.credits;
+                    }
+                } catch(credErr) { console.log('[FAILSAFE] Credit fetch error:', credErr); }
                 updateUIForUser(user.email, credits);
             }
         } catch (e) {
