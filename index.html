@@ -2337,8 +2337,9 @@
                         console.log('[POLL] Video found via Cloudinary fallback');
                         clearInterval(pollInterval);
                         if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+                        var savedJobId = currentJobId;
                         clearJob();
-                        showVideo(cloudinaryUrl + '.mp4');
+                        showVideo(cloudinaryUrl + '.mp4', savedJobId);
                         await loadUserCredits();
                         return;
                     }
@@ -2371,7 +2372,7 @@
             });
         }
 
-        async function showVideo(url) {
+        async function showVideo(url, jobId) {
             // Guard against double calls (race condition from polling)
             if (videoAlreadyShown) {
                 console.log('[SHOW_VIDEO] Already shown, skipping duplicate call');
@@ -2431,12 +2432,12 @@
                 // Update generation record with user_id (record created by n8n Save Video URL)
                     try {
                         var user = window.currentUser || currentUser;
-                        if (user && user.id && currentJobId) {
+                        if (user && user.id && (jobId || currentJobId)) {
                             // Update existing record with user_id
                             await supabaseClient
                                 .from('generations')
                                 .update({ user_id: user.id })
-                                .eq('job_id', currentJobId);
+                                .eq('job_id', jobId || currentJobId);
                             console.log('[HISTORY] Updated generation with user_id');
                         } else if (user && user.id) {
                             // Fallback: insert new record if no job_id match
