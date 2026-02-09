@@ -1128,6 +1128,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         var videoAlreadyShown = false;
+        var progressInterval;
         var creditDeducted = false;
         // Global error handler
         window.onerror = function(msg, url, line, col, error) {
@@ -1824,6 +1825,7 @@
             currentJobId = null;
             videoAlreadyShown = false;
             creditDeducted = false;
+            if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
             if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
             clearJob();
 
@@ -2266,6 +2268,7 @@
                 pollCount++;
                 if (pollCount > MAX_POLLS) {
                     clearInterval(pollInterval);
+                    if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                     clearJob();
                     if (statusText) {
                         statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">⏱️ Processing is taking longer than expected.</div>' +
@@ -2307,27 +2310,14 @@
                     if (response.ok) {
                         console.log('[POLL] Video found via Cloudinary fallback');
                         clearInterval(pollInterval);
+                        if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                         clearJob();
                         showVideo(cloudinaryUrl + '.mp4');
                         await loadUserCredits();
                         return;
                     }
 
-                    // Update progress based on time elapsed
-                    var elapsed = (Date.now() - transformStartTime) / 1000;
-                    if (elapsed < 20) {
-                        setStep(1);
-                        if (statusText) statusText.textContent = 'Analyzing your image...';
-                    } else if (elapsed < 40) {
-                        setStep(2);
-                        if (statusText) statusText.textContent = 'Generating storybook scene...';
-                    } else if (elapsed < 70) {
-                        setStep(3);
-                        if (statusText) statusText.textContent = 'Creating video animation...';
-                    } else {
-                        setStep(4);
-                        if (statusText) statusText.textContent = 'Finalizing your video...';
-                    }
+                    // Visual progress handled by separate progressInterval
 
                 } catch (error) {
                     console.error('Status check error:', error);
