@@ -2262,66 +2262,77 @@
         }
 
         async function checkStatus() {
-            if (!currentJobId) return;
-            pollCount++;
-            if (pollCount > MAX_POLLS) {
-                clearInterval(pollInterval);
-                clearJob();
-                if (statusText) {
-                    statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">⏱️ Processing is taking longer than expected.</div>' +
-                        '<p style="color:var(--text-muted);margin-bottom:15px;">Your video may still be generating. You can check your dashboard for completed videos.</p>' +
-                        '<button onclick="retryTransformation()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;margin-right:10px;">🔄 Try Again</button>' +
-                        '<a href="dashboard.html" style="color:var(--primary);text-decoration:none;font-weight:500;">📊 Check Dashboard</a>';
-                }
-                return;
-            }
-
-            try {
-                // Check Cloudinary directly - NO n8n execution needed!
-                const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
-                console.log('[POLL] Checking:', cloudinaryUrl, 'attempt:', pollCount);
-                const cacheBuster = '?_t=' + Date.now() + '_' + pollCount;
-                const response = await fetch(cloudinaryUrl + cacheBuster, { method: 'HEAD', cache: 'no-store' });
-
-                if (response.ok) {
-                    // Video is ready!
+                if (!currentJobId) return;
+                pollCount++;
+                if (pollCount > MAX_POLLS) {
                     clearInterval(pollInterval);
                     clearJob();
-                    showVideo(cloudinaryUrl + '.mp4');
-                    await loadUserCredits();
-                } else {
-                    // Still processing - update progress based on time elapsed
-                    if (pollCount <= 3) {
-                        setStep(1);
-                        if (statusText) statusText.textContent = 'Processing your photo...';
-                    } else if (pollCount <= 6) {
-                        setStep(2);
-                        if (statusText) statusText.textContent = 'Generating storybook image...';
-                    } else {
-                        setStep(3);
-                        if (statusText) statusText.textContent = 'Creating video animation...';
+                    if (statusText) {
+                        statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">⏱️ Processing is taking longer than expected.</div>' +
+                            '<p style="color:var(--text-muted);margin-bottom:15px;">Your video may still be generating. Check your dashboard for completed videos.</p>' +
+                            '<button onclick="retryTransformation()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;margin-right:10px;">🔄 Try Again</button>' +
+                            '<a href="dashboard.html" style="color:var(--primary);text-decoration:none;font-weight:500;">📊 Check Dashboard</a>';
                     }
+                    return;
                 }
-            } catch (error) {
-                console.error('Status check error:', error, 'URL:', cloudinaryUrl);
-                // Network error - don't stop polling, just skip this check
-                // CORS error on HEAD? Try with no-cors mode
+
                 try {
-                    const cloudinaryUrl = `https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/${currentJobId}`;
-                    const img = new Image();
-                    img.onload = function() {
+                    // Poll Supabase for completed video (reliable - no CDN caching issues)
+                    console.log('[POLL] Checking Supabase for job:', currentJobId, 'attempt:', pollCount);
+
+                    if (supabaseClient) {
+                        var { data, error } = await supabaseClient
+                            .from('generations')
+                            .select('video_url, cloudinary_url, status')
+                            .eq('job_id', currentJobId)
+                            .maybeSingle();
+
+                        if (data && (data.video_url || data.cloudinary_url)) {
+                            // Video is ready!
+                            var videoUrl = data.video_url || data.cloudinary_url;
+                            console.log('[POLL] Video found in Supabase:', videoUrl);
+                            clearInterval(pollInterval);
+                            clearJob();
+                            showVideo(videoUrl);
+                            await loadUserCredits();
+                            return;
+                        }
+                    }
+
+                    // Fallback: also check Cloudinary directly (in case Supabase save failed)
+                    var cloudinaryUrl = 'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/' + currentJobId;
+                    var cacheBuster = '?_t=' + Date.now() + '_' + pollCount;
+                    var response = await fetch(cloudinaryUrl + cacheBuster, { method: 'HEAD', cache: 'no-store' });
+
+                    if (response.ok) {
+                        console.log('[POLL] Video found via Cloudinary fallback');
                         clearInterval(pollInterval);
                         clearJob();
-                        showVideo(cloudinaryUrl);
-                        loadUserCredits();
-                    };
-                    // Use video poster as existence check
-                    img.src = cloudinaryUrl + '.jpg' + '?_t=' + Date.now();
-                } catch (e2) {
-                    console.error('Fallback check error:', e2);
+                        showVideo(cloudinaryUrl + '.mp4');
+                        await loadUserCredits();
+                        return;
+                    }
+
+                    // Update progress based on time elapsed
+                    var elapsed = (Date.now() - transformStartTime) / 1000;
+                    if (elapsed < 20) {
+                        setStep(1);
+                        if (statusText) statusText.textContent = 'Analyzing your image...';
+                    } else if (elapsed < 40) {
+                        setStep(2);
+                        if (statusText) statusText.textContent = 'Generating storybook scene...';
+                    } else if (elapsed < 70) {
+                        setStep(3);
+                        if (statusText) statusText.textContent = 'Creating video animation...';
+                    } else {
+                        setStep(4);
+                        if (statusText) statusText.textContent = 'Finalizing your video...';
+                    }
+
+                } catch (error) {
+                    console.error('Status check error:', error);
                 }
             }
-        }
 
         function updateStepFromStatus(status) {
             if (status === 'analyzing' || status === 'processing') {
