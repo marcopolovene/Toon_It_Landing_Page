@@ -835,7 +835,7 @@
         </div>
 
         <!-- Login Required Message -->
-        <div class="info-box login-required" id="loginRequired">
+        <div class="info-box login-required" id="loginRequired" style="display:none">
             🔐 Please <a onclick="showModal('signup')" style="color: #667eea; cursor: pointer; text-decoration: underline;">sign up</a> or 
             <a onclick="showModal('login')" style="color: #667eea; cursor: pointer; text-decoration: underline;">log in</a> to transform photos.
             <br><strong>New users get 2 FREE credits!</strong>
@@ -1210,20 +1210,21 @@
         document.addEventListener('DOMContentLoaded', async () => {
         // RELIABLE: Check session on page load and update UI
         async function initAuth() {
-            try {
-                // Sync check for iOS compatibility
-                var hasUser = window.currentUser;
-                if (!hasUser) { showModal('login'); return; }
-                if (session) {
-                    currentUser = session.user;
-                    window.currentUser = session.user;
-                    updateUIForUser();
-                    loadUserCredits();
+                try {
+                    var { data: { session } } = await supabaseClient.auth.getSession();
+                    if (session && session.user) {
+                        currentUser = session.user;
+                        window.currentUser = session.user;
+                        updateUIForUser();
+                        loadUserCredits();
+                    } else {
+                        updateUIForGuest();
+                    }
+                } catch (e) {
+                    console.log('Auth init error:', e);
+                    updateUIForGuest();
                 }
-            } catch (e) {
-                console.log('Auth init error:', e);
             }
-        }
         initAuth();
             checkForPasswordReset();
 
