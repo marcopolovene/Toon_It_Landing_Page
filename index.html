@@ -2184,8 +2184,11 @@
             }
             lastTransformTime = now;
             if (!selectedFile) { alert('Please select a photo first'); return; }
-            const hasUser = window.currentUser || currentUser;
+            // Sync currentUser from all possible sources
+            if (!currentUser && window.currentUser) currentUser = window.currentUser;
+            const hasUser = currentUser || window.currentUser;
             if (!hasUser || !hasUser.id) { showModal('login'); return; }
+            currentUser = hasUser;  // Ensure currentUser is always set for the rest of the function
             // Fresh credit check from database
             var creditUser = currentUser || window.currentUser;
             if (creditUser && creditUser.id && supabaseClient) {
