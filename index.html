@@ -741,6 +741,70 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
 
+        
+        /* Cookie Consent */
+        .cookie-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            padding: 15px 20px;
+            z-index: 10000;
+            box-shadow: 0 -3px 15px rgba(42,32,21,0.1);
+        }
+        .cookie-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .cookie-text {
+            flex: 1;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            line-height: 1.4;
+            min-width: 200px;
+        }
+        .cookie-text a { color: var(--primary); }
+        .cookie-accept {
+            background: var(--primary);
+            color: var(--text-dark);
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+        .cookie-accept:hover { opacity: 0.9; }
+
+        
+        /* Password Strength */
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+        }
+        .password-strength-text {
+            font-size: 0.75em;
+            margin-top: 3px;
+            color: var(--text-muted);
+        }
+
         </style>
 </head>
 <body>
@@ -969,6 +1033,9 @@
                 <div class="form-group">
                     <label>Password</label>
                     <input type="password" id="signupPassword" required placeholder="Min 6 characters" minlength="6">
+                
+                    <div class="password-strength"><div id="strengthBar" class="password-strength-bar"></div></div>
+                    <div id="strengthText" class="password-strength-text"></div>
                 </div>
                 <div class="form-group">
                     <label>Confirm Password</label>
@@ -1838,6 +1905,57 @@
             } catch(e) {}
         }
 
+        
+        // ==========================================
+        
+        // ==========================================
+        // PASSWORD STRENGTH
+        // ==========================================
+        (function() {
+            var pw = document.getElementById('signupPassword');
+            if (pw) {
+                pw.addEventListener('input', function() {
+                    var val = pw.value;
+                    var score = 0;
+                    if (val.length >= 6) score++;
+                    if (val.length >= 8) score++;
+                    if (/[A-Z]/.test(val)) score++;
+                    if (/[0-9]/.test(val)) score++;
+                    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+                    var bar = document.getElementById('strengthBar');
+                    var text = document.getElementById('strengthText');
+                    var colors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#27ae60'];
+                    var labels = ['Very weak', 'Weak', 'Fair', 'Strong', 'Very strong'];
+
+                    if (bar) {
+                        bar.style.width = (score * 20) + '%';
+                        bar.style.background = colors[Math.max(0, score - 1)] || '#e74c3c';
+                    }
+                    if (text) {
+                        text.textContent = val.length > 0 ? labels[Math.max(0, score - 1)] || '' : '';
+                        text.style.color = colors[Math.max(0, score - 1)] || '#e74c3c';
+                    }
+                });
+            }
+        })();
+
+        // COOKIE CONSENT
+        // ==========================================
+        function acceptCookies() {
+            localStorage.setItem('cookieConsent', 'accepted');
+            var banner = document.getElementById('cookieBanner');
+            if (banner) banner.style.display = 'none';
+        }
+
+        // Show banner if not accepted
+        if (!localStorage.getItem('cookieConsent')) {
+            setTimeout(function() {
+                var banner = document.getElementById('cookieBanner');
+                if (banner) banner.style.display = 'block';
+            }, 2000);
+        }
+
         // ANALYTICS - Lightweight event tracking
         // ==========================================
         function trackEvent(eventType, eventData) {
@@ -2008,8 +2126,25 @@
             });
         }
 
+        
+        // ==========================================
+        // RATE LIMITING
+        // ==========================================
+        var lastTransformTime = 0;
+        var TRANSFORM_COOLDOWN = 60000; // 60 seconds between transforms
+
         async function startTransformation() {
             videoAlreadyShown = false;
+
+            // Rate limiting
+            var now = Date.now();
+            var elapsed = now - lastTransformTime;
+            if (lastTransformTime > 0 && elapsed < TRANSFORM_COOLDOWN) {
+                var waitSec = Math.ceil((TRANSFORM_COOLDOWN - elapsed) / 1000);
+                alert('Please wait ' + waitSec + ' seconds before creating another video.');
+                return;
+            }
+            lastTransformTime = now;
             if (!selectedFile) { alert('Please select a photo first'); return; }
             const hasUser = window.currentUser || currentUser;
             if (!hasUser) { showModal('loginModal'); return; }
@@ -2694,5 +2829,17 @@
     }
 })();
 </script>
+
+    <!-- Cookie Consent -->
+    <div id="cookieBanner" class="cookie-banner">
+        <div class="cookie-inner">
+            <div class="cookie-text">
+                🍪 We use cookies and analytics to improve your experience. By continuing, you agree to our
+                <a href="privacy.html">Privacy Policy</a>.
+            </div>
+            <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
+        </div>
+    </div>
+
 </body>
 </html>
