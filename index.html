@@ -851,10 +851,14 @@
                 <button class="btn-signup" id="signupBtn">Sign Up</button>
             </div>
             <div class="auth-buttons" id="userButtons" style="display: none;">
-            <a href="dashboard.html" class="dashboard-link" onclick="event.stopPropagation(); window.location.href='dashboard.html'; return false;">📊 Dashboard</a>
-                <span class="user-email" id="userEmail"></span>
-                <button class="btn-credits" id="creditsBtn">Buy Credits</button>
-                <button class="btn-logout" id="logoutBtn">Log Out</button>
+                <div class="user-account-section">
+                    <span class="user-email" id="userEmail"></span>
+                    <div class="user-action-buttons">
+                        <a href="dashboard.html" class="dashboard-link" onclick="event.stopPropagation(); window.location.href='dashboard.html'; return false;">📊 Dashboard</a>
+                        <button class="btn-credits" id="creditsBtn">Buy Credits</button>
+                        <button class="btn-logout" id="logoutBtn">Log Out</button>
+                    </div>
+                </div>
             </div>
         </div>
 
