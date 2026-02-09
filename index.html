@@ -2428,28 +2428,30 @@
                     }
                 }
 
-                // Save generation record for video history
-                try {
-                    const user = window.currentUser || currentUser;
-                    await supabaseClient
-                        .from('generations')
-                        .insert({
-                            user_id: user.id,
-                            video_url: url,
-                            cloudinary_url: url,
-                            status: 'complete',
-                            job_id: currentJobId || 'unknown'
-                        });
-                    console.log('[HISTORY] Video generation saved to history');
-                    // Send video ready notification
+                // Update generation record with user_id (record created by n8n Save Video URL)
                     try {
-                        var emailUser = window.currentUser || currentUser;
-                        if (emailUser && emailUser.email) sendEmailNotification('video_ready', emailUser.email);
-                    } catch(e) {}
-                } catch (histErr) {
-                    console.error('[HISTORY] Save error:', histErr);
-                }
-            } catch (e) {
+                        var user = window.currentUser || currentUser;
+                        if (user && user.id && currentJobId) {
+                            // Update existing record with user_id
+                            await supabaseClient
+                                .from('generations')
+                                .update({ user_id: user.id })
+                                .eq('job_id', currentJobId);
+                            console.log('[HISTORY] Updated generation with user_id');
+                        } else if (user && user.id) {
+                            // Fallback: insert new record if no job_id match
+                            await supabaseClient
+                                .from('generations')
+                                .insert({
+                                    user_id: user.id,
+                                    video_url: url,
+                                    status: 'complete'
+                                });
+                            console.log('[HISTORY] Inserted new generation record');
+                        }
+                    } catch(histErr) {
+                        console.log('[HISTORY] Save error:', histErr);
+                    } catch (e) {
                 console.error('[CREDITS] Deduction error:', e);
             } })(); }
         }
