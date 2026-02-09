@@ -1331,7 +1331,9 @@
         }
 
         async function loadUserCredits() {
-            if (!currentUser || !supabaseClient) return;
+            var user = currentUser || window.currentUser;
+            if (!user || !supabaseClient) return;
+            currentUser = user;  // sync the variable
 
             try {
                 const { data, error } = await supabaseClient
@@ -2184,10 +2186,25 @@
             if (!selectedFile) { alert('Please select a photo first'); return; }
             const hasUser = window.currentUser || currentUser;
             if (!hasUser) { showModal('loginModal'); return; }
+            // Fresh credit check from database
+            var creditUser = currentUser || window.currentUser;
+            if (creditUser && supabaseClient) {
+                try {
+                    var { data: creditData } = await supabaseClient
+                        .from('profiles')
+                        .select('credits')
+                        .eq('id', creditUser.id)
+                        .single();
+                    if (creditData) {
+                        currentCredits = creditData.credits;
+                        var creditEl = document.getElementById('creditCount');
+                        if (creditEl) creditEl.textContent = currentCredits;
+                    }
+                } catch(ce) { console.error('[CREDITS] Fresh check error:', ce); }
+            }
             if (currentCredits < 1) {
-                // Try loading credits first
-                await loadUserCredits();
-                if (currentCredits < 1) { alert('No credits remaining. Please buy more!'); return; }
+                alert('No credits remaining. Please buy more!');
+                return;
             }
 
             // Compress image before sending (reduces 10MB+ to ~300KB)
