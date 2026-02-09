@@ -2473,6 +2473,8 @@
                                 .update({ user_id: user.id })
                                 .eq('job_id', jobId || currentJobId);
                             console.log('[HISTORY] Updated generation with user_id');
+                            // Send video ready email
+                            if (user.email) sendEmailNotification('video_ready', user.email);
                         } else if (user && user.id) {
                             // Fallback: insert new record if no job_id match
                             await supabaseClient
@@ -2483,6 +2485,8 @@
                                     status: 'complete'
                                 });
                             console.log('[HISTORY] Inserted new generation record');
+                            // Send video ready email
+                            if (user.email) sendEmailNotification('video_ready', user.email);
                         }
                     } catch(histErr) {
                         console.log('[HISTORY] Save error:', histErr);
