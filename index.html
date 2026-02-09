@@ -2258,10 +2258,36 @@
         const MAX_POLLS = 60;
 
         function startPolling() {
-            pollCount = 0;
-            pollInterval = setInterval(checkStatus, 10000);
-            checkStatus();
-        }
+ pollCount = 0;
+ transformStartTime = Date.now();
+
+ // Visual progress updates every 3 seconds (cosmetic only, no DB calls)
+ if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+ progressInterval = setInterval(function() {
+ var elapsed = (Date.now() - transformStartTime) / 1000;
+ if (elapsed < 15) {
+ setStep(1);
+ if (statusText) statusText.textContent = 'Analyzing your image...';
+ } else if (elapsed < 35) {
+ setStep(2);
+ if (statusText) statusText.textContent = 'Generating storybook scene...';
+ } else if (elapsed < 60) {
+ setStep(3);
+ if (statusText) statusText.textContent = 'Creating video animation...';
+ } else {
+ setStep(4);
+ if (statusText) statusText.textContent = 'Finalizing your video...';
+ }
+ }, 3000);
+
+ // Set initial step immediately
+ setStep(1);
+ if (statusText) statusText.textContent = 'Analyzing your image...';
+
+ // Data polling every 10 seconds 
+ pollInterval = setInterval(checkStatus, 10000);
+ checkStatus();
+ }
 
         async function checkStatus() {
                 if (!currentJobId) return;
