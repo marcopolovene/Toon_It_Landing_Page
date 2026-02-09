@@ -1332,7 +1332,7 @@
 
         async function loadUserCredits() {
             var user = currentUser || window.currentUser;
-            if (!user || !supabaseClient) return;
+            if (!user || !user.id || !supabaseClient) return;
             currentUser = user;  // sync the variable
 
             try {
@@ -2185,10 +2185,10 @@
             lastTransformTime = now;
             if (!selectedFile) { alert('Please select a photo first'); return; }
             const hasUser = window.currentUser || currentUser;
-            if (!hasUser) { showModal('loginModal'); return; }
+            if (!hasUser || !hasUser.id) { showModal('login'); return; }
             // Fresh credit check from database
             var creditUser = currentUser || window.currentUser;
-            if (creditUser && supabaseClient) {
+            if (creditUser && creditUser.id && supabaseClient) {
                 try {
                     var { data: creditData } = await supabaseClient
                         .from('profiles')
