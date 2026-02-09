@@ -1128,6 +1128,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         var videoAlreadyShown = false;
+        var creditDeducted = false;
         // Global error handler
         window.onerror = function(msg, url, line, col, error) {
             console.error('JS ERROR:', msg, 'at line', line);
@@ -1300,30 +1301,18 @@
             }
 
             try {
-                // Sync check for iOS compatibility
-                var hasUser = window.currentUser;
-                if (!hasUser) { showModal('login'); return; }
-                if (session) { currentUser = session.user; }
-                if (session) {
+                // Always check actual session from Supabase
+                var { data: { session } } = await supabaseClient.auth.getSession();
+                if (session && session.user) {
                     currentUser = session.user;
+                    window.currentUser = session.user;
                     await loadUserCredits();
                     updateUIForUser();
                 } else {
+                    currentUser = null;
+                    window.currentUser = null;
                     updateUIForGuest();
                 }
-
-                // Listen for auth changes
-                supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    if (session) {
-                        currentUser = session.user;
-                        await loadUserCredits();
-                        updateUIForUser();
-                    } else {
-                        currentUser = null;
-                        currentCredits = 0;
-                        updateUIForGuest();
-                    }
-                });
             } catch (e) {
                 console.error('Auth check error:', e);
                 updateUIForGuest();
@@ -1833,6 +1822,7 @@
             selectedFile = null;
             currentJobId = null;
             videoAlreadyShown = false;
+            creditDeducted = false;
             if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
             clearJob();
 
@@ -2370,6 +2360,8 @@
             if (shareSection) shareSection.style.display = 'block';
 
             // Deduct 1 credit after successful video generation
+                if (creditDeducted) { console.log('[CREDITS] Already deducted, skipping'); }
+                else { creditDeducted = true;
             (async () => { try {
                 if (supabaseClient && (window.currentUser || currentUser)) {
                     const user = window.currentUser || currentUser;
@@ -2431,7 +2423,7 @@
                 }
             } catch (e) {
                 console.error('[CREDITS] Deduction error:', e);
-            } })();
+            } })(); }
         }
 
         function downloadVideo() {
