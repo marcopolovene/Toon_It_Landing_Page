@@ -2221,11 +2221,14 @@
                 try {
                     let authToken = '';
                     if (supabaseClient) {
-                        // Sync check for iOS compatibility
-                var hasUser = window.currentUser;
-                if (!hasUser) { showModal('login'); return; }
-                if (session) { currentUser = session.user; }
-                        authToken = session?.access_token || '';
+                        var transformUser = window.currentUser || currentUser;
+                    if (!transformUser) { showModal('login'); return; }
+                    try {
+                        var sessResult = await supabaseClient.auth.getSession();
+                        if (sessResult.data && sessResult.data.session) {
+                            authToken = sessResult.data.session.access_token || '';
+                        }
+                    } catch(authErr) { console.log('[AUTH] Token error:', authErr); }
                     }
 
                     const response = await fetch(WEBHOOK_URL, {
