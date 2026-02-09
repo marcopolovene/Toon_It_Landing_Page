@@ -1461,7 +1461,17 @@
                 if (loginError) {
                     console.log('Auto-login failed:', loginError.message);
                     // Email confirmation might be required
-                    if (successEl) successEl.textContent = 'Account created! Please check your email to confirm, then log in.';
+                    if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
+                    // Hide form fields after success
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var err = document.getElementById('signupError');
+                        if (err) err.style.display = 'none';
+                    }
                 } else if (loginData.session) {
                     console.log('Auto-login successful!');
                     currentUser = loginData.session.user;
@@ -2494,7 +2504,17 @@
             }
 
             if (loginResult.error) {
-                if (successEl) successEl.textContent = 'Account created! Please check your email to confirm, then log in.';
+                if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
+                    // Hide form fields after success
+                    var sf = document.getElementById('signupForm');
+                    if (sf) {
+                        var fgs = sf.querySelectorAll('.form-group');
+                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                        var btn = sf.querySelector('.modal-submit');
+                        if (btn) btn.style.display = 'none';
+                        var err = document.getElementById('signupError');
+                        if (err) err.style.display = 'none';
+                    }
             } else if (loginResult.data && loginResult.data.session) {
                 console.log('[FAILSAFE] Auto-login successful!');
                 closeAllModals();
