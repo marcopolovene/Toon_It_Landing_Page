@@ -785,6 +785,35 @@
             }
         }
 
+        
+        /* Referral */
+        .referral-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75em;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 3px 10px;
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .referral-badge:hover {
+            background: var(--primary);
+            color: var(--text-dark);
+        }
+        .referral-welcome {
+            background: linear-gradient(135deg, #d4a04a22, #e8c07822);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--text-main);
+        }
+
         /* Cookie Consent */
         .cookie-banner {
             display: none;
@@ -867,6 +896,7 @@
             <div class="auth-buttons" id="userButtons" style="display: none;">
                 <div class="user-account-section">
                     <span class="user-email" id="userEmail"></span>
+                        <span class="referral-badge" id="referralBadge" onclick="copyReferralLink()" style="display:none;" title="Click to copy your referral link">🎁 <span id="referralCode"></span></span>
                     <div class="user-action-buttons">
                         <a href="dashboard.html" class="dashboard-link" onclick="event.stopPropagation(); window.location.href='dashboard.html'; return false;">📊 Dashboard</a>
                         <button class="btn-credits" id="creditsBtn">Buy Credits</button>
@@ -1272,6 +1302,7 @@
                         window.currentUser = session.user;
                         updateUIForUser();
                         loadUserCredits();
+                        loadReferralCode();
                     } else {
                         updateUIForGuest();
                     }
@@ -1346,7 +1377,8 @@
             setupUploadHandlers();
             await checkAuth();
             checkPendingJob();
-            console.log('Setup complete');
+            checkReferralParam();
+                console.log('Setup complete');
         });
 
         async function checkAuth() {
@@ -1968,6 +2000,9 @@
                 } else if (type === 'video_ready') {
                     subject = '🎬 Your Storybook Video is Ready!';
                     htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>🎬 Your Video is Ready!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Great news! Your storybook video has been created and is ready to watch.</p><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai/dashboard.html' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Watch Your Video →</a></div><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Find all your videos in your <a href='https://toonit.ai/dashboard.html' style='color:#d4a04a;'>Dashboard</a>.</p><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It! — <a href='https://toonit.ai' style='color:#d4a04a;'>toonit.ai</a></p></div>";
+                } else if (type === 'referral_success') {
+                    subject = '🎁 You Earned a Free Credit!';
+                    htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>🎁 Referral Reward!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Great news! Someone you referred just signed up for Toon It! You've earned <strong style='color:#d4a04a;'>1 free credit</strong>!</p><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Create a Video →</a></div><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It!</p></div>";
                 } else {
                     return;
                 }
@@ -2065,6 +2100,153 @@
                 trackEvent('share_youtube_shorts');
             }
         }
+        
+        // ==========================================
+        // REFERRAL SYSTEM
+        // ==========================================
+        var pendingReferralCode = null;
+
+        // Check for ?ref= parameter on page load
+        function checkReferralParam() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var refCode = urlParams.get('ref');
+            if (refCode) {
+                pendingReferralCode = refCode.toUpperCase();
+                localStorage.setItem('toonit_referral', pendingReferralCode);
+                console.log('[REFERRAL] Found referral code:', pendingReferralCode);
+                // Show welcome message for referred users
+                showReferralWelcome(pendingReferralCode);
+            } else {
+                // Check localStorage for previously stored referral
+                var stored = localStorage.getItem('toonit_referral');
+                if (stored) pendingReferralCode = stored;
+            }
+        }
+
+        function showReferralWelcome(code) {
+            // Show a welcome banner for referred users
+            var header = document.querySelector('.header');
+            if (header && !document.getElementById('referralWelcome')) {
+                var banner = document.createElement('div');
+                banner.id = 'referralWelcome';
+                banner.className = 'referral-welcome';
+                banner.innerHTML = '🎁 <strong>You were invited!</strong> Sign up to get <strong>3 free credits</strong> instead of 2!';
+                header.after(banner);
+            }
+        }
+
+        // Load and display referral code for logged-in users
+        async function loadReferralCode() {
+            var user = window.currentUser || currentUser;
+            if (!user || !supabaseClient) return;
+            try {
+                var { data } = await supabaseClient
+                    .from('profiles')
+                    .select('referral_code')
+                    .eq('id', user.id)
+                    .single();
+                if (data && data.referral_code) {
+                    var badge = document.getElementById('referralBadge');
+                    var codeEl = document.getElementById('referralCode');
+                    if (badge) badge.style.display = 'inline-flex';
+                    if (codeEl) codeEl.textContent = data.referral_code;
+                }
+            } catch(e) { console.log('[REFERRAL] Load error:', e); }
+        }
+
+        function copyReferralLink() {
+            var codeEl = document.getElementById('referralCode');
+            if (codeEl && codeEl.textContent) {
+                var link = 'https://toonit.ai?ref=' + codeEl.textContent;
+                navigator.clipboard.writeText(link).then(function() {
+                    var badge = document.getElementById('referralBadge');
+                    if (badge) {
+                        var orig = badge.innerHTML;
+                        badge.innerHTML = '✅ Link copied!';
+                        setTimeout(function() { badge.innerHTML = orig; }, 2000);
+                    }
+                });
+                trackEvent('referral_copy_link', { code: codeEl.textContent });
+            }
+        }
+
+        // Process referral after signup
+        async function processReferral(newUserId, newUserEmail) {
+            var refCode = pendingReferralCode || localStorage.getItem('toonit_referral');
+            if (!refCode || !supabaseClient) return;
+            console.log('[REFERRAL] Processing referral:', refCode, 'for user:', newUserEmail);
+            try {
+                // Find referrer by code
+                var { data: referrer } = await supabaseClient
+                    .from('profiles')
+                    .select('id, email, referral_code, total_referrals, total_referral_purchases')
+                    .eq('referral_code', refCode)
+                    .single();
+
+                if (!referrer || referrer.id === newUserId) {
+                    console.log('[REFERRAL] Invalid or self-referral');
+                    localStorage.removeItem('toonit_referral');
+                    return;
+                }
+
+                // Check anti-abuse cap
+                var maxAllowed = referrer.total_referral_purchases === 0 ? 10 : referrer.total_referral_purchases * 10;
+                if (referrer.total_referrals >= maxAllowed) {
+                    console.log('[REFERRAL] Referrer is capped');
+                    localStorage.removeItem('toonit_referral');
+                    return;
+                }
+
+                // Create referral record
+                await supabaseClient.from('referrals').insert({
+                    referrer_id: referrer.id,
+                    referred_id: newUserId,
+                    referral_code: refCode,
+                    status: 'confirmed',
+                    signup_credit_awarded: true,
+                    confirmed_at: new Date().toISOString()
+                });
+
+                // Award 1 credit to referrer
+                await supabaseClient.from('profiles').update({
+                    credits: referrer.credits + 1,
+                    total_referrals: referrer.total_referrals + 1
+                }).eq('id', referrer.id);
+
+                // Log referrer credit transaction
+                await supabaseClient.from('credit_transactions').insert({
+                    user_id: referrer.id,
+                    amount: 1,
+                    type: 'bonus',
+                    description: 'Referral bonus: ' + newUserEmail + ' signed up'
+                });
+
+                // Award 1 EXTRA credit to referred user (3 total instead of 2)
+                await supabaseClient.from('profiles').update({
+                    credits: 3,
+                    referred_by: referrer.id
+                }).eq('id', newUserId);
+
+                // Log referred user bonus credit
+                await supabaseClient.from('credit_transactions').insert({
+                    user_id: newUserId,
+                    amount: 1,
+                    type: 'bonus',
+                    description: 'Referral bonus: invited by ' + referrer.email
+                });
+
+                // Send email to referrer
+                sendEmailNotification('referral_success', referrer.email);
+
+                console.log('[REFERRAL] Success! Both users credited');
+                localStorage.removeItem('toonit_referral');
+                trackEvent('referral_complete', { referrer: referrer.id, code: refCode });
+
+            } catch(e) {
+                console.log('[REFERRAL] Error:', e);
+            }
+        }
+
         // COOKIE CONSENT
         // ==========================================
         function acceptCookies() {
@@ -2946,6 +3128,7 @@
                             if (result.data && result.data.session) {
                                 window.currentUser = result.data.session.user;
                                 console.log('[FAILSAFE] Auto-logged in after confirmation:', result.data.session.user.email);
+                                processReferral(result.data.session.user.id, result.data.session.user.email);
                                 // Update UI for logged in user
                                 var fn = window.updateUIForUser || updateUIForUser;
                                 if (typeof fn === 'function') fn(result.data.session.user.email);
