@@ -578,36 +578,41 @@
 
                 </div>
 
-        <!-- Referral Section -->
-        <div class="referral-card">
-            <h3>🎁 Refer Friends, Earn Credits</h3>
-            <p style="color:var(--text-muted);font-size:0.9em;margin:0 0 12px;">Share your link — you both earn 1 credit when they sign up, and another when they purchase!</p>
-            <div class="referral-link-box">
-                <input type="text" class="referral-link-input" id="dashReferralLink" readonly>
-                <button class="referral-copy-btn" onclick="copyDashReferralLink()">📋 Copy</button>
-            </div>
-            <div class="referral-stats">
-                <div class="referral-stat">
-                    <div class="referral-stat-value" id="statReferrals">0</div>
-                    <div class="referral-stat-label">Referrals</div>
-                </div>
-                <div class="referral-stat">
-                    <div class="referral-stat-value" id="statRefCredits">0</div>
-                    <div class="referral-stat-label">Credits Earned</div>
-                </div>
-                
-            </div>
-            <div class="referral-history" id="referralHistory">
-                <p style="color:var(--text-muted);font-size:0.85em;">Loading referral history...</p>
-            </div>
-        </div>
+        
 
                 <button class="card-action" style="width:100%" onclick="window.location.href='index.html'">
                     🎨 Transform a New Photo
                 </button>
             </div>
 
-            <!-- Video History Card -->
+            <!-- Referral Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">🎁 Refer Friends, Earn Credits</h2>
+            </div>
+            <p style="color:var(--text-muted);font-size:0.9em;margin:0 0 12px;padding:0 15px;">Share your link — you both earn 1 credit when they sign up, and another when they purchase!</p>
+            <div style="padding:0 15px;">
+                <div class="referral-link-box">
+                    <input type="text" class="referral-link-input" id="dashReferralLink" readonly>
+                    <button class="referral-copy-btn" onclick="copyDashReferralLink()">📋 Copy</button>
+                </div>
+                <div class="referral-stats">
+                    <div class="referral-stat">
+                        <div class="referral-stat-value" id="statReferrals">0</div>
+                        <div class="referral-stat-label">Referrals</div>
+                    </div>
+                    <div class="referral-stat">
+                        <div class="referral-stat-value" id="statRefCredits">0</div>
+                        <div class="referral-stat-label">Credits Earned</div>
+                    </div>
+                </div>
+                <div class="referral-history" id="referralHistory">
+                    <p style="color:var(--text-muted);font-size:0.85em;text-align:center;">No referrals yet</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video History Card -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">🎬 Video History</h2>
@@ -626,7 +631,7 @@
                 <div class="card-header">
                     <h2 class="card-title">💳 Credit History</h2>
                 </div>
-                <div class="transaction-list" id="transactionList" class="transaction-list-scroll">
+                <div class="transaction-list transaction-list-scroll" id="transactionList">
                     <div class="empty-state">
                         <div class="empty-state-icon">💳</div>
                         <p>No transactions yet</p>
