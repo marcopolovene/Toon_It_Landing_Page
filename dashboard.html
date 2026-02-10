@@ -466,7 +466,7 @@
         }
         .referral-stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             margin: 15px 0;
         }
@@ -504,6 +504,19 @@
         }
         .referral-status-confirmed { background: #d4edda; color: #155724; }
         .referral-status-purchased { background: #fff3cd; color: #856404; }
+
+        
+        .transaction-list-scroll {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border, #e0d4c0);
+            border-radius: 8px;
+            padding: 5px;
+        }
+        .video-list-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
         </style>
 </head>
@@ -558,40 +571,7 @@
                         <div class="stat-value" id="statPurchases">0</div>
                         <div class="stat-label">Purchases</div>
                     </div>
-                </div>
-                <button class="card-action" style="width:100%" onclick="window.location.href='index.html'">
-                    🎨 Transform a New Photo
-                </button>
-            </div>
 
-            <!-- Video History Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">🎬 Video History</h2>
-                </div>
-                <div class="video-list" id="videoList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🎬</div>
-                        <p>No videos yet</p>
-                        <p>Create your first storybook video!</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Transaction History Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">💳 Credit History</h2>
-                </div>
-                <div class="transaction-list" id="transactionList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">💳</div>
-                        <p>No transactions yet</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    
         <!-- Referral Section -->
         <div class="referral-card">
             <h3>🎁 Refer Friends, Earn Credits</h3>
@@ -609,15 +589,48 @@
                     <div class="referral-stat-value" id="statRefCredits">0</div>
                     <div class="referral-stat-label">Credits Earned</div>
                 </div>
-                <div class="referral-stat">
-                    <div class="referral-stat-value" id="statRefPurchases">0</div>
-                    <div class="referral-stat-label">Purchases</div>
-                </div>
+                
             </div>
             <div class="referral-history" id="referralHistory">
                 <p style="color:var(--text-muted);font-size:0.85em;">Loading referral history...</p>
             </div>
         </div>
+
+                </div>
+                <button class="card-action" style="width:100%" onclick="window.location.href='index.html'">
+                    🎨 Transform a New Photo
+                </button>
+            </div>
+
+            <!-- Video History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🎬 Video History</h2>
+                </div>
+                <div class="video-list" id="videoList" class="video-list-scroll">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎬</div>
+                        <p>No videos yet</p>
+                        <p>Create your first storybook video!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💳 Credit History</h2>
+                </div>
+                <div class="transaction-list" id="transactionList" class="transaction-list-scroll">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💳</div>
+                        <p>No transactions yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        
 
         </main>
 
