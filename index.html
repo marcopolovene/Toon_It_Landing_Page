@@ -722,7 +722,7 @@
             background: var(--bg-card);
             transform: translateY(-1px);
         }
-        .share-btn.twitter:hover { color: #1DA1F2; border-color: #1DA1F2; }
+        .share-btn.twitter:hover { color: #000000; border-color: #000000; }
         .share-btn.facebook:hover { color: #4267B2; border-color: #4267B2; }
         .share-btn.copy-link:hover { color: var(--primary); }
         .share-btn.instagram:hover { color: #E4405F; border-color: #E4405F; }
@@ -1054,19 +1054,14 @@
     
             <div class="share-section">
                 <div class="share-label">Share your creation ✨</div>
-                <div class="share-section-label">Share your video</div>
+                <div class="share-section-label">Share your creation</div>
                 <div class="share-buttons">
-                    <button class="share-btn twitter" onclick="shareOnTwitter()">🐦 Twitter</button>
+                    <button class="share-btn twitter" onclick="shareOnTwitter()">𝕏 X</button>
                     <button class="share-btn facebook" onclick="shareOnFacebook()">📘 Facebook</button>
-                    <button class="share-btn copy-link" onclick="copyVideoLink()">🔗 Copy Link</button>
-                </div>
-                <div class="share-section-label">Share to video platforms</div>
-                <div class="share-buttons">
                     <button class="share-btn instagram" onclick="shareToInstagram()">📸 Instagram</button>
                     <button class="share-btn tiktok" onclick="shareToTikTok()">🎵 TikTok</button>
-                    <button class="share-btn youtube" onclick="shareToYouTube()">▶️ YouTube Shorts</button>
+                    <button class="share-btn youtube" onclick="shareToYouTube()">▶️ YouTube</button>
                 </div>
-            </div>
             <div id="copyToast" class="copy-toast">✅ Link copied!</div>
 
     <!-- Footer -->
@@ -2062,43 +2057,18 @@
 
         
         function shareToInstagram() {
-            // Instagram doesn't support direct web sharing - guide user to download
-            if (resultVideo && resultVideo.src) {
-                var link = document.createElement('a');
-                link.href = resultVideo.src;
-                link.download = 'toonit-storybook.mp4';
-                link.click();
-                setTimeout(function() {
-                    alert('Video downloaded! Open Instagram → Create Reel → Select the downloaded video from your gallery.');
-                }, 500);
-                trackEvent('share_instagram');
-            }
+            window.open('https://www.instagram.com/', '_blank');
+            trackEvent('share_instagram');
         }
 
         function shareToTikTok() {
-            if (resultVideo && resultVideo.src) {
-                var link = document.createElement('a');
-                link.href = resultVideo.src;
-                link.download = 'toonit-storybook.mp4';
-                link.click();
-                setTimeout(function() {
-                    alert('Video downloaded! Open TikTok → Tap + → Upload → Select the downloaded video.');
-                }, 500);
-                trackEvent('share_tiktok');
-            }
+            window.open('https://www.tiktok.com/upload', '_blank');
+            trackEvent('share_tiktok');
         }
 
         function shareToYouTube() {
-            if (resultVideo && resultVideo.src) {
-                var link = document.createElement('a');
-                link.href = resultVideo.src;
-                link.download = 'toonit-storybook.mp4';
-                link.click();
-                setTimeout(function() {
-                    alert('Video downloaded! Open YouTube → Tap + → Create a Short → Select the downloaded video.');
-                }, 500);
-                trackEvent('share_youtube_shorts');
-            }
+            window.open('https://www.youtube.com/upload', '_blank');
+            trackEvent('share_youtube_shorts');
         }
         
         // ==========================================
