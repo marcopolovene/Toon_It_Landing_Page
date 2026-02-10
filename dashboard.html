@@ -508,10 +508,12 @@
         
         .transaction-list-scroll {
             max-height: 300px;
-            overflow-y: auto;
+            overflow-y: auto !important;
+            overflow-x: hidden;
             border: 1px solid var(--border, #e0d4c0);
             border-radius: 8px;
-            padding: 5px;
+            padding: 8px;
+            display: block;
         }
         .video-list-scroll {
             max-height: 400px;
@@ -572,6 +574,10 @@
                         <div class="stat-label">Purchases</div>
                     </div>
 
+        
+
+                </div>
+
         <!-- Referral Section -->
         <div class="referral-card">
             <h3>🎁 Refer Friends, Earn Credits</h3>
@@ -596,7 +602,6 @@
             </div>
         </div>
 
-                </div>
                 <button class="card-action" style="width:100%" onclick="window.location.href='index.html'">
                     🎨 Transform a New Photo
                 </button>
