@@ -991,7 +991,7 @@
         </div>
 
         <!-- Result Section -->
-        <div id="result">
+        <div id="result" style="display:none;">
             <video id="resultVideo" controls autoplay loop></video>
             <div class="result-buttons">
                 <button id="downloadBtn">⬇️ Download</button>
@@ -1906,6 +1906,8 @@
             currentJobId = null;
             videoAlreadyShown = false;
             creditDeducted = false;
+            var resultDiv = document.getElementById('result');
+            if (resultDiv) resultDiv.style.display = 'none';
             if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
             if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
             clearJob();
@@ -2688,6 +2690,8 @@
                 return;
             }
             videoAlreadyShown = true;
+                var resultDiv = document.getElementById('result');
+                if (resultDiv) resultDiv.style.display = 'block';
             if (status) status.style.display = 'none';
             if (result) result.style.display = 'block';
             if (resultVideo) resultVideo.src = url;
