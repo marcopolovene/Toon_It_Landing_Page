@@ -691,7 +691,8 @@
             await Promise.all([
                 loadCredits(),
                 loadVideos(),
-                loadTransactions()
+                loadTransactions(),
+                    loadReferralData()
             ]);
 
             // Hide loading screen
