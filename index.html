@@ -2247,6 +2247,68 @@
             }
         }
 
+        
+        // Process referral reward when a referred user makes a purchase
+        async function processReferralPurchase() {
+            var user = window.currentUser || currentUser;
+            if (!user || !supabaseClient) return;
+            try {
+                // Check if this user was referred
+                var { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('referred_by')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!profile || !profile.referred_by) return;
+
+                // Check if purchase credit already awarded
+                var { data: referral } = await supabaseClient
+                    .from('referrals')
+                    .select('*')
+                    .eq('referred_id', user.id)
+                    .eq('referrer_id', profile.referred_by)
+                    .single();
+
+                if (!referral || referral.purchase_credit_awarded) return;
+
+                // Award 1 credit to referrer for purchase
+                var { data: referrer } = await supabaseClient
+                    .from('profiles')
+                    .select('credits, total_referral_purchases')
+                    .eq('id', profile.referred_by)
+                    .single();
+
+                if (referrer) {
+                    await supabaseClient.from('profiles').update({
+                        credits: referrer.credits + 1,
+                        total_referral_purchases: (referrer.total_referral_purchases || 0) + 1
+                    }).eq('id', profile.referred_by);
+
+                    await supabaseClient.from('credit_transactions').insert({
+                        user_id: profile.referred_by,
+                        amount: 1,
+                        type: 'bonus',
+                        description: 'Referral purchase bonus: ' + user.email + ' made a purchase'
+                    });
+
+                    // Update referral record
+                    await supabaseClient.from('referrals').update({
+                        status: 'purchased',
+                        purchase_credit_awarded: true,
+                        purchased_at: new Date().toISOString()
+                    }).eq('id', referral.id);
+
+                    console.log('[REFERRAL] Purchase reward credited to referrer');
+
+                    // Send email to referrer
+                    sendEmailNotification('referral_success', referrer.email);
+                }
+            } catch(e) {
+                console.log('[REFERRAL] Purchase tracking error:', e);
+            }
+        }
+
         // COOKIE CONSENT
         // ==========================================
         function acceptCookies() {
