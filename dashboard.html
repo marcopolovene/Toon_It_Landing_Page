@@ -428,6 +428,83 @@
             .card-header { flex-direction: column; gap: 8px; }
         }
 
+        
+        .referral-card {
+            background: var(--bg-card, #fff);
+            border: 1px solid var(--border, #e0d4c0);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .referral-card h3 {
+            color: var(--primary, #d4a04a);
+            margin: 0 0 15px;
+            font-size: 1.1em;
+        }
+        .referral-link-box {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .referral-link-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border, #e0d4c0);
+            border-radius: 8px;
+            font-size: 0.85em;
+            background: var(--bg-surface, #faf6f0);
+            color: var(--text-main, #2a2015);
+        }
+        .referral-copy-btn {
+            padding: 10px 20px;
+            background: var(--primary, #d4a04a);
+            color: var(--text-dark, #1a1408);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .referral-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .referral-stat {
+            text-align: center;
+            padding: 12px;
+            background: var(--bg-surface, #faf6f0);
+            border-radius: 8px;
+        }
+        .referral-stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary, #d4a04a);
+        }
+        .referral-stat-label {
+            font-size: 0.75em;
+            color: var(--text-muted, #8a7a60);
+            margin-top: 4px;
+        }
+        .referral-history {
+            margin-top: 15px;
+        }
+        .referral-history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border, #e0d4c0);
+            font-size: 0.85em;
+        }
+        .referral-status-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .referral-status-confirmed { background: #d4edda; color: #155724; }
+        .referral-status-purchased { background: #fff3cd; color: #856404; }
+
         </style>
 </head>
 <body>
@@ -514,7 +591,35 @@
                 </div>
             </div>
         </div>
-    </main>
+    
+        <!-- Referral Section -->
+        <div class="referral-card">
+            <h3>🎁 Refer Friends, Earn Credits</h3>
+            <p style="color:var(--text-muted);font-size:0.9em;margin:0 0 12px;">Share your link — you both earn 1 credit when they sign up, and another when they purchase!</p>
+            <div class="referral-link-box">
+                <input type="text" class="referral-link-input" id="dashReferralLink" readonly>
+                <button class="referral-copy-btn" onclick="copyDashReferralLink()">📋 Copy</button>
+            </div>
+            <div class="referral-stats">
+                <div class="referral-stat">
+                    <div class="referral-stat-value" id="statReferrals">0</div>
+                    <div class="referral-stat-label">Referrals</div>
+                </div>
+                <div class="referral-stat">
+                    <div class="referral-stat-value" id="statRefCredits">0</div>
+                    <div class="referral-stat-label">Credits Earned</div>
+                </div>
+                <div class="referral-stat">
+                    <div class="referral-stat-value" id="statRefPurchases">0</div>
+                    <div class="referral-stat-label">Purchases</div>
+                </div>
+            </div>
+            <div class="referral-history" id="referralHistory">
+                <p style="color:var(--text-muted);font-size:0.85em;">Loading referral history...</p>
+            </div>
+        </div>
+
+        </main>
 
     <!-- Video Modal -->
     <div class="video-modal" id="videoModal">
@@ -758,6 +863,76 @@
         document.getElementById('videoModal').addEventListener('click', (e) => {
             if (e.target.id === 'videoModal') closeVideoModal();
         });
-    </script>
+    
+        // Referral functions
+        function copyDashReferralLink() {
+            var input = document.getElementById('dashReferralLink');
+            if (input) {
+                navigator.clipboard.writeText(input.value).then(function() {
+                    var btn = document.querySelector('.referral-copy-btn');
+                    if (btn) {
+                        btn.textContent = '✅ Copied!';
+                        setTimeout(function() { btn.textContent = '📋 Copy'; }, 2000);
+                    }
+                });
+            }
+        }
+
+        async function loadReferralData() {
+            if (!currentUser || !supabaseClient) return;
+            try {
+                // Get user's referral code and stats
+                var { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('referral_code, total_referrals, total_referral_purchases')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (profile) {
+                    var linkInput = document.getElementById('dashReferralLink');
+                    if (linkInput) linkInput.value = 'https://toonit.ai?ref=' + profile.referral_code;
+
+                    var statRef = document.getElementById('statReferrals');
+                    if (statRef) statRef.textContent = profile.total_referrals || 0;
+
+                    var statPurch = document.getElementById('statRefPurchases');
+                    if (statPurch) statPurch.textContent = profile.total_referral_purchases || 0;
+                }
+
+                // Get referral history
+                var { data: referrals } = await supabaseClient
+                    .from('referrals')
+                    .select('status, created_at, signup_credit_awarded, purchase_credit_awarded')
+                    .eq('referrer_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                var historyDiv = document.getElementById('referralHistory');
+                if (referrals && referrals.length > 0) {
+                    var creditsEarned = 0;
+                    var historyHtml = '';
+                    referrals.forEach(function(ref) {
+                        if (ref.signup_credit_awarded) creditsEarned++;
+                        if (ref.purchase_credit_awarded) creditsEarned++;
+                        var statusClass = ref.status === 'purchased' ? 'purchased' : 'confirmed';
+                        var statusLabel = ref.status === 'purchased' ? '💰 Purchased' : '✅ Signed Up';
+                        var date = new Date(ref.created_at).toLocaleDateString();
+                        historyHtml += '<div class="referral-history-item">' +
+                            '<span>' + date + '</span>' +
+                            '<span class="referral-status-badge referral-status-' + statusClass + '">' + statusLabel + '</span>' +
+                            '</div>';
+                    });
+                    if (historyDiv) historyDiv.innerHTML = historyHtml;
+                    var statCredits = document.getElementById('statRefCredits');
+                    if (statCredits) statCredits.textContent = creditsEarned;
+                } else {
+                    if (historyDiv) historyDiv.innerHTML = '<p style="color:var(--text-muted);font-size:0.85em;text-align:center;">No referrals yet. Share your link to get started!</p>';
+                }
+            } catch(e) {
+                console.error('[REFERRAL] Load error:', e);
+            }
+        }
+
+        </script>
 </body>
 </html>
