@@ -1108,10 +1108,7 @@
     <!-- Signup Modal -->
     <div class="modal-overlay" id="signupModal">
         <div class="modal">
-            <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:0.85em;color:var(--text-muted);margin-bottom:4px;">Referral Code (optional)</label>
-                        <input type="text" id="signupReferralCode" placeholder="e.g. TOON-30DD" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.95em;background:var(--bg-surface);color:var(--text-main);text-transform:uppercase;">
-                    </div>
+            
                     <button class="modal-close" data-close-modal>&times;</button>
             <h2>Create Account</h2>
             <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
@@ -1131,6 +1128,10 @@
                     <label>Confirm Password</label>
                     <input type="password" id="signupConfirm" required placeholder="Confirm password">
                 </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:0.85em;color:var(--text-muted);margin-bottom:4px;">Referral Code (optional)</label>
+                        <input type="text" id="signupReferralCode" placeholder="e.g. TOON-30DD" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.95em;background:var(--bg-surface);color:var(--text-main);text-transform:uppercase;">
+                    </div>
                 <div id="signupError" class="form-error"></div>
                 <div id="signupSuccess" class="form-success"></div>
                 <button type="submit" class="modal-submit" id="signupSubmit">Create Account</button>
