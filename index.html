@@ -1307,8 +1307,14 @@
                     if (session && session.user) {
                         currentUser = session.user;
                         window.currentUser = session.user;
-                        updateUIForUser();
-                        loadUserCredits();
+                        // Load credits first, then update UI
+                var initCredits = 0;
+                try {
+                    var cResult = await supabaseClient.from('profiles').select('credits').eq('id', session.user.id).single();
+                    if (cResult.data) initCredits = cResult.data.credits;
+                    currentCredits = initCredits;
+                } catch(ce) {}
+                updateUIForUser(session.user.email, initCredits);
                         loadReferralCode();
                         // Check for pending referral from metadata
                         processReferral(session.user.id, session.user.email);
