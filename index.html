@@ -1108,7 +1108,11 @@
     <!-- Signup Modal -->
     <div class="modal-overlay" id="signupModal">
         <div class="modal">
-            <button class="modal-close" data-close-modal>&times;</button>
+            <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:0.85em;color:var(--text-muted);margin-bottom:4px;">Referral Code (optional)</label>
+                        <input type="text" id="signupReferralCode" placeholder="e.g. TOON-30DD" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.95em;background:var(--bg-surface);color:var(--text-main);text-transform:uppercase;">
+                    </div>
+                    <button class="modal-close" data-close-modal>&times;</button>
             <h2>Create Account</h2>
             <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
             <form id="signupForm" onsubmit="handleSignup(event)">
@@ -1575,7 +1579,7 @@
             try {
                 const { data, error } = await supabaseClient.auth.signUp({
                     email, password,
-                    options: { data: { referred_by_code: pendingReferralCode || localStorage.getItem('toonit_referral') || null } }
+                    options: { data: { referred_by_code: document.getElementById('signupReferralCode') ? (document.getElementById('signupReferralCode').value.trim().toUpperCase() || pendingReferralCode || localStorage.getItem('toonit_referral') || null) : (pendingReferralCode || localStorage.getItem('toonit_referral') || null) } }
                 });
 
                 if (error) {
@@ -2100,6 +2104,9 @@
                 console.log('[REFERRAL] Found referral code:', pendingReferralCode);
                 // Show welcome message for referred users
                 showReferralWelcome(pendingReferralCode);
+                // Pre-fill referral code input if it exists
+                var refInput = document.getElementById('signupReferralCode');
+                if (refInput) refInput.value = pendingReferralCode;
             } else {
                 // Check localStorage for previously stored referral
                 var stored = localStorage.getItem('toonit_referral');
@@ -3030,7 +3037,7 @@
 
         try {
             // Sign up
-            var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: pendingReferralCode || localStorage.getItem('toonit_referral') || null } } });
+            var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: document.getElementById('signupReferralCode') ? (document.getElementById('signupReferralCode').value.trim().toUpperCase() || pendingReferralCode || localStorage.getItem('toonit_referral') || null) : (pendingReferralCode || localStorage.getItem('toonit_referral') || null) } } });
             console.log('[FAILSAFE] Signup result:', signupResult);
 
             if (signupResult.error) {
