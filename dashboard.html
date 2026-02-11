@@ -590,12 +590,23 @@
             <div class="card-header">
                 <h2 class="card-title">🎁 Refer Friends, Earn Credits</h2>
             </div>
-            <p style="color:var(--text-muted);font-size:0.9em;margin:0 0 12px;padding:0 15px;">Share your link — you both earn 1 credit when they sign up, and another when they purchase!</p>
-            <div style="padding:0 15px;">
-                <div class="referral-link-box">
-                    <input type="text" class="referral-link-input" id="dashReferralLink" readonly>
-                    <button class="referral-copy-btn" onclick="copyDashReferralLink()">📋 Copy</button>
+            <div style="padding:0 15px 15px;">
+                <p style="color:var(--text-muted);font-size:0.9em;margin:0 0 15px;">Share your code or link — you both earn 1 credit when they sign up, and another when they purchase!</p>
+
+                <div style="background:var(--bg-surface);border:2px dashed var(--primary);border-radius:12px;padding:15px;text-align:center;margin-bottom:15px;">
+                    <div style="font-size:0.75em;color:var(--text-muted);margin-bottom:5px;">Your Referral Code</div>
+                    <div id="dashReferralCodeDisplay" style="font-size:1.8em;font-weight:700;color:var(--primary);letter-spacing:2px;cursor:pointer;" onclick="copyDashCode()" title="Click to copy code">—</div>
+                    <div style="font-size:0.7em;color:var(--text-muted);margin-top:5px;">Click to copy • Share this code with friends</div>
                 </div>
+
+                <div style="margin-bottom:12px;">
+                    <div style="font-size:0.75em;color:var(--text-muted);margin-bottom:5px;">Or share your referral link</div>
+                    <div class="referral-link-box">
+                        <input type="text" class="referral-link-input" id="dashReferralLink" readonly>
+                        <button class="referral-copy-btn" onclick="copyDashReferralLink()">📋 Copy</button>
+                    </div>
+                </div>
+
                 <div class="referral-stats">
                     <div class="referral-stat">
                         <div class="referral-stat-value" id="statReferrals">0</div>
@@ -607,7 +618,7 @@
                     </div>
                 </div>
                 <div class="referral-history" id="referralHistory">
-                    <p style="color:var(--text-muted);font-size:0.85em;text-align:center;">No referrals yet</p>
+                    <p style="color:var(--text-muted);font-size:0.85em;text-align:center;">No referrals yet. Share your code to get started!</p>
                 </div>
             </div>
         </div>
@@ -889,6 +900,18 @@
         });
     
         // Referral functions
+        function copyDashCode() {
+            var codeEl = document.getElementById('dashReferralCodeDisplay');
+            if (codeEl && codeEl.textContent !== '—') {
+                navigator.clipboard.writeText(codeEl.textContent).then(function() {
+                    var orig = codeEl.textContent;
+                    codeEl.textContent = '✅ Copied!';
+                    codeEl.style.fontSize = '1.2em';
+                    setTimeout(function() { codeEl.textContent = orig; codeEl.style.fontSize = '1.8em'; }, 1500);
+                });
+            }
+        }
+
         function copyDashReferralLink() {
             var input = document.getElementById('dashReferralLink');
             if (input) {
@@ -915,6 +938,8 @@
                 if (profile) {
                     var linkInput = document.getElementById('dashReferralLink');
                     if (linkInput) linkInput.value = 'https://toonit.ai?ref=' + profile.referral_code;
+                    var codeDisplay = document.getElementById('dashReferralCodeDisplay');
+                    if (codeDisplay) codeDisplay.textContent = profile.referral_code;
 
                     var statRef = document.getElementById('statReferrals');
                     if (statRef) statRef.textContent = profile.total_referrals || 0;
