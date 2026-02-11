@@ -2175,7 +2175,6 @@
         // Process referral after signup
         async function processReferral(newUserId, newUserEmail) {
             var refCode = pendingReferralCode || localStorage.getItem('toonit_referral');
-            // Also check user metadata (persists through email confirmation)
             if (!refCode && supabaseClient) {
                 try {
                     var { data: { user } } = await supabaseClient.auth.getUser();
@@ -2188,10 +2187,9 @@
             if (!refCode || !supabaseClient) return;
             console.log('[REFERRAL] Processing referral:', refCode, 'for user:', newUserEmail);
             try {
-                // Find referrer by code
                 var { data: referrer } = await supabaseClient
                     .from('profiles')
-                    .select('id, email, referral_code, total_referrals, total_referral_purchases')
+                    .select('id, referral_code, total_referrals, total_referral_purchases')
                     .eq('referral_code', refCode)
                     .single();
 
@@ -2201,7 +2199,6 @@
                     return;
                 }
 
-                // Check anti-abuse cap
                 var maxAllowed = referrer.total_referral_purchases === 0 ? 10 : referrer.total_referral_purchases * 10;
                 if (referrer.total_referrals >= maxAllowed) {
                     console.log('[REFERRAL] Referrer is capped');
@@ -2209,51 +2206,24 @@
                     return;
                 }
 
-                // Create referral record
-                await supabaseClient.from('referrals').insert({
-                    referrer_id: referrer.id,
-                    referred_id: newUserId,
-                    referral_code: refCode,
-                    status: 'confirmed',
-                    signup_credit_awarded: true,
-                    confirmed_at: new Date().toISOString()
+                // Use atomic RPC function - prevents NULL credits
+                var { data: result, error } = await supabaseClient.rpc('process_referral', {
+                    p_referrer_id: referrer.id,
+                    p_referred_id: newUserId,
+                    p_referral_code: refCode,
+                    p_referred_email: newUserEmail
                 });
 
-                // Award 1 credit to referrer
-                await supabaseClient.from('profiles').update({
-                    credits: referrer.credits + 1,
-                    total_referrals: referrer.total_referrals + 1
-                }).eq('id', referrer.id);
-
-                // Log referrer credit transaction
-                await supabaseClient.from('credit_transactions').insert({
-                    user_id: referrer.id,
-                    amount: 1,
-                    type: 'bonus',
-                    description: 'Referral bonus: ' + newUserEmail + ' signed up'
-                });
-
-                // Award 1 EXTRA credit to referred user (3 total instead of 2)
-                await supabaseClient.from('profiles').update({
-                    credits: 3,
-                    referred_by: referrer.id
-                }).eq('id', newUserId);
-
-                // Log referred user bonus credit
-                await supabaseClient.from('credit_transactions').insert({
-                    user_id: newUserId,
-                    amount: 1,
-                    type: 'bonus',
-                    description: 'Referral bonus: invited by ' + referrer.email
-                });
-
-                // Send email to referrer
-                sendEmailNotification('referral_success', referrer.email);
-
-                console.log('[REFERRAL] Success! Both users credited');
-                localStorage.removeItem('toonit_referral');
-                trackEvent('referral_complete', { referrer: referrer.id, code: refCode });
-
+                if (error) {
+                    console.log('[REFERRAL] RPC error:', error);
+                } else {
+                    console.log('[REFERRAL] Success! Both users credited atomically');
+                    localStorage.removeItem('toonit_referral');
+                    sendEmailNotification('referral_success', referrer.email);
+                    trackEvent('referral_complete', { referrer: referrer.id, code: refCode });
+                    // Refresh credits display
+                    if (typeof loadUserCredits === 'function') loadUserCredits();
+                }
             } catch(e) {
                 console.log('[REFERRAL] Error:', e);
             }
