@@ -1305,6 +1305,8 @@
                         updateUIForUser();
                         loadUserCredits();
                         loadReferralCode();
+                        // Check for pending referral from metadata
+                        processReferral(session.user.id, session.user.email);
                     } else {
                         updateUIForGuest();
                     }
@@ -1572,7 +1574,8 @@
 
             try {
                 const { data, error } = await supabaseClient.auth.signUp({
-                    email, password
+                    email, password,
+                    options: { data: { referred_by_code: pendingReferralCode || localStorage.getItem('toonit_referral') || null } }
                 });
 
                 if (error) {
@@ -2154,6 +2157,16 @@
         // Process referral after signup
         async function processReferral(newUserId, newUserEmail) {
             var refCode = pendingReferralCode || localStorage.getItem('toonit_referral');
+            // Also check user metadata (persists through email confirmation)
+            if (!refCode && supabaseClient) {
+                try {
+                    var { data: { user } } = await supabaseClient.auth.getUser();
+                    if (user && user.user_metadata && user.user_metadata.referred_by_code) {
+                        refCode = user.user_metadata.referred_by_code;
+                        console.log('[REFERRAL] Got code from user metadata:', refCode);
+                    }
+                } catch(e) {}
+            }
             if (!refCode || !supabaseClient) return;
             console.log('[REFERRAL] Processing referral:', refCode, 'for user:', newUserEmail);
             try {
@@ -3017,7 +3030,7 @@
 
         try {
             // Sign up
-            var signupResult = await sb.auth.signUp({ email: email, password: password });
+            var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: pendingReferralCode || localStorage.getItem('toonit_referral') || null } } });
             console.log('[FAILSAFE] Signup result:', signupResult);
 
             if (signupResult.error) {
