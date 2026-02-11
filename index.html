@@ -2822,24 +2822,31 @@
         }
 
         function resetForNew() {
-            selectedFile = null;
-            currentJobId = null;
-            if (preview) {
-                preview.style.display = 'none';
-                preview.src = '';
+        selectedFile = null;
+        currentJobId = null;
+        if (preview) {
+            preview.style.display = 'none';
+            preview.src = '';
+        }
+        if (fileInput) fileInput.value = '';
+        if (result) result.style.display = 'none';
+        if (status) status.style.display = 'none';
+        if (uploadArea) {
+            uploadArea.innerHTML = '<div class="upload-icon">📸</div><p><strong>Drop your photo here</strong></p><p style="color: #999; font-size: 0.9em;">or click to browse</p><input type="file" id="fileInput" accept="image/*" style="display:none;">';
+            uploadArea.style.display = 'block';
+            fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) { if (e.target.files[0]) handleFile(e.target.files[0]); });
             }
-            if (fileInput) fileInput.value = '';
-            if (result) result.style.display = 'none';
-            if (status) status.style.display = 'none';
-            if (uploadArea) uploadArea.style.display = '';
-            if (transformBtn) {
-                transformBtn.style.display = '';
-                transformBtn.disabled = true;
-            }
-            clearJob();
-            if (currentUser) {
-                loadUserCredits().then(() => updateUIForUser());
-            }
+        }
+        if (transformBtn) {
+            transformBtn.style.display = '';
+            transformBtn.disabled = true;
+        }
+        clearJob();
+        if (currentUser) {
+            loadUserCredits().then(function() { updateUIForUser(currentUser.email, currentCredits); });
+        }
         }
 
         // ==========================================
