@@ -1476,6 +1476,7 @@
             if (guestButtons) guestButtons.style.display = 'none';
             if (userButtons) userButtons.style.display = '';
             if (userEmail) userEmail.textContent = currentUser.email;
+ if (creditCount) creditCount.textContent = currentCredits || 0;
     // Enable upload for logged-in users
     const loginRequired = document.getElementById('loginRequired');
     if (uploadArea) {
