@@ -2574,7 +2574,10 @@
                     } catch(authErr) { console.log('[AUTH] Token error:', authErr); }
                     }
 
-                    const response = await fetch(WEBHOOK_URL, {
+                    var controller = new AbortController();
+                        var timeoutId = setTimeout(function() { controller.abort(); }, 45000);
+                        const response = await fetch(WEBHOOK_URL, {
+                            signal: controller.signal,
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -2598,7 +2601,34 @@
                     if (statusText) statusText.textContent = 'Error: ' + error.message;
                 }
             };
-            processImage();
+            // Retry logic: attempt up to 3 times with backoff
+                var maxRetries = 3;
+                var attempt = 0;
+                var retryTransform = async function() {
+                    attempt++;
+                    try {
+                        await processImage();
+                    } catch(retryErr) {
+                        console.log('[RETRY] Attempt ' + attempt + ' failed:', retryErr);
+                        if (attempt < maxRetries) {
+                            var waitTime = attempt * 5;
+                            var statusText = document.getElementById('statusText');
+                            if (statusText) statusText.textContent = 'Retrying... (attempt ' + (attempt+1) + '/' + maxRetries + ')';
+                            await new Promise(function(r) { setTimeout(r, waitTime * 1000); });
+                            return retryTransform();
+                        } else {
+                            throw retryErr;
+                        }
+                    }
+                };
+                retryTransform().catch(function(finalErr) {
+                    console.log('[RETRY] All attempts failed:', finalErr);
+                    var statusEl = document.getElementById('status');
+                    if (statusEl) {
+                        statusEl.innerHTML = '<p style="color:#d94040;">Video generation failed. Please try again.</p>' +
+                            '<button onclick="resetForNew()" style="margin-top:10px;padding:10px 25px;border-radius:20px;border:none;background:#d4a04a;color:#1a1408;cursor:pointer;font-weight:600;">🔄 Try Again</button>';
+                    }
+                });
         }
 
         let pollCount = 0;
