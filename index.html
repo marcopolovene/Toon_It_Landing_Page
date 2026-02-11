@@ -1935,6 +1935,14 @@
             creditDeducted = false;
             var resultDiv = document.getElementById('result');
             if (resultDiv) resultDiv.style.display = 'none';
+            // Reset upload area to original state
+            var uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) {
+                var fileInput = document.getElementById('fileInput');
+                var savedInput = fileInput ? fileInput.outerHTML : '';
+                uploadArea.innerHTML = '<div class="upload-icon">📸</div><p><strong>Drop your photo here</strong></p><p style="color:#999;font-size:0.9em;">or click to browse</p>' + savedInput;
+                uploadArea.style.display = 'block';
+            }
             if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
             if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
             clearJob();
