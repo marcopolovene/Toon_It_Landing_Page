@@ -2197,6 +2197,15 @@
             }
             if (!refCode || !supabaseClient) return;
             console.log('[REFERRAL] Processing referral:', refCode, 'for user:', newUserEmail);
+            // Guard: check if already processed
+            try {
+                var { data: myProfile } = await supabaseClient.from('profiles').select('referred_by').eq('id', newUserId).single();
+                if (myProfile && myProfile.referred_by) {
+                    console.log('[REFERRAL] Already processed, skipping');
+                    localStorage.removeItem('toonit_referral');
+                    return;
+                }
+            } catch(guardErr) {}
             try {
                 var { data: referrer } = await supabaseClient
                     .from('profiles')
@@ -3085,7 +3094,13 @@
             var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: (function() { var el = document.getElementById('signupReferralCode'); return (el && el.value.trim()) ? el.value.trim().toUpperCase() : (pendingReferralCode || localStorage.getItem('toonit_referral') || null); })() } } });
             console.log('[FAILSAFE] Signup result:', signupResult);
 
-            if (signupResult.error) {
+            // Check if user already exists (Supabase returns user without session for existing emails)
+                    if (signupResult.data && signupResult.data.user && !signupResult.data.session && signupResult.data.user.identities && signupResult.data.user.identities.length === 0) {
+                        if (errorEl) { errorEl.textContent = 'An account with this email already exists. Please log in instead.'; errorEl.style.display = 'block'; }
+                        if (submitBtn) submitBtn.disabled = false;
+                        return;
+                    }
+                    if (signupResult.error) {
                 if (errorEl) errorEl.textContent = signupResult.error.message;
                 if (submitBtn) {
                     submitBtn.disabled = false;
