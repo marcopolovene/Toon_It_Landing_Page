@@ -1595,6 +1595,7 @@
                     sendEmailNotification('welcome', email);
                     console.log('Signup successful with immediate session');
                     if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                                hideSignupForm();
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
@@ -1619,6 +1620,7 @@
                 // If no session, try to auto-login (in case email confirmation is disabled)
                 console.log('No immediate session, attempting auto-login...');
                 if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                                hideSignupForm();
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
@@ -1643,6 +1645,7 @@
                     console.log('Auto-login failed:', loginError.message);
                     // Email confirmation might be required
                     if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
+                                hideSignupForm();
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
@@ -2310,6 +2313,22 @@
             }
         }
 
+        
+        function hideSignupForm() {
+            var modal = document.getElementById('signupModal');
+            if (!modal) return;
+            // Hide all form groups, buttons, error messages
+            modal.querySelectorAll('.form-group, .modal-submit, .modal-error, .modal-switch').forEach(function(el) { el.style.display = 'none'; });
+            // Also hide by specific IDs
+            ['signupReferralCode'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && el.parentElement) el.parentElement.style.display = 'none';
+            });
+            // Hide any label/input inside the modal
+            modal.querySelectorAll('label, input, button[type=submit]').forEach(function(el) {
+                if (!el.classList.contains('modal-close')) el.style.display = 'none';
+            });
+        }
         // COOKIE CONSENT
         // ==========================================
         function acceptCookies() {
@@ -3059,6 +3078,7 @@
 
             // Try auto-login
             if (successEl) successEl.textContent = 'Account created! Logging you in...';
+                                hideSignupForm();
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
@@ -3081,6 +3101,7 @@
 
             if (loginResult.error) {
                 if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
+                                hideSignupForm();
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
