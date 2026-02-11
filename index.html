@@ -1580,7 +1580,7 @@
             try {
                 const { data, error } = await supabaseClient.auth.signUp({
                     email, password,
-                    options: { data: { referred_by_code: document.getElementById('signupReferralCode') ? (document.getElementById('signupReferralCode').value.trim().toUpperCase() || pendingReferralCode || localStorage.getItem('toonit_referral') || null) : (pendingReferralCode || localStorage.getItem('toonit_referral') || null) } }
+                    options: { data: { referred_by_code: (function() { var el = document.getElementById('signupReferralCode'); return (el && el.value.trim()) ? el.value.trim().toUpperCase() : (pendingReferralCode || localStorage.getItem('toonit_referral') || null); })() } }
                 });
 
                 if (error) {
@@ -3057,7 +3057,7 @@
 
         try {
             // Sign up
-            var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: document.getElementById('signupReferralCode') ? (document.getElementById('signupReferralCode').value.trim().toUpperCase() || pendingReferralCode || localStorage.getItem('toonit_referral') || null) : (pendingReferralCode || localStorage.getItem('toonit_referral') || null) } } });
+            var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: (function() { var el = document.getElementById('signupReferralCode'); return (el && el.value.trim()) ? el.value.trim().toUpperCase() : (pendingReferralCode || localStorage.getItem('toonit_referral') || null); })() } } });
             console.log('[FAILSAFE] Signup result:', signupResult);
 
             if (signupResult.error) {
