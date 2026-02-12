@@ -892,7 +892,114 @@
             color: var(--text-muted);
         }
 
-        </style>
+        
+    /* ===== MAGICAL TRANSFORMATION EFFECTS ===== */
+    #status.magical-active {
+        position: relative; overflow: hidden;
+        background: linear-gradient(135deg, rgba(26,20,8,0.97), rgba(42,30,15,0.97));
+        border-radius: 20px; padding: 30px 20px;
+        border: 1px solid rgba(212,160,74,0.15);
+    }
+    .magical-shimmer {
+        position: absolute; top:0; left:0; right:0; bottom:0;
+        background: linear-gradient(45deg, transparent 0%, rgba(212,160,74,0.04) 25%, rgba(192,132,252,0.06) 50%, rgba(212,160,74,0.04) 75%, transparent 100%);
+        background-size: 400% 400%; animation: shimmerMove 6s ease-in-out infinite;
+        pointer-events:none; z-index:0; border-radius:20px;
+    }
+    @keyframes shimmerMove { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .spell-cast { text-align:center; padding:15px 0 10px; position:relative; z-index:1; }
+    .magic-wand {
+        font-size:2.8em; display:inline-block;
+        animation: wandWave 2.5s ease-in-out infinite;
+        filter: drop-shadow(0 0 12px rgba(212,160,74,0.6));
+        transform-origin: 70% 70%;
+    }
+    @keyframes wandWave {
+        0%,100%{transform:rotate(-8deg)}
+        25%{transform:rotate(12deg) scale(1.08)}
+        50%{transform:rotate(-3deg)}
+        75%{transform:rotate(8deg) scale(1.04)}
+    }
+    .magic-wand.casting { animation: wandCast 1.6s ease-out forwards; }
+    @keyframes wandCast {
+        0%{transform:rotate(-60deg) scale(0.3);opacity:0}
+        20%{opacity:1}
+        40%{transform:rotate(25deg) scale(1.3)}
+        60%{transform:rotate(-15deg) scale(1.1)}
+        80%{transform:rotate(10deg) scale(1.15)}
+        100%{transform:rotate(0deg) scale(1);opacity:1}
+    }
+    .spell-text {
+        font-family:'Georgia','Times New Roman',serif;
+        font-size:1.7em; font-weight:bold;
+        background: linear-gradient(135deg, #d4a04a, #f0d48a, #c084fc, #f0d48a, #d4a04a);
+        background-size:300% 300%;
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        animation: spellGradient 4s ease-in-out infinite;
+        margin:8px 0 15px; letter-spacing:2px; position:relative; z-index:1;
+    }
+    @keyframes spellGradient { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .spell-text.entering {
+        animation: spellEntrance 1.4s cubic-bezier(0.34,1.56,0.64,1) forwards, spellGradient 4s ease-in-out 1.4s infinite;
+    }
+    @keyframes spellEntrance {
+        0%{opacity:0;transform:scale(0.2) rotate(-15deg);letter-spacing:20px;filter:blur(8px)}
+        60%{opacity:1;transform:scale(1.1) rotate(3deg);letter-spacing:3px;filter:blur(0)}
+        80%{transform:scale(0.95) rotate(-1deg)}
+        100%{opacity:1;transform:scale(1) rotate(0deg);letter-spacing:2px}
+    }
+    .spell-text.pulsing {
+        animation: spellPulse 5s ease-in-out infinite, spellGradient 4s ease-in-out infinite;
+    }
+    @keyframes spellPulse {
+        0%,70%,100%{opacity:0.5;transform:scale(0.97)}
+        35%{opacity:1;transform:scale(1.04)}
+    }
+    .sparkle-particle {
+        position:absolute; pointer-events:none; z-index:2;
+        animation: sparkleFloat var(--dur,3s) ease-in-out var(--del,0s) infinite;
+        font-size: var(--sz,14px); opacity:0;
+    }
+    @keyframes sparkleFloat {
+        0%{opacity:0;transform:translateY(30px) rotate(0deg) scale(0.3)}
+        15%{opacity:1}
+        85%{opacity:0.6}
+        100%{opacity:0;transform:translateY(-100px) rotate(360deg) scale(0)}
+    }
+    .step-sparkle-burst {
+        position:absolute; top:50%; left:50%;
+        width:5px; height:5px; border-radius:50%;
+        background:#f0d48a; box-shadow:0 0 6px #d4a04a;
+        animation: burstOut 0.7s ease-out forwards;
+        pointer-events:none; z-index:5;
+    }
+    @keyframes burstOut {
+        0%{transform:translate(-50%,-50%) scale(1);opacity:1}
+        100%{transform:translate(var(--tx,20px),var(--ty,-20px)) scale(0);opacity:0}
+    }
+    #status.magical-active .step.active .step-icon { animation: iconPulse 1.5s ease-in-out infinite; }
+    @keyframes iconPulse {
+        0%,100%{transform:scale(1)}
+        50%{transform:scale(1.25);filter:drop-shadow(0 0 10px rgba(212,160,74,0.7))}
+    }
+    #status.magical-active #statusText {
+        font-style:italic; color:#f0d48a;
+        text-shadow:0 0 25px rgba(212,160,74,0.25);
+        position:relative; z-index:1;
+    }
+    #status.magical-active .progress-steps { position:relative; z-index:1; }
+    #status.magical-active .step.completed .step-icon { filter:drop-shadow(0 0 8px rgba(212,160,74,0.5)); }
+    .sparkle-container {
+        position:absolute; top:0; left:0; right:0; bottom:0;
+        pointer-events:none; overflow:hidden; z-index:2; border-radius:20px;
+    }
+    @media (max-width:600px) {
+        .spell-text { font-size:1.3em; letter-spacing:1px; }
+        .magic-wand { font-size:2.2em; }
+        #status.magical-active { padding:20px 15px; }
+    }
+
+    </style>
 </head>
 <body>
     <div class="container">
@@ -1919,6 +2026,7 @@
         }
 
         function retryTransformation() {
+        cleanupMagic();
             if (selectedFile) {
                 if (statusText) statusText.textContent = 'Retrying...';
                 setStep(1);
@@ -2197,15 +2305,6 @@
             }
             if (!refCode || !supabaseClient) return;
             console.log('[REFERRAL] Processing referral:', refCode, 'for user:', newUserEmail);
-            // Guard: check if already processed
-            try {
-                var { data: myProfile } = await supabaseClient.from('profiles').select('referred_by').eq('id', newUserId).single();
-                if (myProfile && myProfile.referred_by) {
-                    console.log('[REFERRAL] Already processed, skipping');
-                    localStorage.removeItem('toonit_referral');
-                    return;
-                }
-            } catch(guardErr) {}
             try {
                 var { data: referrer } = await supabaseClient
                     .from('profiles')
@@ -2632,6 +2731,7 @@
                 };
                 retryTransform().catch(function(finalErr) {
                     console.log('[RETRY] All attempts failed:', finalErr);
+            cleanupMagic();
                     var statusEl = document.getElementById('status');
                     if (statusEl) {
                         statusEl.innerHTML = '<p style="color:#d94040;">Video generation failed. Please try again.</p>' +
@@ -2646,29 +2746,25 @@
         function startPolling() {
  pollCount = 0;
  transformStartTime = Date.now();
+ _mIdx = 0;
+ initMagic();
 
  // Visual progress updates every 3 seconds (cosmetic only, no DB calls)
  if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
- progressInterval = setInterval(function() {
- var elapsed = (Date.now() - transformStartTime) / 1000;
- if (elapsed < 15) {
- setStep(1);
- if (statusText) statusText.textContent = 'Analyzing your image...';
- } else if (elapsed < 35) {
- setStep(2);
- if (statusText) statusText.textContent = 'Generating storybook scene...';
- } else if (elapsed < 60) {
- setStep(3);
- if (statusText) statusText.textContent = 'Creating video animation...';
- } else {
- setStep(4);
- if (statusText) statusText.textContent = 'Finalizing your video...';
- }
- }, 3000);
+        progressInterval = setInterval(function() {
+            var elapsed = (Date.now() - transformStartTime) / 1000;
+            var step;
+            if (elapsed < 15) step = 1;
+            else if (elapsed < 35) step = 2;
+            else if (elapsed < 60) step = 3;
+            else step = 4;
+            setStep(step);
+            if (statusText) statusText.textContent = _mMsg(step);
+        }, 3000);
 
  // Set initial step immediately
  setStep(1);
- if (statusText) statusText.textContent = 'Analyzing your image...';
+ if (statusText) statusText.textContent = _mMsg(1);
 
  // Data polling every 10 seconds 
  pollInterval = setInterval(checkStatus, 10000);
@@ -2679,6 +2775,7 @@
                 if (!currentJobId) return;
                 pollCount++;
                 if (pollCount > MAX_POLLS) {
+            cleanupMagic();
                     clearInterval(pollInterval);
                     if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                     clearJob();
@@ -2751,11 +2848,96 @@
             }
         }
 
-        function setStep(stepNum) {
+    
+    // ==========================================
+    // MAGICAL WAITING EXPERIENCE
+    // ==========================================
+    var _mMsgs = {
+        1: ['Casting the enchantment... 🔮','Reading the magical essence...','Discovering hidden stories... 📖','Peering into the looking glass...','Summoning the story spirits...'],
+        2: ['Sprinkling storybook magic... ✨','Painting with pixie dust... 🧚','The enchantment is brewing... 🧪','Weaving threads of wonder...','Colors dancing to the spell... 🎨'],
+        3: ['Bringing the tale to life... 🌟','Stirring the cauldron of motion...','Animating with a flick of the wand... 🪄','The magic is swirling... 🌀','Characters awakening... 🦋'],
+        4: ['Polishing the final sparkle... 💎','The magic is almost complete... ✨','Sealing the enchantment... 🔮','Your storybook awaits... 📚']
+    };
+    var _mIdx = 0, _mSpkInt = null, _mActive = false;
+
+    function initMagic() {
+        var el = document.getElementById('status');
+        if (!el || _mActive) return;
+        _mActive = true;
+        el.classList.add('magical-active');
+        if (!el.querySelector('.magical-shimmer')) {
+            var s = document.createElement('div'); s.className = 'magical-shimmer';
+            el.insertBefore(s, el.firstChild);
+        }
+        var old = document.getElementById('spellCast'); if (old) old.remove();
+        var d = document.createElement('div'); d.className = 'spell-cast'; d.id = 'spellCast';
+        d.innerHTML = '<div class="magic-wand casting" id="magicWand">🪄</div><div class="spell-text entering" id="spellText">Wibbity Wobbity Woo!</div>';
+        var st = document.getElementById('statusText');
+        if (st) el.insertBefore(d, st); else el.prepend(d);
+        if (!el.querySelector('.sparkle-container')) {
+            var sc = document.createElement('div'); sc.className = 'sparkle-container'; sc.id = 'sparkleContainer';
+            el.appendChild(sc);
+        }
+        _genSpk();
+        _mSpkInt = setInterval(_genSpk, 2500);
+        setTimeout(function() {
+            var w = document.getElementById('magicWand'), sp = document.getElementById('spellText');
+            if (w) w.classList.remove('casting');
+            if (sp) { sp.classList.remove('entering'); sp.classList.add('pulsing'); }
+        }, 2200);
+    }
+
+    function _genSpk() {
+        var c = document.getElementById('sparkleContainer'); if (!c) return;
+        var ch = ['✨','⭐','💫','🌟','✦','⋆','˚','·'];
+        for (var i=0,n=3+Math.floor(Math.random()*5);i<n;i++) {
+            var s = document.createElement('div'); s.className = 'sparkle-particle';
+            s.textContent = ch[Math.floor(Math.random()*ch.length)];
+            var dur = 2.5+Math.random()*3;
+            s.style.setProperty('--dur',dur+'s');
+            s.style.setProperty('--del',(Math.random()*2)+'s');
+            s.style.setProperty('--sz',(10+Math.random()*18)+'px');
+            s.style.left = (5+Math.random()*90)+'%';
+            s.style.top = (30+Math.random()*50)+'%';
+            c.appendChild(s);
+            (function(e,t){setTimeout(function(){if(e.parentNode)e.remove();},t);})(s,(dur+2.5)*1000);
+        }
+    }
+
+    function _mMsg(step) {
+        var m = _mMsgs[step]||_mMsgs[1];
+        return m[_mIdx++%m.length];
+    }
+
+    function _sparkBurst(el) {
+        if (!el) return;
+        el.style.position = el.style.position||'relative';
+        for (var i=0;i<10;i++) {
+            var b = document.createElement('div'); b.className = 'step-sparkle-burst';
+            var a=(i/10)*Math.PI*2, r=15+Math.random()*15;
+            b.style.setProperty('--tx',(Math.cos(a)*r)+'px');
+            b.style.setProperty('--ty',(Math.sin(a)*r)+'px');
+            el.appendChild(b);
+            (function(x){setTimeout(function(){if(x.parentNode)x.remove();},800);})(b);
+        }
+    }
+
+    function cleanupMagic() {
+        _mActive = false;
+        var el = document.getElementById('status');
+        if (el) el.classList.remove('magical-active');
+        if (_mSpkInt) { clearInterval(_mSpkInt); _mSpkInt = null; }
+        ['sparkleContainer','spellCast'].forEach(function(id){var x=document.getElementById(id);if(x)x.remove();});
+        if (el) { var sh=el.querySelector('.magical-shimmer'); if(sh)sh.remove(); }
+        _mIdx = 0;
+    }
+
+    function setStep(stepNum) {
             document.querySelectorAll('.step').forEach((step, i) => {
-                step.classList.remove('active', 'completed');
+                var wasActive = step.classList.contains('active');
+            step.classList.remove('active', 'completed');
                 if (i + 1 < stepNum) step.classList.add('completed');
-                if (i + 1 === stepNum) step.classList.add('active');
+                if (i + 1 === stepNum) { step.classList.add('active'); if (!wasActive && _mActive) _sparkBurst(step); }
             });
         }
 
@@ -2766,6 +2948,8 @@
                 return;
             }
             videoAlreadyShown = true;
+        cleanupMagic();
+        if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                 var resultDiv = document.getElementById('result');
                 if (resultDiv) resultDiv.style.display = 'block';
             if (status) status.style.display = 'none';
@@ -3094,13 +3278,7 @@
             var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: (function() { var el = document.getElementById('signupReferralCode'); return (el && el.value.trim()) ? el.value.trim().toUpperCase() : (pendingReferralCode || localStorage.getItem('toonit_referral') || null); })() } } });
             console.log('[FAILSAFE] Signup result:', signupResult);
 
-            // Check if user already exists (Supabase returns user without session for existing emails)
-                    if (signupResult.data && signupResult.data.user && !signupResult.data.session && signupResult.data.user.identities && signupResult.data.user.identities.length === 0) {
-                        if (errorEl) { errorEl.textContent = 'An account with this email already exists. Please log in instead.'; errorEl.style.display = 'block'; }
-                        if (submitBtn) submitBtn.disabled = false;
-                        return;
-                    }
-                    if (signupResult.error) {
+            if (signupResult.error) {
                 if (errorEl) errorEl.textContent = signupResult.error.message;
                 if (submitBtn) {
                     submitBtn.disabled = false;
