@@ -999,6 +999,87 @@
         #status.magical-active { padding:20px 15px; }
     }
 
+    
+    /* ===== MAGICAL SIGNUP PROMPT ===== */
+    .login-required {
+        background: linear-gradient(135deg, rgba(26,20,8,0.95), rgba(42,30,15,0.95)) !important;
+        border: 1px solid rgba(212,160,74,0.3) !important;
+        border-radius: 16px !important;
+        padding: 24px 20px !important;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .login-required::before {
+        content: '';
+        position: absolute; top:0; left:0; right:0; bottom:0;
+        background: linear-gradient(45deg, transparent 0%, rgba(212,160,74,0.05) 25%, rgba(192,132,252,0.07) 50%, rgba(212,160,74,0.05) 75%, transparent 100%);
+        background-size: 400% 400%;
+        animation: shimmerMove 6s ease-in-out infinite;
+        pointer-events: none; border-radius: 16px;
+    }
+    .signup-headline {
+        font-size: 1.5em; font-weight: bold; margin-bottom: 8px;
+        background: linear-gradient(135deg, #d4a04a, #f0d48a, #c084fc, #f0d48a, #d4a04a);
+        background-size: 300% 300%;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        animation: spellGradient 4s ease-in-out infinite;
+        position: relative; z-index: 1;
+    }
+    .signup-subtext {
+        color: #c4b99a; font-size: 1.05em; margin-bottom: 14px;
+        position: relative; z-index: 1;
+    }
+    .signup-credits-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #d4a04a, #e8c060);
+        color: #1a1408; font-weight: 700; font-size: 0.95em;
+        padding: 6px 16px; border-radius: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 12px rgba(212,160,74,0.3);
+        position: relative; z-index: 1;
+        animation: badgePulse 3s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+        0%,100%{box-shadow:0 2px 12px rgba(212,160,74,0.3)}
+        50%{box-shadow:0 2px 20px rgba(212,160,74,0.6)}
+    }
+    .signup-cta-btn {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #1a1408 !important; font-weight: 700; font-size: 1.1em;
+        padding: 12px 32px; border-radius: 25px;
+        cursor: pointer; border: none;
+        text-decoration: none !important;
+        box-shadow: 0 4px 15px rgba(212,160,74,0.3);
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative; z-index: 1;
+        letter-spacing: 0.5px;
+    }
+    .signup-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(212,160,74,0.5);
+    }
+    .signup-sparkles {
+        position: absolute; top:0; left:0; right:0; bottom:0;
+        pointer-events: none; overflow: hidden; z-index: 0;
+        border-radius: 16px;
+    }
+    .signup-sparkle {
+        position: absolute; opacity: 0;
+        animation: signupSparkle var(--dur, 3s) ease-in-out var(--del, 0s) infinite;
+    }
+    @keyframes signupSparkle {
+        0%{opacity:0;transform:scale(0.3) rotate(0deg)}
+        20%{opacity:0.8}
+        80%{opacity:0.4}
+        100%{opacity:0;transform:scale(0) rotate(180deg)}
+    }
+    @media (max-width:600px) {
+        .signup-headline { font-size: 1.25em; }
+        .login-required { padding: 20px 15px !important; }
+    }
+
     </style>
 </head>
 <body>
@@ -1073,9 +1154,12 @@
 
         <!-- Login Required Message -->
         <div class="info-box login-required" id="loginRequired" style="display:none">
-            🔐 Please <a onclick="showModal('signup')" style="color: #667eea; cursor: pointer; text-decoration: underline;">sign up</a> or 
-            <a onclick="showModal('login')" style="color: #667eea; cursor: pointer; text-decoration: underline;">log in</a> to transform photos.
-            <br><strong>New users get 2 FREE credits!</strong>
+            <div class="signup-sparkles" id="signupSparkles"></div>
+            <div class="signup-headline">✨ Be the Magic! ✨</div>
+            <div class="signup-subtext">Sign up and start transforming your photos into enchanted storybook videos</div>
+            <div class="signup-credits-badge">🎁 New users get 2 FREE credits!</div>
+            <br>
+            <a class="signup-cta-btn" onclick="showModal('signup')">🪄 Start Your Story</a>
         </div>
 
         <!-- No Credits Message -->
@@ -2921,6 +3005,36 @@
             (function(x){setTimeout(function(){if(x.parentNode)x.remove();},800);})(b);
         }
     }
+
+    
+    // Signup prompt sparkles
+    (function() {
+        function populateSignupSparkles() {
+            var c = document.getElementById('signupSparkles'); if (!c) return;
+            if (c.children.length > 0) return;
+            var chars = ['✨','⭐','💫','🌟','✦','·'];
+            for (var i = 0; i < 12; i++) {
+                var s = document.createElement('span');
+                s.className = 'signup-sparkle';
+                s.textContent = chars[Math.floor(Math.random() * chars.length)];
+                s.style.setProperty('--dur', (3 + Math.random() * 4) + 's');
+                s.style.setProperty('--del', (Math.random() * 5) + 's');
+                s.style.fontSize = (10 + Math.random() * 14) + 'px';
+                s.style.left = (5 + Math.random() * 90) + '%';
+                s.style.top = (10 + Math.random() * 80) + '%';
+                c.appendChild(s);
+            }
+        }
+        // Run on load and periodically check (element may be hidden initially)
+        var _spkCheck = setInterval(function() {
+            var el = document.getElementById('loginRequired');
+            if (el && el.style.display !== 'none') {
+                populateSignupSparkles();
+                clearInterval(_spkCheck);
+            }
+        }, 500);
+        setTimeout(function() { clearInterval(_spkCheck); }, 30000);
+    })();
 
     function cleanupMagic() {
         _mActive = false;
