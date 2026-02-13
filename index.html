@@ -1100,6 +1100,29 @@
     .container.logged-in .how-it-works   { order: 11; }
     .container.logged-in footer            { order: 12; width: 100%; }
 
+    
+    /* ===== IMPROVED SHARE BUTTONS ===== */
+    .share-btn.copy-link {
+        background: linear-gradient(135deg, #d4a04a, #e8c060) !important;
+        color: #1a1408 !important;
+        font-weight: 600;
+    }
+    .share-btn.native-share {
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        color: #fff !important;
+        font-weight: 600;
+    }
+    #shareToast {
+        background: rgba(26,20,8,0.95);
+        color: #f0d48a;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 10px;
+        font-size: 0.95em;
+        border: 1px solid rgba(212,160,74,0.3);
+    }
+
     </style>
 </head>
 <body>
@@ -1267,12 +1290,15 @@
         <div class="share-label">Share your creation ✨</div>
                 
         <div class="share-buttons">
+        <button class="share-btn copy-link" onclick="copyVideoLink()">🔗 Copy Link</button>
         <button class="share-btn twitter" onclick="shareOnTwitter()">𝕏</button>
         <button class="share-btn facebook" onclick="shareOnFacebook()">📘 Facebook</button>
-        <button class="share-btn instagram" onclick="shareToInstagram()">📸 Instagram</button>
-        <button class="share-btn tiktok" onclick="shareToTikTok()">🎵 TikTok</button>
-        <button class="share-btn youtube" onclick="shareToYouTube()">▶️ YouTube</button>
+        <button class="share-btn instagram" onclick="downloadAndShare('instagram')">📸 Instagram</button>
+        <button class="share-btn tiktok" onclick="downloadAndShare('tiktok')">🎵 TikTok</button>
+        <button class="share-btn youtube" onclick="downloadAndShare('youtube')">▶️ YouTube</button>
+        <button class="share-btn native-share" id="nativeShareBtn" onclick="nativeShare()" style="display:none;">📤 Share</button>
         </div>
+        <div id="shareToast" class="copy-toast" style="display:none;"></div>
         <div id="copyToast" class="copy-toast">✅ Link copied!</div>
 
     </div>
@@ -2107,31 +2133,134 @@
         // ==========================================
         // SOCIAL SHARING
         // ==========================================
+        function _getVideoUrl() {
+            var video = document.getElementById('resultVideo');
+            return video && video.src ? video.src : '';
+        }
+
         function shareOnTwitter() {
-            var text = 'Check out my magical storybook video made with Toon It! ✨🎨';
-            var url = 'https://toonit.ai';
-            window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url), '_blank', 'width=600,height=400');
+            var videoUrl = _getVideoUrl();
+            var text = '✨ Check out my magical storybook video made with @ToonItAI! 🎨🎞️';
+            if (videoUrl) text += '\n\n🎬 Watch it here: ' + videoUrl;
+            var url = videoUrl || 'https://toonit.ai';
+            window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'width=600,height=400');
+            trackEvent('share_twitter');
         }
 
         function shareOnFacebook() {
-            var url = 'https://toonit.ai';
+            var videoUrl = _getVideoUrl();
+            var url = videoUrl || 'https://toonit.ai';
             window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank', 'width=600,height=400');
+            trackEvent('share_facebook');
         }
 
         function copyVideoLink() {
-            var video = document.getElementById('resultVideo');
-            var url = video ? video.src : 'https://toonit.ai';
+            var url = _getVideoUrl() || 'https://toonit.ai';
             navigator.clipboard.writeText(url).then(function() {
-                var toast = document.getElementById('copyToast');
-                if (toast) {
-                    toast.style.display = 'block';
-                    setTimeout(function() { toast.style.display = 'none'; }, 2000);
-                }
+                _showShareToast('✅ Video link copied!');
             }).catch(function() {
-                // Fallback for older browsers
                 prompt('Copy this link:', url);
             });
+            trackEvent('share_copy_link');
         }
+
+        function downloadAndShare(platform) {
+            var videoUrl = _getVideoUrl();
+            if (!videoUrl) {
+                _showShareToast('❌ No video to share yet');
+                return;
+            }
+
+            _showShareToast('⬇️ Downloading video...');
+
+            // Download the video
+            fetch(videoUrl)
+                .then(function(r) { return r.blob(); })
+                .then(function(blob) {
+                    // Trigger download
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'toonit_creation.mp4';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+
+                    // Open platform after short delay
+                    var platformUrls = {
+                        'instagram': 'https://www.instagram.com/',
+                        'tiktok': 'https://www.tiktok.com/upload',
+                        'youtube': 'https://www.youtube.com/upload'
+                    };
+
+                    setTimeout(function() {
+                        _showShareToast('✅ Video downloaded! Upload it to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
+                        if (platformUrls[platform]) {
+                            window.open(platformUrls[platform], '_blank');
+                        }
+                    }, 1000);
+
+                    trackEvent('share_' + platform);
+                })
+                .catch(function(error) {
+                    _showShareToast('❌ Download failed. Try the Copy Link button instead.');
+                    console.error('[SHARE] Download error:', error);
+                });
+        }
+
+        function nativeShare() {
+            var videoUrl = _getVideoUrl();
+            if (!videoUrl) return;
+
+            // Try Web Share API with file
+            if (navigator.share && navigator.canShare) {
+                fetch(videoUrl)
+                    .then(function(r) { return r.blob(); })
+                    .then(function(blob) {
+                        var file = new File([blob], 'toonit_creation.mp4', { type: 'video/mp4' });
+                        var shareData = {
+                            title: 'My Toon It! Creation',
+                            text: '✨ Check out my magical storybook video made with Toon It!',
+                            files: [file]
+                        };
+                        if (navigator.canShare(shareData)) {
+                            navigator.share(shareData);
+                            trackEvent('share_native_file');
+                        } else {
+                            // Fallback: share URL only
+                            navigator.share({
+                                title: 'My Toon It! Creation',
+                                text: '✨ Check out my magical storybook video!',
+                                url: videoUrl
+                            });
+                            trackEvent('share_native_url');
+                        }
+                    }).catch(function() {
+                        navigator.share({
+                            title: 'My Toon It! Creation',
+                            text: '✨ Check out my magical storybook video!',
+                            url: videoUrl
+                        }).catch(function() {});
+                    });
+            }
+        }
+
+        function _showShareToast(msg) {
+            var toast = document.getElementById('shareToast');
+            if (toast) {
+                toast.textContent = msg;
+                toast.style.display = 'block';
+                setTimeout(function() { toast.style.display = 'none'; }, 4000);
+            }
+        }
+
+        // Show native share button on supported devices
+        (function() {
+            if (navigator.share) {
+                var btn = document.getElementById('nativeShareBtn');
+                if (btn) btn.style.display = '';
+            }
+        })();
 
         function retryTransformation() {
         cleanupMagic();
@@ -2316,20 +2445,11 @@
         })();
 
         
-        function shareToInstagram() {
-            window.open('https://www.instagram.com/', '_blank');
-            trackEvent('share_instagram');
-        }
+        
 
-        function shareToTikTok() {
-            window.open('https://www.tiktok.com/upload', '_blank');
-            trackEvent('share_tiktok');
-        }
+        
 
-        function shareToYouTube() {
-            window.open('https://www.youtube.com/upload', '_blank');
-            trackEvent('share_youtube_shorts');
-        }
+        
         
         // ==========================================
         // REFERRAL SYSTEM
