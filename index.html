@@ -3047,17 +3047,17 @@
                     // Fallback: check Cloudinary directly after 30s
                     var elapsedSec = transformStartTime ? (Date.now() - transformStartTime) / 1000 : 0;
                     if (elapsedSec > 30) {
-                        var storageUrl = 'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/' + currentJobId;
+                        var storageUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/storage/v1/object/public/videos/' + currentJobId + '.mp4';
                         var cacheBuster = '?_t=' + Date.now() + '_' + pollCount;
                         try {
                             var response = await fetch(storageUrl + cacheBuster, { method: 'HEAD', cache: 'no-store' });
                             if (response.ok) {
-                                console.log('[POLL] Video found via Cloudinary fallback');
+                                console.log('[POLL] Video found via Supabase Storage fallback');
                                 clearInterval(pollInterval);
                                 if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                                 var savedJobId = currentJobId;
                                 clearJob();
-                                showVideo(storageUrl + '.mp4', savedJobId);
+                                showVideo(storageUrl, savedJobId);
                                 await loadUserCredits();
                                 return;
                             }
