@@ -1080,6 +1080,24 @@
         .login-required { padding: 20px 15px !important; }
     }
 
+    
+    /* ===== LOGGED-IN LAYOUT REORDER ===== */
+    .container.logged-in {
+        display: flex;
+        flex-direction: column;
+    }
+    .container.logged-in .auth-bar      { order: 1; }
+    .container.logged-in .header         { order: 2; }
+    .container.logged-in #uploadArea     { order: 3; }
+    .container.logged-in #loginRequired  { order: 3; }
+    .container.logged-in #noCredits      { order: 4; }
+    .container.logged-in #infoBox        { order: 5; }
+    .container.logged-in #transformBtn   { order: 6; }
+    .container.logged-in #status         { order: 7; }
+    .container.logged-in #result         { order: 8; }
+    .container.logged-in .gallery-section { order: 10; margin-top: 40px; }
+    .container.logged-in .how-it-works   { order: 11; }
+
     </style>
 </head>
 <body>
@@ -1648,6 +1666,7 @@
 
             if (guestView) guestView.style.display = '';
             if (userView) userView.style.display = 'none';
+            var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.remove('logged-in');
             if (guestButtons) guestButtons.style.display = '';
             if (userButtons) userButtons.style.display = 'none';
             if (loginRequired) loginRequired.style.display = '';
@@ -1670,6 +1689,7 @@
 
             if (guestView) guestView.style.display = 'none';
             if (userView) userView.style.display = '';
+            var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
             if (guestButtons) guestButtons.style.display = 'none';
             if (userButtons) userButtons.style.display = '';
             if (userEmail) userEmail.textContent = currentUser.email;
@@ -3300,6 +3320,7 @@
 
         if (guestView) guestView.style.display = 'none';
         if (userView) userView.style.display = 'flex';
+        var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
         if (userEmail) userEmail.textContent = email;
         if (creditCount) creditCount.textContent = credits;
  if (guestButtons) guestButtons.style.display = 'none';
