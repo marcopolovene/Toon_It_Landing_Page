@@ -2125,6 +2125,10 @@
             currentJobId = null;
             videoAlreadyShown = false;
             creditDeducted = false;
+            // Pre-warm video URL for faster playback
+            var preloadLink = document.createElement('link');
+            preloadLink.rel = 'preload'; preloadLink.as = 'video'; preloadLink.href = url;
+            document.head.appendChild(preloadLink);
             var resultDiv = document.getElementById('result');
             if (resultDiv) resultDiv.style.display = 'none';
             // Reset upload area to original state
@@ -2851,7 +2855,7 @@
  if (statusText) statusText.textContent = _mMsg(1);
 
  // Data polling every 10 seconds 
- pollInterval = setInterval(checkStatus, 10000);
+ pollInterval = setInterval(checkStatus, 5000);
  checkStatus();
  }
 
@@ -2896,20 +2900,24 @@
                         }
                     }
 
-                    // Fallback: also check Cloudinary directly (in case Supabase save failed)
-                    var cloudinaryUrl = 'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/' + currentJobId;
-                    var cacheBuster = '?_t=' + Date.now() + '_' + pollCount;
-                    var response = await fetch(cloudinaryUrl + cacheBuster, { method: 'HEAD', cache: 'no-store' });
-
-                    if (response.ok) {
-                        console.log('[POLL] Video found via Cloudinary fallback');
-                        clearInterval(pollInterval);
-                        if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
-                        var savedJobId = currentJobId;
-                        clearJob();
-                        showVideo(cloudinaryUrl + '.mp4', savedJobId);
-                        await loadUserCredits();
-                        return;
+                    // Fallback: check Cloudinary directly only after 30s (avoid unnecessary requests)
+                    var elapsedSec = transformStartTime ? (Date.now() - transformStartTime) / 1000 : 0;
+                    if (elapsedSec > 30) {
+                        var cloudinaryUrl = 'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_videos/' + currentJobId;
+                        var cacheBuster = '?_t=' + Date.now() + '_' + pollCount;
+                        try {
+                            var response = await fetch(cloudinaryUrl + cacheBuster, { method: 'HEAD', cache: 'no-store' });
+                            if (response.ok) {
+                                console.log('[POLL] Video found via Cloudinary fallback');
+                                clearInterval(pollInterval);
+                                if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+                                var savedJobId = currentJobId;
+                                clearJob();
+                                showVideo(cloudinaryUrl + '.mp4', savedJobId);
+                                await loadUserCredits();
+                                return;
+                            }
+                        } catch(e) { console.log('[POLL] Cloudinary fallback skipped:', e.message); }
                     }
 
                     // Visual progress handled by separate progressInterval
