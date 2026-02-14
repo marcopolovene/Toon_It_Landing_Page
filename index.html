@@ -1092,7 +1092,8 @@
     .container.logged-in #loginRequired  { order: 3; }
     .container.logged-in #noCredits      { order: 4; }
     .container.logged-in #infoBox        { order: 5; }
-    .container.logged-in #transformBtn   { order: 6; }
+    .container.logged-in #transformBtn   { order: 7; }
+    .container.logged-in #styleSelector  { order: 5; }
     .container.logged-in #status         { order: 7; }
     .container.logged-in #result         { order: 8; }
     .container.logged-in .share-section   { order: 9; }
@@ -1121,6 +1122,68 @@
         margin-top: 10px;
         font-size: 0.95em;
         border: 1px solid rgba(212,160,74,0.3);
+    }
+
+    
+    /* ===== STYLE SELECTOR ===== */
+    .style-selector {
+        margin: 20px 0;
+        display: none; /* shown when upload area is visible */
+    }
+    .style-selector h3 {
+        text-align: center;
+        color: var(--primary);
+        font-size: 1.1em;
+        margin-bottom: 12px;
+    }
+    .style-cards {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding: 4px 2px;
+    }
+    .style-card {
+        flex: 0 0 auto;
+        width: 100px;
+        padding: 12px 8px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        scroll-snap-align: center;
+    }
+    .style-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212,160,74,0.2);
+    }
+    .style-card.active {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(212,160,74,0.1), rgba(232,192,96,0.1));
+        box-shadow: 0 0 12px rgba(212,160,74,0.3);
+    }
+    .style-card .style-icon {
+        font-size: 1.8em;
+        display: block;
+        margin-bottom: 6px;
+    }
+    .style-card .style-name {
+        font-size: 0.75em;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.2;
+    }
+    .style-card.active .style-name {
+        color: var(--primary);
+    }
+    @media (max-width: 600px) {
+        .style-card { width: 85px; padding: 10px 6px; }
+        .style-card .style-icon { font-size: 1.5em; }
+        .style-card .style-name { font-size: 0.7em; }
     }
 
     </style>
@@ -1251,6 +1314,33 @@
         </div>
     </div>
 
+
+        <!-- Style Selector -->
+        <div class="style-selector" id="styleSelector">
+            <h3>✨ Choose Your Style</h3>
+            <div class="style-cards">
+                <div class="style-card active" data-style="storybook" onclick="selectStyle(this)">
+                    <span class="style-icon">🏰</span>
+                    <span class="style-name">Storybook Fantasy</span>
+                </div>
+                <div class="style-card" data-style="anime" onclick="selectStyle(this)">
+                    <span class="style-icon">🌸</span>
+                    <span class="style-name">Anime</span>
+                </div>
+                <div class="style-card" data-style="watercolor" onclick="selectStyle(this)">
+                    <span class="style-icon">🎨</span>
+                    <span class="style-name">Watercolor</span>
+                </div>
+                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
+                    <span class="style-icon">🧸</span>
+                    <span class="style-name">3D Cartoon</span>
+                </div>
+                <div class="style-card" data-style="comic" onclick="selectStyle(this)">
+                    <span class="style-icon">𝲥</span>
+                    <span class="style-name">Comic Book</span>
+                </div>
+            </div>
+        </div>
 
         <button id="transformBtn" disabled>Toon It!</button>
 
@@ -1707,7 +1797,8 @@
         function updateUIForUser() {
             // Always enable upload for logged-in users
             const uploadArea = document.getElementById('uploadArea');
-            if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block'; }
+            if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block';
+                var styleSel = document.getElementById('styleSelector'); if (styleSel) styleSel.style.display = 'block'; }
             const guestView = document.getElementById('guestView');
             const userView = document.getElementById('userView');
             const guestButtons = document.getElementById('guestButtons');
@@ -2342,6 +2433,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        style: getSelectedStyle(),
+                        
                         bundle: bundle,
                         user_id: user.id,
                         email: user.email
@@ -2449,6 +2542,33 @@
 
         
         
+        
+        // ==========================================
+        // STYLE SELECTION
+        // ==========================================
+        function selectStyle(el) {
+            document.querySelectorAll('.style-card').forEach(function(c) { c.classList.remove('active'); });
+            el.classList.add('active');
+            localStorage.setItem('toonit_preferred_style', el.dataset.style);
+        }
+
+        function getSelectedStyle() {
+            var active = document.querySelector('.style-card.active');
+            return active ? active.dataset.style : 'storybook';
+        }
+
+        // Restore preferred style from localStorage
+        (function() {
+            var preferred = localStorage.getItem('toonit_preferred_style');
+            if (preferred) {
+                var card = document.querySelector('.style-card[data-style="' + preferred + '"]');
+                if (card) {
+                    document.querySelectorAll('.style-card').forEach(function(c) { c.classList.remove('active'); });
+                    card.classList.add('active');
+                }
+            }
+        })();
+
         // ==========================================
         // REFERRAL SYSTEM
         // ==========================================
@@ -2922,6 +3042,7 @@
                             image: base64,
                             user_id: currentUser.id,
                             auth_token: authToken,
+                            style: getSelectedStyle(),
                             duration: 5
                         })
                     });
