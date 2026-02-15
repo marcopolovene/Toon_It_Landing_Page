@@ -2656,11 +2656,9 @@
             if (!refCode || !supabaseClient) return;
             console.log('[REFERRAL] Processing referral:', refCode, 'for user:', newUserEmail);
             try {
-                var { data: referrer } = await supabaseClient
-                    .from('profiles')
-                    .select('id, referral_code, total_referrals, total_referral_purchases')
-                    .eq('referral_code', refCode)
-                    .single();
+                var { data: referrerArr } = await supabaseClient
+                    .rpc('lookup_referrer', { p_referral_code: refCode });
+                var referrer = referrerArr && referrerArr.length > 0 ? referrerArr[0] : null;
 
                 if (!referrer || referrer.id === newUserId) {
                     console.log('[REFERRAL] Invalid or self-referral');
