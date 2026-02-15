@@ -3245,12 +3245,65 @@
     // ==========================================
     // MAGICAL WAITING EXPERIENCE
     // ==========================================
-    var _mMsgs = {
-        1: ['Casting the enchantment... 🔮','Reading the magical essence...','Discovering hidden stories... 📖','Peering into the looking glass...','Summoning the story spirits...'],
-        2: ['Sprinkling storybook magic... ✨','Painting with pixie dust... 🧚','The enchantment is brewing... 🧪','Weaving threads of wonder...','Colors dancing to the spell... 🎨'],
-        3: ['Bringing the tale to life... 🌟','Stirring the cauldron of motion...','Animating with a flick of the wand... 🪄','The magic is swirling... 🌀','Characters awakening... 🦋'],
-        4: ['Polishing the final sparkle... 💎','The magic is almost complete... ✨','Sealing the enchantment... 🔮','Your storybook awaits... 📚']
+    // Style-specific magical themes
+    var _magicThemes = {
+        storybook: {
+            spell: 'Wibbity Wobbity Woo!',
+            wand: '🪄',
+            particles: ['✨','⭐','💫','🌟','✦','⋆','˚','·'],
+            msgs: {
+                1: ['Casting the enchantment... 🔮','Reading the magical essence...','Discovering hidden stories... 📖','Peering into the looking glass...','Summoning the story spirits...'],
+                2: ['Sprinkling storybook magic... ✨','Painting with pixie dust... 🧚','The enchantment is brewing... 🧪','Weaving threads of wonder...','Colors dancing to the spell... 🎨'],
+                3: ['Bringing the tale to life... 🌟','Stirring the cauldron of motion...','Animating with a flick of the wand... 🪄','The magic is swirling... 🌀','Characters awakening... 🦋']
+            }
+        },
+        anime: {
+            spell: 'Totoro Kaze no Maho!',
+            wand: '🍃',
+            particles: ['🌸','🍃','🌿','☁️','🌺','🍁','💐','✨'],
+            msgs: {
+                1: ['The forest spirits are gathering... 🍃','A gentle wind carries the magic... 🌸','The spirit world is opening... 🌊','Reading the essence of your story...','Ancient magic awakening...'],
+                2: ['Totoro is painting your world... 🎨','Cherry blossoms are falling... 🌸','Studio magic swirling in the clouds... ☁️','Drawing with the wind... 🌬️','Colors of Ghibli flowing... 🌈'],
+                3: ['The catbus is on its way... 🌟','Spirits of the forest awakening... 🌿','Your anime scene comes alive... 🌸','The wind carries your story... 🍃','Miyazaki magic unfolding... ✨']
+            }
+        },
+        watercolor: {
+            spell: 'Splash Wash Flow!',
+            wand: '🖌️',
+            particles: ['💧','🎨','🖌️','🌊','✨','💦','∙','·'],
+            msgs: {
+                1: ['The brush is finding its rhythm... 🖌️','Mixing the perfect palette... 🎨','Wetting the paper just right... 💧','Reading the colors of your photo...','Preparing the canvas...'],
+                2: ['Colors are bleeding beautifully... 💧','Wet paint meeting wet paper... 🎨','Every drop tells a story... 💦','Pigments dancing on the canvas... ✨','Soft washes flowing... 🌊'],
+                3: ['The watercolors are drying just right... 🌊','Brush strokes finding their flow... 🖌️','Your painting is coming alive... 🎨','Colors settling into place... 💧','A masterpiece emerges... ✨']
+            }
+        },
+        cartoon3d: {
+            spell: 'Boing Squish Pop!',
+            wand: '🎬',
+            particles: ['🎬','⭐','🍿','💥','✨','🎈','🎮','🌟'],
+            msgs: {
+                1: ['Rendering your close-up... 🎥','The animation studio is buzzing... 🐝','Sculpting your 3D model... 🧸','Reading your character design...','Warming up the render farm...'],
+                2: ['Characters are learning their lines... 🎭','Adding that Pixar polish... ✨','The lighting crew is at work... 💡','Subsurface scattering activated... 🌟','Rendering with love... 🎬'],
+                3: ['The director yells ACTION... 🎬','Your premiere is almost ready... 🍿','Final render pass running... ✨','Animation complete, adding magic... 🌟','Standing ovation incoming... 👏']
+            }
+        },
+        comic: {
+            spell: 'POWER... ACTIVATE!',
+            wand: '⚡',
+            particles: ['⚡','💥','🔥','🌟','✨','🛡️','☄️','💫'],
+            msgs: {
+                1: ['Your origin story begins... ⚡','Scanning for superpowers... 🧬','The transformation chamber is charging... 🔋','Reading your heroic essence...','Power signature detected...'],
+                2: ['Power levels rising... 💪','With great power comes great art... 🦸','Energy shields forming... 🛡️','Heroic colors activated... 🔥','The multiverse is aligning... 🌀'],
+                3: ['Activating hero protocol... 🛡️','Cape and mask materializing... 🦸','Your powers are manifesting... ⚡','Superhero transformation complete... 💥','Assembling the final scene... 🌟']
+            }
+        }
     };
+
+    function _getTheme() {
+        var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'storybook';
+        return _magicThemes[style] || _magicThemes.storybook;
+    }
+
     var _mIdx = 0, _mSpkInt = null, _mActive = false;
 
     function initMagic() {
@@ -3264,7 +3317,7 @@
         }
         var old = document.getElementById('spellCast'); if (old) old.remove();
         var d = document.createElement('div'); d.className = 'spell-cast'; d.id = 'spellCast';
-        d.innerHTML = '<div class="magic-wand casting" id="magicWand">🪄</div><div class="spell-text entering" id="spellText">Wibbity Wobbity Woo!</div>';
+        var _t = _getTheme(); d.innerHTML = '<div class="magic-wand casting" id="magicWand">' + _t.wand + '</div><div class="spell-text entering" id="spellText">' + _t.spell + '</div>';
         var st = document.getElementById('statusText');
         if (st) el.insertBefore(d, st); else el.prepend(d);
         if (!el.querySelector('.sparkle-container')) {
@@ -3282,7 +3335,7 @@
 
     function _genSpk() {
         var c = document.getElementById('sparkleContainer'); if (!c) return;
-        var ch = ['✨','⭐','💫','🌟','✦','⋆','˚','·'];
+        var ch = _getTheme().particles;
         for (var i=0,n=3+Math.floor(Math.random()*5);i<n;i++) {
             var s = document.createElement('div'); s.className = 'sparkle-particle';
             s.textContent = ch[Math.floor(Math.random()*ch.length)];
@@ -3298,7 +3351,8 @@
     }
 
     function _mMsg(step) {
-        var m = _mMsgs[step]||_mMsgs[1];
+        var theme = _getTheme();
+        var m = theme.msgs[step]||theme.msgs[1];
         return m[_mIdx++%m.length];
     }
 
