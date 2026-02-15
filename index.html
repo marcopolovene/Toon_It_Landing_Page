@@ -2966,12 +2966,12 @@
         // RATE LIMITING
         // ==========================================
         var lastTransformTime = 0;
-        var TRANSFORM_COOLDOWN = 60000; // 60 seconds between transforms
+        var TRANSFORM_COOLDOWN = 10000; // 10 seconds between transforms
 
         async function startTransformation() {
             videoAlreadyShown = false;
 
-            // Rate limiting
+            // Rate limiting — only blocks if a previous transform actually started successfully
             var now = Date.now();
             var elapsed = now - lastTransformTime;
             if (lastTransformTime > 0 && elapsed < TRANSFORM_COOLDOWN) {
@@ -2979,7 +2979,6 @@
                 alert('Please wait ' + waitSec + ' seconds before creating another video.');
                 return;
             }
-            lastTransformTime = now;
             if (!selectedFile) { alert('Please select a photo first'); return; }
             // Sync currentUser from all possible sources
             if (!currentUser && window.currentUser) currentUser = window.currentUser;
@@ -3049,6 +3048,7 @@
                     const result = await response.json();
 
                     if (result.job_id) {
+                        lastTransformTime = Date.now(); // Set cooldown only after successful start
                         currentJobId = result.job_id;
                         saveJob(currentJobId);
                         startPolling();
