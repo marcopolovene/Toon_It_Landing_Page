@@ -2264,32 +2264,49 @@
             _showShareToast('⬇️ Downloading video...');
 
             // Download the video
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            var platformUrls = {
+                'instagram': 'https://www.instagram.com/',
+                'tiktok': 'https://www.tiktok.com/upload',
+                'youtube': 'https://www.youtube.com/upload'
+            };
+
             fetch(videoUrl)
                 .then(function(r) { return r.blob(); })
                 .then(function(blob) {
-                    // Trigger download
-                    var a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'toonit_creation.mp4';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(a.href);
-
-                    // Open platform after short delay
-                    var platformUrls = {
-                        'instagram': 'https://www.instagram.com/',
-                        'tiktok': 'https://www.tiktok.com/upload',
-                        'youtube': 'https://www.youtube.com/upload'
-                    };
-
-                    setTimeout(function() {
-                        _showShareToast('✅ Video downloaded! Upload it to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
-                        if (platformUrls[platform]) {
-                            window.open(platformUrls[platform], '_blank');
+                    if (isIOS) {
+                        // iOS: Use Web Share API
+                        var file = new File([blob], 'toonit_creation.mp4', { type: 'video/mp4' });
+                        var shareData = { files: [file] };
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            navigator.share(shareData).then(function() {
+                                _showShareToast('✅ Video saved! Upload it to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
+                                if (platformUrls[platform]) window.open(platformUrls[platform], '_blank');
+                            }).catch(function() {
+                                window.open(videoUrl, '_blank');
+                                _showShareToast('💡 Hold the video to save, then upload to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
+                            });
+                        } else {
+                            window.open(videoUrl, '_blank');
+                            _showShareToast('💡 Hold the video to save, then upload to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
                         }
-                    }, 1000);
+                    } else {
+                        // Android/Desktop: standard download
+                        var a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = 'toonit_creation.mp4';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(a.href);
 
+                        setTimeout(function() {
+                            _showShareToast('✅ Video downloaded! Upload it to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
+                            if (platformUrls[platform]) {
+                                window.open(platformUrls[platform], '_blank');
+                            }
+                        }, 1000);
+                    }
                     trackEvent('share_' + platform);
                 })
                 .catch(function(error) {
@@ -3522,9 +3539,42 @@
         }
 
         function downloadVideo() {
-            if (resultVideo && resultVideo.src) {
+            if (!resultVideo || !resultVideo.src) return;
+            var videoUrl = resultVideo.src;
+
+            // Detect iOS (iPhone/iPad/iPod)
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            if (isIOS) {
+                // iOS: Use Web Share API to save video (triggers native share sheet with "Save Video" option)
+                fetch(videoUrl)
+                    .then(function(r) { return r.blob(); })
+                    .then(function(blob) {
+                        var file = new File([blob], 'toon-it-video.mp4', { type: 'video/mp4' });
+                        var shareData = { files: [file] };
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            navigator.share(shareData).then(function() {
+                                console.log('[DOWNLOAD] iOS share/save successful');
+                            }).catch(function(err) {
+                                console.log('[DOWNLOAD] iOS share cancelled or failed:', err);
+                                // Fallback: open video in new tab for long-press save
+                                window.open(videoUrl, '_blank');
+                            });
+                        } else {
+                            // Fallback: open in new tab with save instructions
+                            window.open(videoUrl, '_blank');
+                            _showShareToast('💡 Hold the video to save it to your camera roll');
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('[DOWNLOAD] iOS fetch error:', err);
+                        window.open(videoUrl, '_blank');
+                        _showShareToast('💡 Hold the video to save it to your camera roll');
+                    });
+            } else {
+                // Android/Desktop: standard download
                 const a = document.createElement('a');
-                a.href = resultVideo.src;
+                a.href = videoUrl;
                 a.download = 'toon-it-video.mp4';
                 a.click();
             }
