@@ -1319,7 +1319,11 @@
         <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card active" data-style="storybook" onclick="selectStyle(this)">
+                <div class="style-card active" data-style="cartoon3d" onclick="selectStyle(this)">
+                    <span class="style-icon">👦🏽</span>
+                    <span class="style-name">3D Cartoon</span>
+                </div>
+                <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
                     <span class="style-icon">🏰</span>
                     <span class="style-name">Magical Storybook</span>
                 </div>
@@ -1331,17 +1335,9 @@
                     <span class="style-icon">🎨</span>
                     <span class="style-name">Watercolor</span>
                 </div>
-                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
-                    <span class="style-icon">🧸</span>
-                    <span class="style-name">3D Cartoon</span>
-                </div>
                 <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                     <span class="style-icon">💥</span>
                     <span class="style-name">Superhero</span>
-                </div>
-                <div class="style-card" data-style="steves_poc" onclick="selectStyle(this)">
-                    <span class="style-icon">🧪</span>
-                    <span class="style-name">Steve's POC</span>
                 </div>
             </div>
         </div>
@@ -2559,7 +2555,7 @@
 
         function getSelectedStyle() {
             var active = document.querySelector('.style-card.active');
-            return active ? active.dataset.style : 'storybook';
+            return active ? active.dataset.style : 'cartoon3d';
         }
 
         // Restore preferred style from localStorage
@@ -3313,7 +3309,7 @@
     };
 
     function _getTheme() {
-        var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'storybook';
+        var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         return _magicThemes[style] || _magicThemes.storybook;
     }
 
