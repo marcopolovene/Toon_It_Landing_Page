@@ -2290,8 +2290,23 @@
                             window.open(videoUrl, '_blank');
                             _showShareToast('💡 Hold the video to save, then upload to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
                         }
-                    }, 1000);
+                    } else {
+                        // Android/Desktop: standard download
+                        var a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = 'toonit_creation.mp4';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(a.href);
 
+                        setTimeout(function() {
+                            _showShareToast('✅ Video downloaded! Upload it to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
+                            if (platformUrls[platform]) {
+                                window.open(platformUrls[platform], '_blank');
+                            }
+                        }, 1000);
+                    }
                     trackEvent('share_' + platform);
                 })
                 .catch(function(error) {
@@ -2447,11 +2462,11 @@
                 if (!response.ok) {
                     throw new Error('Server error (' + response.status + '). Please try again.');
                 }
-                const checkoutText = await response.text();
+                var checkoutText = await response.text();
                 if (!checkoutText) {
                     throw new Error('Empty response from server. Please try again.');
                 }
-                let data;
+                var data;
                 try { data = JSON.parse(checkoutText); } catch(e) {
                     throw new Error('Invalid response from server. Please try again.');
                 }
@@ -3060,11 +3075,11 @@
                     if (!response.ok) {
                         throw new Error('Server error (' + response.status + '). Please try again.');
                     }
-                    const resultText = await response.text();
+                    var resultText = await response.text();
                     if (!resultText) {
                         throw new Error('Empty response from server. Please try again.');
                     }
-                    let result;
+                    var result;
                     try { result = JSON.parse(resultText); } catch(e) {
                         throw new Error('Invalid server response. Please try again.');
                     }
@@ -3673,14 +3688,14 @@
                     startPolling();
                     return;
                 }
-                const statusText2 = await response.text();
-                if (!statusText2) {
+                var statusRawText = await response.text();
+                if (!statusRawText) {
                     console.warn('Empty status response');
                     startPolling();
                     return;
                 }
-                let data;
-                try { data = JSON.parse(statusText2); } catch(e) {
+                var data;
+                try { data = JSON.parse(statusRawText); } catch(e) {
                     console.warn('Invalid status JSON:', e);
                     startPolling();
                     return;
