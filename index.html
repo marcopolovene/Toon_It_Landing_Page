@@ -15,14 +15,20 @@
     <meta property="og:title" content="Toon It! — Transform Photos into Magical Storybook Videos">
     <meta property="og:description" content="Upload any photo and watch it come alive as an enchanting AI-animated storybook video. 2 free credits to start!">
     <meta property="og:site_name" content="Toon It!">
+    <meta property="og:image" content="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_1200,h_630,c_fill,q_90/job_1771351311926_61mjtnmc4_ugcuo9.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Toon It! — Transform Photos into Magical Storybook Videos">
     <meta name="twitter:description" content="Upload any photo and watch it come alive as an enchanting AI-animated storybook video. Try free!">
+    <meta name="twitter:image" content="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_1200,h_630,c_fill,q_90/job_1771351311926_61mjtnmc4_ugcuo9.jpg">
 
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dzarqnick/image/upload/w_32,h_32,c_fill/toonit_favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://res.cloudinary.com/dzarqnick/image/upload/w_180,h_180,c_fill/toonit_favicon.png">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#d4a04a">
@@ -1220,6 +1226,20 @@
             <p>Transform your photos into magical storybook videos</p>
         </div>
 
+        <!-- Social Proof Counter -->
+        <div id="socialProof" style="text-align:center;margin:15px auto 5px;padding:10px 20px;max-width:500px;opacity:0;transition:opacity 0.6s ease;">
+            <div style="display:flex;justify-content:center;gap:30px;flex-wrap:wrap;">
+                <div style="text-align:center;">
+                    <div id="proofUsers" style="font-size:1.6em;font-weight:800;color:var(--primary);">—</div>
+                    <div style="font-size:0.8em;color:var(--text-muted);margin-top:2px;">Happy Users</div>
+                </div>
+                <div style="text-align:center;">
+                    <div id="proofVideos" style="font-size:1.6em;font-weight:800;color:var(--primary);">—</div>
+                    <div style="font-size:0.8em;color:var(--text-muted);margin-top:2px;">Videos Created</div>
+                </div>
+            </div>
+        </div>
+
             <div class="gallery-section" style="max-width:580px;margin:30px auto 30px;padding:0 20px;">
         <h2 style="text-align:center;color:var(--primary);font-size:1.4em;margin-bottom:5px;">✨ See the Magic</h2>
         <p style="text-align:center;color:var(--text-muted);margin-bottom:15px;font-size:0.95em;">Real transformations from our users — click to play</p>
@@ -2204,6 +2224,57 @@
         // ERROR HANDLING & RETRY
         // ==========================================
         
+        // Gallery hover preview
+        (function() {
+            document.querySelectorAll('.gallery-item').forEach(function(item) {
+                var videoUrl = item.getAttribute('onclick').match(/'([^']+\.mp4)'/)[1];
+                var vid = document.createElement('video');
+                vid.className = 'hover-preview';
+                vid.muted = true;
+                vid.loop = true;
+                vid.playsInline = true;
+                vid.preload = 'none';
+                vid.src = videoUrl;
+                item.appendChild(vid);
+                item.addEventListener('mouseenter', function() { vid.play().catch(function(){}); });
+                item.addEventListener('mouseleave', function() { vid.pause(); vid.currentTime = 0; });
+            });
+        })();
+
+        // Social Proof: fetch real counts from Supabase
+        (function() {
+            var sbUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/rest/v1/';
+            var anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNzUsImV4cCI6MjA4NTg4NjA3NX0.4rLuSThMKOeSwBsQ-UbyYNsSc2CJXV4cPS99VUiGN3g';
+            var headers = { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey, 'Prefer': 'count=exact' };
+            function animateCount(el, target) {
+                var current = 0;
+                var step = Math.max(1, Math.floor(target / 40));
+                var timer = setInterval(function() {
+                    current += step;
+                    if (current >= target) { current = target; clearInterval(timer); }
+                    el.textContent = current.toLocaleString() + '+';
+                }, 30);
+            }
+            fetch(sbUrl + 'profiles?select=id', { headers: headers }).then(function(r) {
+                var cr = r.headers.get('content-range') || '';
+                if (cr.indexOf('/') > -1) {
+                    var count = parseInt(cr.split('/')[1]) || 0;
+                    if (count > 0) animateCount(document.getElementById('proofUsers'), count);
+                }
+            }).catch(function(){});
+            fetch(sbUrl + 'generations?select=id&status=eq.complete', { headers: headers }).then(function(r) {
+                var cr = r.headers.get('content-range') || '';
+                if (cr.indexOf('/') > -1) {
+                    var count = parseInt(cr.split('/')[1]) || 0;
+                    if (count > 0) animateCount(document.getElementById('proofVideos'), count);
+                }
+            }).catch(function(){});
+            setTimeout(function() {
+                var el = document.getElementById('socialProof');
+                if (el) el.style.opacity = '1';
+            }, 300);
+        })();
+
         // Randomize gallery order on load
         (function() {
             var grid = document.querySelector('.gallery-grid');
