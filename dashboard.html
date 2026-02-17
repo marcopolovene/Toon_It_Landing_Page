@@ -661,6 +661,9 @@
         <button class="video-modal-close" onclick="closeVideoModal()">×</button>
         <div class="video-modal-content">
             <video id="modalVideo" controls></video>
+            <div style="margin-top:12px;text-align:center;">
+                <button id="shareVideoBtn" onclick="shareCurrentVideo()" style="background:var(--primary);color:var(--bg-main);border:none;padding:10px 24px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;">Share Video</button>
+            </div>
         </div>
     </div>
 
@@ -885,8 +888,10 @@
             window.location.href = 'index.html';
         }
 
+        var currentVideoUrl = "";
         function playVideo(url) {
             if (!url) return;
+            currentVideoUrl = url;
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
             video.src = url;
@@ -902,6 +907,22 @@
             modal.classList.remove('show');
         }
 
+        function shareCurrentVideo() {
+            if (!currentVideoUrl) return;
+            if (navigator.share) {
+                navigator.share({
+                    title: "Check out my Toon It! video!",
+                    text: "I transformed my photo into a magical storybook video with Toon It!",
+                    url: "https://toonit.ai"
+                }).catch(function(){});
+            } else {
+                navigator.clipboard.writeText(currentVideoUrl).then(function() {
+                    var btn = document.getElementById("shareVideoBtn");
+                    btn.textContent = "Link Copied!";
+                    setTimeout(function() { btn.textContent = "Share Video"; }, 2000);
+                }).catch(function(){});
+            }
+        }
         // Close modal on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeVideoModal();
