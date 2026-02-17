@@ -1479,20 +1479,20 @@
                 <div class="credit-bundle" onclick="buyCredits('starter')"> 
                     <div class="bundle-credits">5</div>
                     <div>credits</div>
-                    <div class="bundle-price">$5.00</div>
-                    <div class="bundle-per">$1.00 each</div>
+                    <div class="bundle-price"><span style="text-decoration:line-through;opacity:0.5;font-size:0.7em">$5.00</span> $2.50</div>
+                    <div class="bundle-per">$0.50 each</div><div style="color:#ff6b35;font-size:0.75em;font-weight:bold;margin-top:4px">🚀 50% LAUNCH</div>
                 </div>
                 <div class="credit-bundle popular" onclick="buyCredits('popular')">
                     <div class="bundle-credits">12</div>
                     <div>credits</div>
-                    <div class="bundle-price">$10.00</div>
-                    <div class="bundle-per">$0.83 each</div>
+                    <div class="bundle-price"><span style="text-decoration:line-through;opacity:0.5;font-size:0.7em">$10.00</span> $5.00</div>
+                    <div class="bundle-per">$0.42 each</div><div style="color:#ff6b35;font-size:0.75em;font-weight:bold;margin-top:4px">🚀 50% LAUNCH</div>
                 </div>
                 <div class="credit-bundle" onclick="buyCredits('pro')">
                     <div class="bundle-credits">35</div>
                     <div>credits</div>
-                    <div class="bundle-price">$25.00</div>
-                    <div class="bundle-per">$0.71 each</div>
+                    <div class="bundle-price"><span style="text-decoration:line-through;opacity:0.5;font-size:0.7em">$25.00</span> $12.50</div>
+                    <div class="bundle-per">$0.36 each</div><div style="color:#ff6b35;font-size:0.75em;font-weight:bold;margin-top:4px">🚀 50% LAUNCH</div>
                 </div>
             </div>
             <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe</p>
@@ -2433,9 +2433,9 @@
 
             // Map bundle to price details
             const bundles = {
-                'starter': { credits: 5, price: '$5.00' },
-                'popular': { credits: 12, price: '$10.00' },
-                'pro': { credits: 35, price: '$25.00' }
+                'starter': { credits: 5, price: '$2.50' },
+                'popular': { credits: 12, price: '$5.00' },
+                'pro': { credits: 35, price: '$12.50' }
             };
 
             const selected = bundles[bundle];
