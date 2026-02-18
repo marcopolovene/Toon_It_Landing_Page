@@ -1256,19 +1256,7 @@
             <p>Transform your photos into magical storybook videos</p>
         </div>
 
-        <!-- Social Proof Counter -->
-        <div id="socialProof" style="text-align:center;margin:15px auto 5px;padding:10px 20px;max-width:500px;opacity:0;transition:opacity 0.6s ease;">
-            <div style="display:flex;justify-content:center;gap:30px;flex-wrap:wrap;">
-                <div style="text-align:center;">
-                    <div id="proofUsers" style="font-size:1.6em;font-weight:800;color:var(--primary);">—</div>
-                    <div style="font-size:0.8em;color:var(--text-muted);margin-top:2px;">Happy Users</div>
-                </div>
-                <div style="text-align:center;">
-                    <div id="proofVideos" style="font-size:1.6em;font-weight:800;color:var(--primary);">—</div>
-                    <div style="font-size:0.8em;color:var(--text-muted);margin-top:2px;">Videos Created</div>
-                </div>
-            </div>
-        </div>
+
 
             <div class="gallery-section" style="max-width:580px;margin:30px auto 30px;padding:0 20px;">
         <h2 style="text-align:center;color:var(--primary);font-size:1.4em;margin-bottom:5px;">✨ See the Magic</h2>
@@ -2269,40 +2257,6 @@
                 item.addEventListener('mouseenter', function() { vid.play().catch(function(){}); });
                 item.addEventListener('mouseleave', function() { vid.pause(); vid.currentTime = 0; });
             });
-        })();
-
-        // Social Proof: fetch real counts from Supabase
-        (function() {
-            var sbUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/rest/v1/';
-            var anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNzUsImV4cCI6MjA4NTg4NjA3NX0.4rLuSThMKOeSwBsQ-UbyYNsSc2CJXV4cPS99VUiGN3g';
-            var headers = { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey, 'Prefer': 'count=exact' };
-            function animateCount(el, target) {
-                var current = 0;
-                var step = Math.max(1, Math.floor(target / 40));
-                var timer = setInterval(function() {
-                    current += step;
-                    if (current >= target) { current = target; clearInterval(timer); }
-                    el.textContent = current.toLocaleString() + '+';
-                }, 30);
-            }
-            fetch(sbUrl + 'profiles?select=id', { headers: headers }).then(function(r) {
-                var cr = r.headers.get('content-range') || '';
-                if (cr.indexOf('/') > -1) {
-                    var count = parseInt(cr.split('/')[1]) || 0;
-                    if (count > 0) animateCount(document.getElementById('proofUsers'), count);
-                }
-            }).catch(function(){});
-            fetch(sbUrl + 'generations?select=id&status=eq.complete', { headers: headers }).then(function(r) {
-                var cr = r.headers.get('content-range') || '';
-                if (cr.indexOf('/') > -1) {
-                    var count = parseInt(cr.split('/')[1]) || 0;
-                    if (count > 0) animateCount(document.getElementById('proofVideos'), count);
-                }
-            }).catch(function(){});
-            setTimeout(function() {
-                var el = document.getElementById('socialProof');
-                if (el) el.style.opacity = '1';
-            }, 300);
         })();
 
         // Randomize gallery order on load
