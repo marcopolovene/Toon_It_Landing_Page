@@ -2621,49 +2621,6 @@
             }
         }
 
-        function resetForNew() {
-            selectedFile = null;
-            currentJobId = null;
-            videoAlreadyShown = false;
-            creditDeducted = false;
-            // Pre-warm video URL for faster playback
-            var preloadLink = document.createElement('link');
-            preloadLink.rel = 'preload'; preloadLink.as = 'video'; preloadLink.href = url;
-            document.head.appendChild(preloadLink);
-            var resultDiv = document.getElementById('result');
-            if (resultDiv) resultDiv.style.display = 'none';
-            // Reset upload area to original state
-            var uploadArea = document.getElementById('uploadArea');
-            if (uploadArea) {
-                uploadArea.innerHTML = '<div class="upload-icon">📸</div><p><strong>Drop your photo here</strong></p><p style="color: #999; font-size: 0.9em;">or click to browse</p><input type="file" id="fileInput" accept="image/*" style="display:none;">';
-                uploadArea.style.display = 'block';
-                // Re-attach file input listener
-                var newFileInput = document.getElementById('fileInput');
-                if (newFileInput) {
-                    newFileInput.addEventListener('change', function(e) { if (e.target.files[0]) handleFile(e.target.files[0]); });
-                }
-            }
-            if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
-            if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
-            clearJob();
-
-            if (uploadArea) {
-                uploadArea.style.display = 'block';
-                // Clear preview if any
-                var previewInUpload = uploadArea.querySelector('img');
-                if (previewInUpload) previewInUpload.remove();
-                var textInUpload = uploadArea.querySelector('.upload-text');
-                if (textInUpload) textInUpload.style.display = 'block';
-            }
-            if (status) status.style.display = 'none';
-            if (result) result.style.display = 'none';
-            if (transformBtn) transformBtn.style.display = 'none';
-
-            var infoBoxEl = document.querySelector('.info-box');
-            if (infoBoxEl) infoBoxEl.style.display = 'block';
-            if (fileInput) fileInput.value = '';
-        }
-
         async function buyCredits(bundle) {
             trackEvent('buy_credits_click', { bundle: bundle });
             const user = window.currentUser || currentUser;
@@ -3844,6 +3801,8 @@
         function resetForNew() {
         selectedFile = null;
         currentJobId = null;
+        creditDeducted = false;
+        videoAlreadyShown = false;
         if (preview) {
             preview.style.display = 'none';
             preview.src = '';
