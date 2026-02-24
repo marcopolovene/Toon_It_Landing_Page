@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery — Toon It! Community Creations</title>
+    <meta name="description" content="See what the ToonIt community has created! AI-powered storybook photo transformations. Try it free at toonit.ai">
+    <meta property="og:title" content="Toon It! Community Gallery">
+    <meta property="og:description" content="Amazing AI storybook video transformations made by real people. Try it free!">
+    <meta property="og:url" content="https://toonit.ai/gallery.html">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://toonit.ai/gallery.html">
+    <link rel="icon" href="https://toonit.ai/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #d4a04a;
+            --primary-dark: #b8852e;
+            --bg: #0d0a06;
+            --surface: #1a1408;
+            --surface2: #241c0a;
+            --border: #3a2e1a;
+            --text: #f5e6c8;
+            --text-muted: #9a8660;
+            --error: #e05555;
+            --success: #4caf7d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; }
+
+        /* NAV */
+        nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+        .nav-logo { font-size: 1.4em; font-weight: 800; color: var(--primary); text-decoration: none; letter-spacing: -0.5px; }
+        .nav-cta { background: var(--primary); color: #1a1408; border: none; border-radius: 24px; padding: 9px 22px; font-weight: 700; font-size: 0.9em; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+        .nav-cta:hover { background: var(--primary-dark); }
+        .nav-links { display: flex; gap: 16px; align-items: center; }
+        .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.9em; transition: color 0.2s; }
+        .nav-link:hover { color: var(--text); }
+
+        /* HERO */
+        .hero { text-align: center; padding: 52px 20px 32px; }
+        .hero h1 { font-size: clamp(1.8em, 4vw, 2.8em); font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .hero p { color: var(--text-muted); font-size: 1.05em; max-width: 500px; margin: 0 auto 28px; line-height: 1.6; }
+        .hero-stats { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+        .hero-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: 0.9em; color: var(--text-muted); }
+        .hero-stat strong { color: var(--primary); font-size: 1.2em; display: block; }
+
+        /* SORT BAR */
+        .sort-bar { display: flex; gap: 10px; justify-content: center; padding: 0 20px 28px; flex-wrap: wrap; }
+        .sort-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); border-radius: 20px; padding: 7px 18px; font-size: 0.85em; cursor: pointer; transition: all 0.2s; }
+        .sort-btn.active, .sort-btn:hover { background: var(--primary); color: #1a1408; border-color: var(--primary); font-weight: 700; }
+
+        /* GRID */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 0 20px 40px; max-width: 1200px; margin: 0 auto; }
+
+        /* CARD */
+        .gallery-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+        .gallery-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(212,160,74,0.15); }
+        .video-wrapper { position: relative; width: 100%; aspect-ratio: 9/16; background: #000; overflow: hidden; cursor: pointer; }
+        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        .video-wrapper:hover video { opacity: 0.85; }
+        .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+        .video-wrapper:hover .play-overlay { opacity: 1; }
+        .play-icon { font-size: 3em; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7)); }
+
+        /* CARD FOOTER */
+        .card-footer { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; }
+        .like-btn { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 0.85em; color: var(--text-muted); transition: all 0.2s; user-select: none; }
+        .like-btn:hover { border-color: #e05580; color: #e05580; }
+        .like-btn.liked { background: #2a0e18; border-color: #e05580; color: #e05580; }
+        .like-btn .heart { font-size: 1em; }
+        .make-one-btn { background: transparent; border: none; color: var(--primary); font-size: 0.8em; font-weight: 600; cursor: pointer; text-decoration: none; opacity: 0.85; transition: opacity 0.2s; }
+        .make-one-btn:hover { opacity: 1; }
+
+        /* EMPTY / LOADING */
+        .gallery-empty { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+        .gallery-empty .emoji { font-size: 3em; margin-bottom: 16px; }
+        .gallery-loading { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* LOAD MORE */
+        .load-more-wrap { text-align: center; padding: 10px 20px 50px; }
+        .load-more-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 24px; padding: 12px 32px; font-size: 0.95em; cursor: pointer; transition: all 0.2s; }
+        .load-more-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* TOAST */
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 24px; border-radius: 24px; font-size: 0.9em; z-index: 9999; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+
+        /* FOOTER */
+        footer { background: var(--surface); border-top: 1px solid var(--border); text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85em; }
+        footer a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 500px) {
+            .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 0 12px 30px; }
+            .hero { padding: 36px 16px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="https://toonit.ai">✨ Toon It!</a>
+    <div class="nav-links">
+        <a class="nav-link" href="https://toonit.ai/dashboard.html">My Videos</a>
+        <a class="nav-cta" href="https://toonit.ai">Try It Free →</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <h1>🎨 Community Gallery</h1>
+    <p>Amazing storybook transformations made by real people. Every photo tells a magical story.</p>
+    <div class="hero-stats">
+        <div class="hero-stat"><strong id="statCount">—</strong>Creations</div>
+        <div class="hero-stat"><strong id="statLikes">—</strong>Total Likes</div>
+    </div>
+</section>
+
+<div class="sort-bar">
+    <button class="sort-btn active" onclick="setSort('likes')" id="sortLikes">🔥 Most Liked</button>
+    <button class="sort-btn" onclick="setSort('newest')" id="sortNewest">🆕 Newest</button>
+</div>
+
+<div id="galleryLoading" class="gallery-loading">
+    <div class="spinner"></div>
+    <p>Loading creations...</p>
+</div>
+
+<div class="gallery-grid" id="galleryGrid" style="display:none"></div>
+
+<div class="gallery-empty" id="galleryEmpty" style="display:none">
+    <div class="emoji">🎬</div>
+    <p>No public creations yet — be the first!</p>
+    <a href="https://toonit.ai" style="color:var(--primary);font-weight:700;">Create yours now →</a>
+</div>
+
+<div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <button class="load-more-btn" onclick="loadMore()">Load More ✨</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+    Made with ✨ by <a href="https://toonit.ai">Toon It!</a> — Transform your photos into storybook magic.
+</footer>
+
+<script>
+    const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_Jbaod-sXFO7WABnmuPGtFPGGMNFXpA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const PAGE_SIZE = 12;
+    let currentSort = 'likes';
+    let currentPage = 0;
+    let totalCount = 0;
+    let likedSet = new Set();
+    let currentUser = null;
+
+    // Watermark helper
+    function addWatermark(url) {
+        if (!url || !url.includes('res.cloudinary.com')) return url;
+        if (url.includes('ToonIt.ai')) return url;
+        var transform = 'l_text:Arial_18_bold:Made%20with%20ToonIt.ai,co_white,o_55,g_south_east,x_14,y_10';
+        return url.replace('/upload/', '/upload/' + transform + '/');
+    }
+
+    async function init() {
+        // Get current user (for likes)
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        currentUser = user;
+        if (user) await loadUserLikes(user.id);
+        await loadGallery(true);
+        await loadStats();
+    }
+
+    async function loadUserLikes(userId) {
+        const { data } = await supabaseClient
+            .from('gallery_likes')
+            .select('generation_id')
+            .eq('user_id', userId);
+        if (data) data.forEach(l => likedSet.add(l.generation_id));
+    }
+
+    async function loadStats() {
+        const { count } = await supabaseClient
+            .from('generations')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_public', true);
+        const { data: likeData } = await supabaseClient
+            .from('generations')
+            .select('like_count')
+            .eq('is_public', true);
+        const totalLikes = likeData ? likeData.reduce((s, r) => s + (r.like_count || 0), 0) : 0;
+        document.getElementById('statCount').textContent = count || 0;
+        document.getElementById('statLikes').textContent = totalLikes;
+        totalCount = count || 0;
+    }
+
+    async function loadGallery(reset = false) {
+        if (reset) { currentPage = 0; document.getElementById('galleryGrid').innerHTML = ''; }
+        document.getElementById('galleryLoading').style.display = reset ? 'block' : 'none';
+
+        const from = currentPage * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        let query = supabaseClient
+            .from('generations')
+            .select('id, video_url, cloudinary_url, like_count, created_at')
+            .eq('is_public', true)
+            .eq('status', 'complete')
+            .range(from, to);
+
+        if (currentSort === 'likes') query = query.order('like_count', { ascending: false }).order('created_at', { ascending: false });
+        else query = query.order('created_at', { ascending: false });
+
+        const { data, error } = await query;
+        document.getElementById('galleryLoading').style.display = 'none';
+
+        if (error || !data || data.length === 0) {
+            if (reset) {
+                document.getElementById('galleryEmpty').style.display = 'block';
+                document.getElementById('galleryGrid').style.display = 'none';
+            }
+            document.getElementById('loadMoreWrap').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('galleryEmpty').style.display = 'none';
+        document.getElementById('galleryGrid').style.display = 'grid';
+
+        data.forEach(item => {
+            const videoUrl = addWatermark(item.video_url || item.cloudinary_url || '');
+            const liked = likedSet.has(item.id);
+            const card = document.createElement('div');
+            card.className = 'gallery-card';
+            card.dataset.id = item.id;
+            card.innerHTML = `
+                <div class="video-wrapper" onclick="togglePlay(this)">
+                    <video src="${videoUrl}" muted loop playsinline preload="metadata"></video>
+                    <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                </div>
+                <div class="card-footer">
+                    <button class="like-btn ${liked ? 'liked' : ''}" onclick="handleLike(event, '${item.id}')"
+                      id="like-${item.id}">
+                        <span class="heart">${liked ? '❤️' : '🤍'}</span>
+                        <span class="like-count" id="lc-${item.id}">${item.like_count || 0}</span>
+                    </button>
+                    <a href="https://toonit.ai" class="make-one-btn">Make one like this →</a>
+                </div>`;
+            document.getElementById('galleryGrid').appendChild(card);
+        });
+
+        currentPage++;
+        const loaded = currentPage * PAGE_SIZE;
+        document.getElementById('loadMoreWrap').style.display = loaded < totalCount ? 'block' : 'none';
+    }
+
+    function togglePlay(wrapper) {
+        const video = wrapper.querySelector('video');
+        if (video.paused) { video.play(); wrapper.querySelector('.play-overlay').style.opacity = '0'; }
+        else { video.pause(); wrapper.querySelector('.play-overlay').style.opacity = '1'; }
+    }
+
+    async function handleLike(e, genId) {
+        e.stopPropagation();
+        if (!currentUser) {
+            showToast('✨ Sign in to like creations!');
+            setTimeout(() => window.location.href = 'https://toonit.ai', 1500);
+            return;
+        }
+        const btn = document.getElementById('like-' + genId);
+        const countEl = document.getElementById('lc-' + genId);
+        const heart = btn.querySelector('.heart');
+        const isLiked = likedSet.has(genId);
+
+        // Optimistic update
+        const delta = isLiked ? -1 : 1;
+        const newCount = Math.max(0, parseInt(countEl.textContent) + delta);
+        countEl.textContent = newCount;
+        if (isLiked) { likedSet.delete(genId); btn.classList.remove('liked'); heart.textContent = '🤍'; }
+        else { likedSet.add(genId); btn.classList.add('liked'); heart.textContent = '❤️'; }
+
+        const { data, error } = await supabaseClient.rpc('toggle_like', {
+            p_generation_id: genId,
+            p_user_id: currentUser.id
+        });
+        if (error) {
+            // Rollback
+            countEl.textContent = newCount - delta;
+            if (isLiked) { likedSet.add(genId); btn.classList.add('liked'); heart.textContent = '❤️'; }
+            else { likedSet.delete(genId); btn.classList.remove('liked'); heart.textContent = '🤍'; }
+            showToast('❌ Could not update like');
+        }
+    }
+
+    function setSort(sort) {
+        if (currentSort === sort) return;
+        currentSort = sort;
+        document.getElementById('sortLikes').classList.toggle('active', sort === 'likes');
+        document.getElementById('sortNewest').classList.toggle('active', sort === 'newest');
+        loadGallery(true);
+    }
+
+    function loadMore() { loadGallery(false); }
+
+    function showToast(msg, duration = 3000) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', duration);
+    }
+
+    init();
+</script>
+</body>
+</html>
