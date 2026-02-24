@@ -781,7 +781,7 @@
                         <div class="video-item" onclick="playVideo('${video.video_url || ''}')">
                             <div class="video-thumbnail">
                                 ${video.video_url ? 
-                                    `<video src="${video.video_url}" muted></video>` : 
+                                    `<video src="${addWatermark(video.video_url)}" muted></video>` : 
                                     '<span>🎬</span>'
                                 }
                             </div>
@@ -889,12 +889,22 @@
         }
 
         var currentVideoUrl = "";
+        
+        // === WATERMARK HELPER ===
+        function addWatermark(url) {
+            if (!url || !url.includes('res.cloudinary.com')) return url;
+            if (url.includes('ToonIt.ai')) return url; // already watermarked
+            var transform = 'l_text:Arial_18_bold:Made%20with%20ToonIt.ai,co_white,o_55,g_south_east,x_14,y_10';
+            return url.replace('/upload/', '/upload/' + transform + '/');
+        }
+        // === END WATERMARK HELPER ===
+
         function playVideo(url) {
             if (!url) return;
             currentVideoUrl = url;
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
-            video.src = url;
+            video.src = addWatermark(url);
             modal.classList.add('show');
             video.play();
         }
