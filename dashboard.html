@@ -778,10 +778,10 @@
                 document.getElementById('statVideos').textContent = totalVideos || data.length;
 
                     videoList.innerHTML = data.map(video => `
-                        <div class="video-item" onclick="playVideo('${(video.video_url || video.cloudinary_url) || ''}')">
+                        <div class="video-item" onclick="playVideo('${video.video_url || ''}')">
                             <div class="video-thumbnail">
-                                ${(video.video_url || video.cloudinary_url) ? 
-                                    `<video src="${(video.video_url || video.cloudinary_url)}" muted></video>` : 
+                                ${video.video_url ? 
+                                    `<video src="${video.video_url}" muted></video>` : 
                                     '<span>🎬</span>'
                                 }
                             </div>
