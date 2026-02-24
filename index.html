@@ -3427,15 +3427,27 @@
                             var videoUrl = data.video_url;
                             console.log('[POLL] Video found in Supabase:', videoUrl);
                             clearInterval(pollInterval);
+                            if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                             var savedJobId = currentJobId;
                             clearJob();
                             showVideo(videoUrl, savedJobId);
                             await loadUserCredits();
                             return;
+                        } else if (data && (data.status === 'failed' || data.status === 'error' || data.status === 'expired')) {
+                            // Generation failed — stop polling and show error immediately
+                            console.log('[POLL] Job failed with status:', data.status);
+                            clearInterval(pollInterval);
+                            if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+                            clearJob();
+                            if (statusText) {
+                                statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ Video generation failed. Please try again.</div>' +
+                                    '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
+                            }
+                            return;
                         }
                     }
 
-                    // Fallback: check Cloudinary directly after 30s
+                    // Fallback: check Supabase Storage directly after 30s
                     var elapsedSec = transformStartTime ? (Date.now() - transformStartTime) / 1000 : 0;
                     if (elapsedSec > 30) {
                         var storageUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/storage/v1/object/public/videos/' + currentJobId + '.mp4';
