@@ -3809,6 +3809,7 @@
         }
         if (fileInput) fileInput.value = '';
         if (result) result.style.display = 'none';
+        var resultVid = document.getElementById('resultVideo'); if (resultVid) { resultVid.pause(); resultVid.src = ''; resultVid.load(); }
         if (status) status.style.display = 'none';
         if (uploadArea) {
             uploadArea.innerHTML = '<div class="upload-icon">📸</div><p><strong>Drop your photo here</strong></p><p style="color: #999; font-size: 0.9em;">or click to browse</p><input type="file" id="fileInput" accept="image/*" style="display:none;">';
