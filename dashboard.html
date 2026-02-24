@@ -130,6 +130,20 @@
             background: var(--bg-card);
         }
         .video-item:hover { border-color: var(--primary); box-shadow: 0 3px 15px var(--glow); }
+
+        .gallery-toggle-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78em;
+            color: var(--text-muted, #9a8660);
+            cursor: pointer;
+            margin-top: 6px;
+            user-select: none;
+        }
+        .gallery-toggle-label input { cursor: pointer; accent-color: var(--primary, #d4a04a); }
+        .gallery-toggle-label:hover { color: var(--primary, #d4a04a); }
+
         .video-thumbnail {
             width: 120px; height: 80px; border-radius: 8px;
             overflow: hidden; flex-shrink: 0; background: var(--bg-light);
@@ -541,6 +555,7 @@
 
     <!-- Header -->
     <header>
+        <a href="gallery.html" style="color:var(--primary);text-decoration:none;font-size:0.85em;margin-right:12px;">🎨 Gallery</a>
         <a href="index.html" class="logo">✨ Toon It!</a>
         <div class="header-right">
             <div class="credit-badge">
@@ -772,7 +787,7 @@
             try {
                 const { data, error } = await supabaseClient
                     .from('generations')
-                    .select('*')
+                    .select('id, user_id, job_id, status, video_url, cloudinary_url, created_at, is_public, like_count')
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: false })
                     .limit(20);
@@ -801,6 +816,14 @@
                                 <span class="video-status ${video.status === 'complete' ? 'status-complete' : 'status-processing'}">
                                     ${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}
                                 </span>
+                                ${video.status === 'complete' ? `
+                                <label class="gallery-toggle-label" onclick="event.stopPropagation()">
+                                    <input type="checkbox" class="gallery-toggle" 
+                                        ${video.is_public ? 'checked' : ''}
+                                        onchange="toggleGalleryOptIn(event, '${video.id}')"
+                                        onclick="event.stopPropagation()">
+                                    <span>📢 Show in gallery</span>
+                                </label>` : ''}
                             </div>
                         </div>
                     `).join('');
@@ -901,6 +924,31 @@
         var currentVideoUrl = "";
         
         
+        
+        async function toggleGalleryOptIn(event, genId) {
+            event.stopPropagation();
+            const checkbox = event.target;
+            const isPublic = checkbox.checked;
+            try {
+                const { error } = await supabaseClient
+                    .from('generations')
+                    .update({ is_public: isPublic })
+                    .eq('id', genId);
+                if (error) throw error;
+                // Show feedback
+                const label = checkbox.closest('.gallery-toggle-label');
+                if (label) {
+                    const span = label.querySelector('span');
+                    const orig = span.textContent;
+                    span.textContent = isPublic ? '✅ Added to gallery!' : '✅ Removed from gallery';
+                    setTimeout(() => span.textContent = orig, 2000);
+                }
+            } catch (err) {
+                console.error('Gallery toggle error:', err);
+                checkbox.checked = !isPublic; // rollback
+            }
+        }
+
         function showFreeCreditsExpiry(freeCredits, expiresAt) {
             if (!freeCredits || freeCredits <= 0 || !expiresAt) return;
             var now = new Date();
