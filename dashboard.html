@@ -525,7 +525,15 @@
 
         </style>
 </head>
-<body>
+
+    <!-- Free Credits Expiry Banner -->
+    <div id="expiryBanner" style="display:none; background:linear-gradient(90deg,#ff6b35,#f7c948); color:#1a1408; padding:12px 20px; text-align:center; font-weight:600; font-size:0.9em; position:sticky; top:0; z-index:9999;">
+      <span id="expiryBannerText"></span>
+      <button onclick="openCreditsModal()" style="margin-left:12px; background:#1a1408; color:#f7c948; border:none; border-radius:20px; padding:5px 14px; font-weight:700; cursor:pointer; font-size:0.85em;">Buy Credits →</button>
+      <button onclick="document.getElementById('expiryBanner').style.display='none'" style="margin-left:8px; background:transparent; border:none; color:#1a1408; cursor:pointer; font-size:1.1em;">✕</button>
+    </div>
+
+    <body>
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="spinner"></div>
@@ -745,13 +753,15 @@
             try {
                 const { data, error } = await supabaseClient
                     .from('profiles')
-                    .select('credits')
+                    .select('credits, free_credits, free_credits_expires_at')
                     .eq('id', currentUser.id)
                     .single();
 
                 if (data) {
                     document.getElementById('headerCredits').textContent = data.credits;
                     document.getElementById('statCredits').textContent = data.credits;
+                    // Show free credit expiry warning if applicable
+                    showFreeCreditsExpiry(data.free_credits, data.free_credits_expires_at);
                 }
             } catch (err) {
                 console.error('Error loading credits:', err);
@@ -890,6 +900,30 @@
 
         var currentVideoUrl = "";
         
+        
+        function showFreeCreditsExpiry(freeCredits, expiresAt) {
+            if (!freeCredits || freeCredits <= 0 || !expiresAt) return;
+            var now = new Date();
+            var expiry = new Date(expiresAt);
+            var msLeft = expiry - now;
+            var daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+            var banner = document.getElementById('expiryBanner');
+            var bannerText = document.getElementById('expiryBannerText');
+            if (!banner || !bannerText) return;
+            if (daysLeft <= 0) {
+                bannerText.textContent = '⏰ Your ' + freeCredits + ' free credit' + (freeCredits > 1 ? 's have' : ' has') + ' expired. Buy credits to keep creating!';
+                banner.style.display = 'block';
+            } else if (daysLeft <= 7) {
+                bannerText.textContent = '⏰ Your ' + freeCredits + ' free credit' + (freeCredits > 1 ? 's expire' : ' expires') + ' in ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + '!';
+                banner.style.display = 'block';
+            }
+        }
+
+        function openCreditsModal() {
+            // Redirect to main page with credits modal trigger
+            window.location.href = 'https://toonit.ai#buy-credits';
+        }
+
         // === WATERMARK HELPER ===
         function addWatermark(url) {
             if (!url || !url.includes('res.cloudinary.com')) return url;
