@@ -1744,10 +1744,12 @@
 
         let supabaseClient = null;
 
-        // Initialize Supabase (script loads synchronously before this)
+        // Initialize Supabase — single authoritative instance
         try {
             if (window.supabase && window.supabase.createClient) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                // Expose on window so failsafe block and all scripts use SAME instance
+                window.supabaseClient = supabaseClient;
                 console.log('Supabase initialized successfully');
             } else {
                 console.error('Supabase library not loaded');
@@ -1782,7 +1784,10 @@
         document.addEventListener('DOMContentLoaded', async () => {
         // RELIABLE: Check session on page load and update UI
         async function initAuth() {
+                // Sync supabaseClient with window instance in case of timing
+                if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
                 try {
+                    if (!supabaseClient) { updateUIForGuest(); return; }
                     var { data: { session } } = await supabaseClient.auth.getSession();
                     if (session && session.user) {
                         currentUser = session.user;
@@ -2082,6 +2087,8 @@
         }
 
         async function handleGoogleOAuth() {
+            // Use window.supabaseClient or fallback via getSupabase()
+            if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
             if (!supabaseClient) { alert('Authentication service not available. Please refresh.'); return; }
 
             // Disable buttons while processing
@@ -4090,14 +4097,16 @@
 
     // Wait for Supabase to be available
     function getSupabase() {
+        // ALWAYS return the single authoritative supabaseClient instance
+        // Never create a second client — separate clients have separate session storage
+        if (window.supabaseClient) return window.supabaseClient;
+        // Fallback: create once and store as the authoritative instance
         if (window.supabase && typeof window.supabase.createClient === 'function') {
-            if (!window._supabaseClient) {
-                window._supabaseClient = window.supabase.createClient(
-                    'https://zgfpxdkanwbcieowrqoz.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' + 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN' + 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0'
-                );
-            }
-            return window._supabaseClient;
+            window.supabaseClient = window.supabase.createClient(
+                'https://zgfpxdkanwbcieowrqoz.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' + 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN' + 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0'
+            );
+            return window.supabaseClient;
         }
         return null;
     }
