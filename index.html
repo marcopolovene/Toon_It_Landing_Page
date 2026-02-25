@@ -2006,6 +2006,25 @@
         // ==========================================
         var _gisInitialized = false;
 
+                async function handleGoogleOAuth() {
+            if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
+            if (!supabaseClient) { alert('Authentication service not available. Please refresh.'); return; }
+            try {
+                var refInput = document.getElementById('signupReferralCode');
+                if (refInput && refInput.value.trim()) {
+                    localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
+                }
+                var r = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + window.location.pathname }
+                });
+                if (r.error) { alert('Google sign-in failed: ' + r.error.message); }
+            } catch(e) {
+                console.error('[GOOGLE AUTH] Error:', e);
+                alert('Google sign-in failed. Please try again.');
+            }
+        }
+
         async function handleGoogleCredential(response) {
             if (!response.credential) return;
 
