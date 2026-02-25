@@ -2006,22 +2006,57 @@
         // ==========================================
         var _gisInitialized = false;
 
-                async function handleGoogleOAuth() {
+                // Google OAuth -- GIS popup flow (shows app name not supabase.co)
+        // Falls back to signInWithOAuth redirect if GIS not available
+        function _googleFallbackRedirect() {
             if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
             if (!supabaseClient) { alert('Authentication service not available. Please refresh.'); return; }
-            try {
-                var refInput = document.getElementById('signupReferralCode');
-                if (refInput && refInput.value.trim()) {
-                    localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
-                }
-                var r = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: window.location.origin + window.location.pathname }
-                });
+            var refInput = document.getElementById('signupReferralCode');
+            if (refInput && refInput.value.trim()) {
+                localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
+            }
+            supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin + window.location.pathname }
+            }).then(function(r) {
                 if (r.error) { alert('Google sign-in failed: ' + r.error.message); }
-            } catch(e) {
-                console.error('[GOOGLE AUTH] Error:', e);
+            }).catch(function(e) {
                 alert('Google sign-in failed. Please try again.');
+            });
+        }
+
+        function handleGoogleOAuth() {
+            if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
+            // Save referral code before any redirect
+            var refInput = document.getElementById('signupReferralCode');
+            if (refInput && refInput.value.trim()) {
+                localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
+            }
+            // Use GIS popup (shows "Toon It!" not supabase.co)
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                try {
+                    google.accounts.id.initialize({
+                        client_id: '497352803234-1bcrsjes6bijboj3locnpi6baug9309n.apps.googleusercontent.com',
+                        callback: handleGoogleCredential,
+                        auto_select: false,
+                        cancel_on_tap_outside: true,
+                        use_fedcm_for_prompt: false
+                    });
+                    google.accounts.id.prompt(function(notification) {
+                        console.log('[GOOGLE AUTH] Prompt notification:', notification.getMomentType());
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            console.log('[GOOGLE AUTH] Popup not shown, reason:', notification.getNotDisplayedReason && notification.getNotDisplayedReason());
+                            // Fallback to redirect
+                            _googleFallbackRedirect();
+                        }
+                    });
+                } catch(e) {
+                    console.error('[GOOGLE AUTH] GIS error:', e);
+                    _googleFallbackRedirect();
+                }
+            } else {
+                console.log('[GOOGLE AUTH] GIS not loaded, using redirect');
+                _googleFallbackRedirect();
             }
         }
 
