@@ -1947,45 +1947,58 @@
             if (transformBtn) transformBtn.disabled = true;
         }
 
-        function updateUIForUser() {
-            // Always enable upload for logged-in users
-            const uploadArea = document.getElementById('uploadArea');
-            if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block';
-                var styleSel = document.getElementById('styleSelector'); if (styleSel) styleSel.style.display = 'block'; }
-            const guestView = document.getElementById('guestView');
-            const userView = document.getElementById('userView');
-            const guestButtons = document.getElementById('guestButtons');
-            const userButtons = document.getElementById('userButtons');
-            const userEmail = document.getElementById('userEmail');
-            const creditCount = document.getElementById('creditCount');
+        // Single authoritative updateUIForUser — accepts optional (email, credits) args
+        // or falls back to currentUser/currentCredits globals
+        function updateUIForUser(emailArg, creditsArg) {
+            // Resolve values: use passed args or globals
+            var resolvedEmail = emailArg || (currentUser && currentUser.email) || '';
+            var resolvedCredits = (creditsArg !== undefined && creditsArg !== null) ? creditsArg : (currentCredits || 0);
 
+            // Update globals
+            if (creditsArg !== undefined && creditsArg !== null) currentCredits = creditsArg;
+
+            // DOM elements
+            var uploadArea = document.getElementById('uploadArea');
+            var guestView = document.getElementById('guestView');
+            var userView = document.getElementById('userView');
+            var guestButtons = document.getElementById('guestButtons');
+            var userButtons = document.getElementById('userButtons');
+            var userEmail = document.getElementById('userEmail');
+            var creditCount = document.getElementById('creditCount');
+            var loginRequired = document.getElementById('loginRequired');
+            var styleSel = document.getElementById('styleSelector');
+
+            // Switch guest -> user UI
             if (guestView) guestView.style.display = 'none';
-            if (userView) userView.style.display = '';
-            var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
+            if (userView) userView.style.display = 'flex';
             if (guestButtons) guestButtons.style.display = 'none';
-            if (userButtons) userButtons.style.display = '';
-            if (userEmail) userEmail.textContent = currentUser.email;
- if (creditCount) creditCount.textContent = currentCredits || 0;
-    // Enable upload for logged-in users
-    const loginRequired = document.getElementById('loginRequired');
-    if (uploadArea) {
-      uploadArea.style.display = 'block';
-      uploadArea.classList.remove('disabled');
-    }
-    if (loginRequired) loginRequired.style.display = 'none';
-            if (creditCount) creditCount.textContent = currentCredits;
+            if (userButtons) userButtons.style.display = 'flex';
+            var _ctn = document.querySelector('.container');
+            if (_ctn) _ctn.classList.add('logged-in');
+
+            // Show email and credits
+            if (userEmail) userEmail.textContent = resolvedEmail;
+            if (creditCount) creditCount.textContent = resolvedCredits;
             if (loginRequired) loginRequired.style.display = 'none';
 
-            if (currentCredits > 0) {
-      if (noCredits) noCredits.style.display = 'none';
-      if (infoBox) infoBox.style.display = '';
-      if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block'; }
-    } else {
-      if (noCredits) noCredits.style.display = '';
-      if (infoBox) infoBox.style.display = 'none';
-      // Don't disable - let user try anyway, backend will check
-    }
+            // Upload area
+            if (uploadArea) {
+                uploadArea.style.display = 'block';
+                uploadArea.classList.remove('disabled');
+            }
+            if (styleSel) styleSel.style.display = 'block';
+
+            // Credits-dependent UI
+            if (resolvedCredits > 0) {
+                if (noCredits) noCredits.style.display = 'none';
+                if (infoBox) infoBox.style.display = '';
+            } else {
+                if (noCredits) noCredits.style.display = '';
+                if (infoBox) infoBox.style.display = 'none';
+            }
+
             updateTransformButton();
+            console.log('[UI] Updated for user:', resolvedEmail, 'credits:', resolvedCredits);
         }
 
         function updateTransformButton() {
@@ -2030,9 +2043,10 @@
                 window.currentUser = data.session.user;
                 console.log('[LOGIN] Success! User:', data.session.user.email);
                 closeModals();
-                updateUIForUser();
-                loadUserCredits();
-                console.log('[LOGIN] UI updated');
+                // Load credits first, THEN update UI so credits show correctly
+                await loadUserCredits();
+                updateUIForUser(data.session.user.email, currentCredits);
+                console.log('[LOGIN] UI updated, credits:', currentCredits);
             }
             } catch (e) {
                 if (errorEl) errorEl.textContent = 'Login failed. Please try again.';
@@ -4094,27 +4108,7 @@
         });
     }
 
-    function updateUIForUser(email, credits) {
-        console.log('[FAILSAFE] Updating UI for user:', email);
-        var guestView = document.getElementById('guestView');
-        var userView = document.getElementById('userView');
-        var userEmail = document.getElementById('userEmail');
-        var creditCount = document.getElementById('creditCount');
- var guestButtons = document.getElementById('guestButtons');
- var userButtons = document.getElementById('userButtons');
-        var loginRequired = document.getElementById('loginRequired');
-        var uploadArea = document.getElementById('uploadArea');
-
-        if (guestView) guestView.style.display = 'none';
-        if (userView) userView.style.display = 'flex';
-        var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
-        if (userEmail) userEmail.textContent = email;
-        if (creditCount) creditCount.textContent = credits;
- if (guestButtons) guestButtons.style.display = 'none';
- if (userButtons) userButtons.style.display = 'flex';
-        if (loginRequired) loginRequired.style.display = 'none';
-        if (uploadArea) uploadArea.style.display = 'block';
-    }
+    // updateUIForUser duplicate removed — single definition above handles all cases
 
     async function handleLoginSubmit(e) {
         e.preventDefault();
