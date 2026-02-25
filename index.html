@@ -1667,6 +1667,26 @@
             if (modal) {
                 modal.classList.add('active');
                 console.log('Modal activated');
+                // Re-render Google GIS buttons after modal is visible
+                // (renderButton fails silently when container is display:none/0x0)
+                if (type === 'login' || type === 'signup') {
+                    setTimeout(function() {
+                        try {
+                            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                                // Clear containers so GIS renders fresh buttons
+                                var loginC = document.getElementById('googleLoginContainer');
+                                var signupC = document.getElementById('googleSignupContainer');
+                                if (loginC) loginC.innerHTML = '';
+                                if (signupC) signupC.innerHTML = '';
+                                _gisInitialized = false;
+                                initGoogleButtons();
+                                console.log('[GOOGLE AUTH] Buttons re-rendered for modal:', type);
+                            }
+                        } catch(e) {
+                            console.warn('[GOOGLE AUTH] Re-render failed:', e);
+                        }
+                    }, 50);
+                }
             }
         }
 
@@ -1693,8 +1713,8 @@
 
         // Initialize Supabase (script loads synchronously before this)
         try {
-            if (window.supabase && window.window.supabase.createClient) {
-                supabaseClient = window.window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('Supabase initialized successfully');
             } else {
                 console.error('Supabase library not loaded');
@@ -4210,18 +4230,18 @@
             btn.onclick = closeAllModals;
         });
 
-        // Login form
+        // Login/Signup forms: handlers are set via HTML onsubmit attributes.
+        // Do NOT override here - the original handleLogin/handleSignup functions
+        // use the correctly initialized supabaseClient. Overriding caused session
+        // conflicts and the 'invalid login' error. (fixed 2026-02-25)
         var loginForm = document.getElementById('loginForm');
         if (loginForm) {
-            loginForm.onsubmit = handleLoginSubmit;
-            console.log('[FAILSAFE] Login form handler attached');
+            console.log('[AUTH] Login form ready (using HTML onsubmit handler)');
         }
 
-        // Signup form
         var signupForm = document.getElementById('signupForm');
         if (signupForm) {
-            signupForm.onsubmit = handleSignupSubmit;
-            console.log('[FAILSAFE] Signup form handler attached');
+            console.log('[AUTH] Signup form ready (using HTML onsubmit handler)');
         }
 
         console.log('[FAILSAFE] All handlers ready!');
