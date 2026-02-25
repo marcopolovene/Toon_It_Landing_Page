@@ -36,6 +36,7 @@
 
 
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toon It! — Transform Photos into Magical Storybook Videos with AI</title>
     
@@ -1246,7 +1247,34 @@
         .style-card .style-name { font-size: 0.7em; }
     }
 
-    </style>
+    
+        /* ToonIt watermark overlay */
+        .toonit-watermark-wrap {
+            position: relative;
+            display: block;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .toonit-watermark-wrap video {
+            display: block;
+            width: 100%;
+            margin-bottom: 0 !important; /* override #result video margin so span stays over frame */
+        }
+        .toonit-watermark {
+            position: absolute;
+            bottom: 14px;
+            left: 16px;
+            font-family: 'Pacifico', cursive;
+            font-size: 18px;
+            color: white;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            user-select: none;
+            letter-spacing: 0.3px;
+        }
+        </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
     {
@@ -1459,7 +1487,10 @@
 
         <!-- Result Section -->
         <div id="result" style="display:none;">
+            <div class="toonit-watermark-wrap">
             <video id="resultVideo" controls autoplay loop></video>
+            <span class="toonit-watermark">ToonIt.ai</span>
+        </div>
             <div class="result-buttons">
                 <button id="downloadBtn">⬇️ Download</button>
                 <button id="newBtn">🔄 Create Another</button>
@@ -1906,7 +1937,12 @@
             if (transformBtn) transformBtn.disabled = true;
         }
 
-        function updateUIForUser() {
+        function updateUIForUser(email, credits) {
+            // Fallback to globals if not passed
+            if (email === undefined) email = (currentUser || window.currentUser || {}).email || '';
+            if (credits === undefined) credits = (window.currentCredits !== undefined ? window.currentCredits : currentCredits);
+            // Keep all credit globals in sync
+            if (credits !== undefined) { currentCredits = credits; window.currentCredits = credits; }
             // Always enable upload for logged-in users
             const uploadArea = document.getElementById('uploadArea');
             if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block';
@@ -1924,7 +1960,7 @@
             if (guestButtons) guestButtons.style.display = 'none';
             if (userButtons) userButtons.style.display = '';
             if (userEmail) userEmail.textContent = currentUser.email;
- if (creditCount) creditCount.textContent = currentCredits || 0;
+ if (creditCount) creditCount.textContent = credits !== undefined ? credits : (currentCredits || 0);
     // Enable upload for logged-in users
     const loginRequired = document.getElementById('loginRequired');
     if (uploadArea) {
@@ -1946,6 +1982,8 @@
     }
             updateTransformButton();
         }
+        // Expose primary updateUIForUser to global scope
+        window._updateUIForUser = updateUIForUser;
 
         function updateTransformButton() {
             if (transformBtn && selectedFile) {
@@ -1989,8 +2027,8 @@
                 window.currentUser = data.session.user;
                 console.log('[LOGIN] Success! User:', data.session.user.email);
                 closeModals();
+                await loadUserCredits();
                 updateUIForUser();
-                loadUserCredits();
                 console.log('[LOGIN] UI updated');
             }
             } catch (e) {
@@ -3726,10 +3764,7 @@
 
         // === WATERMARK HELPER ===
         function addWatermark(url) {
-            if (!url || !url.includes('res.cloudinary.com')) return url;
-            if (url.includes('ToonIt.ai')) return url; // already watermarked
-            var transform = 'l_text:Arial_18_bold:Made%20with%20ToonIt.ai,co_white,o_55,g_south_east,x_14,y_10';
-            return url.replace('/upload/', '/upload/' + transform + '/');
+            return url; // watermark is CSS overlay
         }
         // === END WATERMARK HELPER ===
 
@@ -4014,25 +4049,19 @@
     }
 
     function updateUIForUser(email, credits) {
-        console.log('[FAILSAFE] Updating UI for user:', email);
-        var guestView = document.getElementById('guestView');
-        var userView = document.getElementById('userView');
-        var userEmail = document.getElementById('userEmail');
-        var creditCount = document.getElementById('creditCount');
- var guestButtons = document.getElementById('guestButtons');
- var userButtons = document.getElementById('userButtons');
-        var loginRequired = document.getElementById('loginRequired');
-        var uploadArea = document.getElementById('uploadArea');
-
-        if (guestView) guestView.style.display = 'none';
-        if (userView) userView.style.display = 'flex';
-        var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
-        if (userEmail) userEmail.textContent = email;
-        if (creditCount) creditCount.textContent = credits;
- if (guestButtons) guestButtons.style.display = 'none';
- if (userButtons) userButtons.style.display = 'flex';
-        if (loginRequired) loginRequired.style.display = 'none';
-        if (uploadArea) uploadArea.style.display = 'block';
+        // Sync credits to all globals so the primary function sees correct value
+        if (credits !== undefined) {
+            window.currentCredits = credits;
+            currentCredits = credits;
+        }
+        if (email !== undefined) {
+            var _u = window.currentUser || currentUser;
+            if (_u) _u.email = email;
+        }
+        // Delegate to authoritative implementation inside DOMContentLoaded closure
+        if (typeof window._updateUIForUser === 'function') {
+            window._updateUIForUser(email, credits);
+        }
     }
 
     async function handleLoginSubmit(e) {

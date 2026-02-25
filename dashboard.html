@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#d4a04a">
 
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toon It! - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -537,6 +538,33 @@
             overflow-y: auto;
         }
 
+        
+        /* ToonIt watermark overlay */
+        .toonit-watermark-wrap {
+            position: relative;
+            display: block;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .toonit-watermark-wrap video {
+            display: block;
+            width: 100%;
+            margin-bottom: 0 !important; /* override #result video margin so span stays over frame */
+        }
+        .toonit-watermark {
+            position: absolute;
+            bottom: 14px;
+            left: 16px;
+            font-family: 'Pacifico', cursive;
+            font-size: 18px;
+            color: white;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            user-select: none;
+            letter-spacing: 0.3px;
+        }
         </style>
 </head>
 
@@ -683,7 +711,10 @@
     <div class="video-modal" id="videoModal">
         <button class="video-modal-close" onclick="closeVideoModal()">×</button>
         <div class="video-modal-content">
+            <div class="toonit-watermark-wrap">
             <video id="modalVideo" controls></video>
+            <span class="toonit-watermark">ToonIt.ai</span>
+        </div>
             <div style="margin-top:12px;text-align:center;">
                 <button id="shareVideoBtn" onclick="shareCurrentVideo()" style="background:var(--primary);color:var(--bg-main);border:none;padding:10px 24px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;">Share Video</button>
             </div>
@@ -974,10 +1005,7 @@
 
         // === WATERMARK HELPER ===
         function addWatermark(url) {
-            if (!url || !url.includes('res.cloudinary.com')) return url;
-            if (url.includes('ToonIt.ai')) return url; // already watermarked
-            var transform = 'l_text:Arial_18_bold:Made%20with%20ToonIt.ai,co_white,o_55,g_south_east,x_14,y_10';
-            return url.replace('/upload/', '/upload/' + transform + '/');
+            return url; // watermark is CSS overlay
         }
         // === END WATERMARK HELPER ===
 
