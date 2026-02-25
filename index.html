@@ -2039,8 +2039,8 @@
                         client_id: '497352803234-1bcrsjes6bijboj3locnpi6baug9309n.apps.googleusercontent.com',
                         callback: handleGoogleCredential,
                         auto_select: false,
-                        cancel_on_tap_outside: true,
-                        use_fedcm_for_prompt: false
+                        cancel_on_tap_outside: false,
+                        use_fedcm_for_prompt: true
                     });
                     google.accounts.id.prompt(function(notification) {
                         console.log('[GOOGLE AUTH] Prompt notification:', notification.getMomentType());
