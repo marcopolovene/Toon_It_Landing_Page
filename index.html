@@ -2057,48 +2057,19 @@
         function initGoogleButtons() {
             if (_gisInitialized) return;
             if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
-                console.log('[GOOGLE AUTH] GIS library not loaded');
                 return;
             }
-
             try {
+                // Initialize for credential callback only -- custom HTML buttons handle click
+                // Do NOT call renderButton -- it overwrites our custom buttons
                 google.accounts.id.initialize({
                     client_id: '497352803234-1bcrsjes6bijboj3locnpi6baug9309n.apps.googleusercontent.com',
                     callback: handleGoogleCredential,
                     auto_select: false,
                     itp_support: true
                 });
-
-                // Render button in login modal
-                var loginContainer = document.getElementById('googleLoginContainer');
-                if (loginContainer) {
-                    google.accounts.id.renderButton(loginContainer, {
-                        type: 'standard',
-                        theme: 'outline',
-                        size: 'large',
-                        text: 'continue_with',
-                        shape: 'rectangular',
-                        logo_alignment: 'left',
-                        width: 320
-                    });
-                }
-
-                // Render button in signup modal
-                var signupContainer = document.getElementById('googleSignupContainer');
-                if (signupContainer) {
-                    google.accounts.id.renderButton(signupContainer, {
-                        type: 'standard',
-                        theme: 'outline',
-                        size: 'large',
-                        text: 'signup_with',
-                        shape: 'rectangular',
-                        logo_alignment: 'left',
-                        width: 320
-                    });
-                }
-
                 _gisInitialized = true;
-                console.log('[GOOGLE AUTH] GIS buttons rendered');
+                console.log('[GOOGLE AUTH] GIS initialized (no renderButton -- using custom buttons)');
             } catch(e) {
                 console.error('[GOOGLE AUTH] GIS init error:', e);
             }
