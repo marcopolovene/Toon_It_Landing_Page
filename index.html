@@ -1508,7 +1508,12 @@
         <div class="modal">
             <button class="modal-close" data-close-modal>&times;</button>
             <h2>Welcome Back!</h2>
-            <div id="googleLoginContainer" style="display:flex;justify-content:center;"></div>
+            <div id="googleLoginContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
+                <button type="button" onclick="handleGoogleOAuth()" class="btn-google" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Continue with Google
+                </button>
+            </div>
             <div class="auth-divider">or</div>
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
@@ -1536,7 +1541,12 @@
                     <button class="modal-close" data-close-modal>&times;</button>
             <h2>Create Account</h2>
             <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
-            <div id="googleSignupContainer" style="display:flex;justify-content:center;"></div>
+            <div id="googleSignupContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
+                <button type="button" onclick="handleGoogleOAuth()" class="btn-google" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Sign up with Google
+                </button>
+            </div>
             <div class="auth-divider">or continue with email</div>
             <form id="signupForm" onsubmit="handleSignup(event)">
                 <div class="form-group">
@@ -2033,8 +2043,71 @@
         }
 
         // ==========================================
-        // GOOGLE OAUTH (Google Identity Services - renderButton)
+        // GOOGLE OAUTH
         // ==========================================
+        // Uses GIS prompt() popup flow -> signInWithIdToken (preferred)
+        // Falls back to signInWithOAuth redirect if GIS unavailable
+
+        function resetGoogleButtons() {
+            var btns = document.querySelectorAll('.btn-google');
+            btns.forEach(function(btn) { btn.disabled = false; });
+        }
+
+        async function fallbackGoogleRedirect() {
+            try {
+                var refInput = document.getElementById('signupReferralCode');
+                if (refInput && refInput.value.trim()) {
+                    localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
+                }
+                var { error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + window.location.pathname }
+                });
+                if (error) { alert('Google sign-in failed: ' + error.message); resetGoogleButtons(); }
+            } catch(e) { alert('Google sign-in failed. Please try again.'); resetGoogleButtons(); }
+        }
+
+        async function handleGoogleOAuth() {
+            if (!supabaseClient) { alert('Authentication service not available. Please refresh.'); return; }
+
+            // Disable buttons while processing
+            var btns = document.querySelectorAll('.btn-google');
+            btns.forEach(function(btn) { btn.disabled = true; });
+
+            // Store referral code before any redirect
+            var refInput = document.getElementById('signupReferralCode');
+            if (refInput && refInput.value.trim()) {
+                localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
+            }
+
+            try {
+                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                    google.accounts.id.initialize({
+                        client_id: '497352803234-1bcrsjes6bijboj3locnpi6baug9309n.apps.googleusercontent.com',
+                        callback: handleGoogleCredential,
+                        auto_select: false,
+                        cancel_on_tap_outside: false,
+                        use_fedcm_for_prompt: true
+                    });
+                    google.accounts.id.prompt(function(notification) {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            console.log('[GOOGLE AUTH] GIS prompt not displayed, using redirect fallback');
+                            fallbackGoogleRedirect();
+                        } else if (notification.isDismissedMoment()) {
+                            console.log('[GOOGLE AUTH] User dismissed prompt');
+                            resetGoogleButtons();
+                        }
+                    });
+                } else {
+                    console.log('[GOOGLE AUTH] GIS not loaded, using redirect fallback');
+                    fallbackGoogleRedirect();
+                }
+            } catch(e) {
+                console.error('[GOOGLE AUTH] Error:', e);
+                fallbackGoogleRedirect();
+            }
+        }
+
         var _gisInitialized = false;
 
         async function handleGoogleCredential(response) {
