@@ -1659,6 +1659,44 @@
         // ==========================================
         console.log('=== Landing page JS loaded ===');
 
+        function renderGoogleButtonInModal(type) {
+            // Called AFTER modal is visible — renderButton needs real dimensions
+            // IMPORTANT: do NOT call initialize() again, only renderButton()
+            if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+                console.log('[GOOGLE AUTH] GIS not ready yet, retrying...');
+                setTimeout(function(){ renderGoogleButtonInModal(type); }, 200);
+                return;
+            }
+            try {
+                if (type === 'login' || type === 'all') {
+                    var loginC = document.getElementById('googleLoginContainer');
+                    if (loginC) {
+                        loginC.innerHTML = '';
+                        google.accounts.id.renderButton(loginC, {
+                            type: 'standard', theme: 'outline', size: 'large',
+                            text: 'continue_with', shape: 'rectangular',
+                            logo_alignment: 'left', width: 320
+                        });
+                        console.log('[GOOGLE AUTH] Login button rendered');
+                    }
+                }
+                if (type === 'signup' || type === 'all') {
+                    var signupC = document.getElementById('googleSignupContainer');
+                    if (signupC) {
+                        signupC.innerHTML = '';
+                        google.accounts.id.renderButton(signupC, {
+                            type: 'standard', theme: 'outline', size: 'large',
+                            text: 'signup_with', shape: 'rectangular',
+                            logo_alignment: 'left', width: 320
+                        });
+                        console.log('[GOOGLE AUTH] Signup button rendered');
+                    }
+                }
+            } catch(e) {
+                console.warn('[GOOGLE AUTH] renderButton error:', e);
+            }
+        }
+
         function showModal(type) {
             console.log('showModal called with:', type);
             closeModals();
@@ -1667,25 +1705,10 @@
             if (modal) {
                 modal.classList.add('active');
                 console.log('Modal activated');
-                // Re-render Google GIS buttons after modal is visible
-                // (renderButton fails silently when container is display:none/0x0)
+                // Render Google button AFTER modal is visible (not during page load)
+                // initialize() is called once at startup; here we only call renderButton()
                 if (type === 'login' || type === 'signup') {
-                    setTimeout(function() {
-                        try {
-                            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                                // Clear containers so GIS renders fresh buttons
-                                var loginC = document.getElementById('googleLoginContainer');
-                                var signupC = document.getElementById('googleSignupContainer');
-                                if (loginC) loginC.innerHTML = '';
-                                if (signupC) signupC.innerHTML = '';
-                                _gisInitialized = false;
-                                initGoogleButtons();
-                                console.log('[GOOGLE AUTH] Buttons re-rendered for modal:', type);
-                            }
-                        } catch(e) {
-                            console.warn('[GOOGLE AUTH] Re-render failed:', e);
-                        }
-                    }, 50);
+                    setTimeout(function() { renderGoogleButtonInModal(type); }, 100);
                 }
             }
         }
