@@ -1509,7 +1509,7 @@
             <button class="modal-close" data-close-modal>&times;</button>
             <h2>Welcome Back!</h2>
             <div id="googleLoginContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
-                <button type="button" onclick="handleGoogleOAuth()" class="btn-google" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
+                <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                     Continue with Google
                 </button>
@@ -1542,7 +1542,7 @@
             <h2>Create Account</h2>
             <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
             <div id="googleSignupContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
-                <button type="button" onclick="handleGoogleOAuth()" class="btn-google" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
+                <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                     Sign up with Google
                 </button>
@@ -1669,44 +1669,6 @@
         // ==========================================
         console.log('=== Landing page JS loaded ===');
 
-        function renderGoogleButtonInModal(type) {
-            // Called AFTER modal is visible — renderButton needs real dimensions
-            // IMPORTANT: do NOT call initialize() again, only renderButton()
-            if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
-                console.log('[GOOGLE AUTH] GIS not ready yet, retrying...');
-                setTimeout(function(){ renderGoogleButtonInModal(type); }, 200);
-                return;
-            }
-            try {
-                if (type === 'login' || type === 'all') {
-                    var loginC = document.getElementById('googleLoginContainer');
-                    if (loginC) {
-                        loginC.innerHTML = '';
-                        google.accounts.id.renderButton(loginC, {
-                            type: 'standard', theme: 'outline', size: 'large',
-                            text: 'continue_with', shape: 'rectangular',
-                            logo_alignment: 'left', width: 320
-                        });
-                        console.log('[GOOGLE AUTH] Login button rendered');
-                    }
-                }
-                if (type === 'signup' || type === 'all') {
-                    var signupC = document.getElementById('googleSignupContainer');
-                    if (signupC) {
-                        signupC.innerHTML = '';
-                        google.accounts.id.renderButton(signupC, {
-                            type: 'standard', theme: 'outline', size: 'large',
-                            text: 'signup_with', shape: 'rectangular',
-                            logo_alignment: 'left', width: 320
-                        });
-                        console.log('[GOOGLE AUTH] Signup button rendered');
-                    }
-                }
-            } catch(e) {
-                console.warn('[GOOGLE AUTH] renderButton error:', e);
-            }
-        }
-
         function showModal(type) {
             console.log('showModal called with:', type);
             closeModals();
@@ -1715,11 +1677,6 @@
             if (modal) {
                 modal.classList.add('active');
                 console.log('Modal activated');
-                // Render Google button AFTER modal is visible (not during page load)
-                // initialize() is called once at startup; here we only call renderButton()
-                if (type === 'login' || type === 'signup') {
-                    setTimeout(function() { renderGoogleButtonInModal(type); }, 100);
-                }
             }
         }
 
@@ -1744,11 +1701,10 @@
 
         let supabaseClient = null;
 
-        // Initialize Supabase — single authoritative instance
+        // Initialize Supabase -- single authoritative instance
         try {
             if (window.supabase && window.supabase.createClient) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                // Expose on window so failsafe block and all scripts use SAME instance
                 window.supabaseClient = supabaseClient;
                 console.log('Supabase initialized successfully');
             } else {
@@ -1784,10 +1740,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
         // RELIABLE: Check session on page load and update UI
         async function initAuth() {
-                // Sync supabaseClient with window instance in case of timing
                 if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
                 try {
-                    if (!supabaseClient) { updateUIForGuest(); return; }
                     var { data: { session } } = await supabaseClient.auth.getSession();
                     if (session && session.user) {
                         currentUser = session.user;
@@ -1952,58 +1906,45 @@
             if (transformBtn) transformBtn.disabled = true;
         }
 
-        // Single authoritative updateUIForUser — accepts optional (email, credits) args
-        // or falls back to currentUser/currentCredits globals
-        function updateUIForUser(emailArg, creditsArg) {
-            // Resolve values: use passed args or globals
-            var resolvedEmail = emailArg || (currentUser && currentUser.email) || '';
-            var resolvedCredits = (creditsArg !== undefined && creditsArg !== null) ? creditsArg : (currentCredits || 0);
+        function updateUIForUser() {
+            // Always enable upload for logged-in users
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block';
+                var styleSel = document.getElementById('styleSelector'); if (styleSel) styleSel.style.display = 'block'; }
+            const guestView = document.getElementById('guestView');
+            const userView = document.getElementById('userView');
+            const guestButtons = document.getElementById('guestButtons');
+            const userButtons = document.getElementById('userButtons');
+            const userEmail = document.getElementById('userEmail');
+            const creditCount = document.getElementById('creditCount');
 
-            // Update globals
-            if (creditsArg !== undefined && creditsArg !== null) currentCredits = creditsArg;
-
-            // DOM elements
-            var uploadArea = document.getElementById('uploadArea');
-            var guestView = document.getElementById('guestView');
-            var userView = document.getElementById('userView');
-            var guestButtons = document.getElementById('guestButtons');
-            var userButtons = document.getElementById('userButtons');
-            var userEmail = document.getElementById('userEmail');
-            var creditCount = document.getElementById('creditCount');
-            var loginRequired = document.getElementById('loginRequired');
-            var styleSel = document.getElementById('styleSelector');
-
-            // Switch guest -> user UI
             if (guestView) guestView.style.display = 'none';
-            if (userView) userView.style.display = 'flex';
+            if (userView) userView.style.display = '';
+            var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
             if (guestButtons) guestButtons.style.display = 'none';
-            if (userButtons) userButtons.style.display = 'flex';
-            var _ctn = document.querySelector('.container');
-            if (_ctn) _ctn.classList.add('logged-in');
-
-            // Show email and credits
-            if (userEmail) userEmail.textContent = resolvedEmail;
-            if (creditCount) creditCount.textContent = resolvedCredits;
+            if (userButtons) userButtons.style.display = '';
+            if (userEmail) userEmail.textContent = currentUser.email;
+ if (creditCount) creditCount.textContent = currentCredits || 0;
+    // Enable upload for logged-in users
+    const loginRequired = document.getElementById('loginRequired');
+    if (uploadArea) {
+      uploadArea.style.display = 'block';
+      uploadArea.classList.remove('disabled');
+    }
+    if (loginRequired) loginRequired.style.display = 'none';
+            if (creditCount) creditCount.textContent = currentCredits;
             if (loginRequired) loginRequired.style.display = 'none';
 
-            // Upload area
-            if (uploadArea) {
-                uploadArea.style.display = 'block';
-                uploadArea.classList.remove('disabled');
-            }
-            if (styleSel) styleSel.style.display = 'block';
-
-            // Credits-dependent UI
-            if (resolvedCredits > 0) {
-                if (noCredits) noCredits.style.display = 'none';
-                if (infoBox) infoBox.style.display = '';
-            } else {
-                if (noCredits) noCredits.style.display = '';
-                if (infoBox) infoBox.style.display = 'none';
-            }
-
+            if (currentCredits > 0) {
+      if (noCredits) noCredits.style.display = 'none';
+      if (infoBox) infoBox.style.display = '';
+      if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block'; }
+    } else {
+      if (noCredits) noCredits.style.display = '';
+      if (infoBox) infoBox.style.display = 'none';
+      // Don't disable - let user try anyway, backend will check
+    }
             updateTransformButton();
-            console.log('[UI] Updated for user:', resolvedEmail, 'credits:', resolvedCredits);
         }
 
         function updateTransformButton() {
@@ -2048,10 +1989,9 @@
                 window.currentUser = data.session.user;
                 console.log('[LOGIN] Success! User:', data.session.user.email);
                 closeModals();
-                // Load credits first, THEN update UI so credits show correctly
-                await loadUserCredits();
-                updateUIForUser(data.session.user.email, currentCredits);
-                console.log('[LOGIN] UI updated, credits:', currentCredits);
+                updateUIForUser();
+                loadUserCredits();
+                console.log('[LOGIN] UI updated');
             }
             } catch (e) {
                 if (errorEl) errorEl.textContent = 'Login failed. Please try again.';
@@ -2062,73 +2002,8 @@
         }
 
         // ==========================================
-        // GOOGLE OAUTH
+        // GOOGLE OAUTH (Google Identity Services - renderButton)
         // ==========================================
-        // Uses GIS prompt() popup flow -> signInWithIdToken (preferred)
-        // Falls back to signInWithOAuth redirect if GIS unavailable
-
-        function resetGoogleButtons() {
-            var btns = document.querySelectorAll('.btn-google');
-            btns.forEach(function(btn) { btn.disabled = false; });
-        }
-
-        async function fallbackGoogleRedirect() {
-            try {
-                var refInput = document.getElementById('signupReferralCode');
-                if (refInput && refInput.value.trim()) {
-                    localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
-                }
-                var { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: window.location.origin + window.location.pathname }
-                });
-                if (error) { alert('Google sign-in failed: ' + error.message); resetGoogleButtons(); }
-            } catch(e) { alert('Google sign-in failed. Please try again.'); resetGoogleButtons(); }
-        }
-
-        async function handleGoogleOAuth() {
-            // Use window.supabaseClient or fallback via getSupabase()
-            if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
-            if (!supabaseClient) { alert('Authentication service not available. Please refresh.'); return; }
-
-            // Disable buttons while processing
-            var btns = document.querySelectorAll('.btn-google');
-            btns.forEach(function(btn) { btn.disabled = true; });
-
-            // Store referral code before any redirect
-            var refInput = document.getElementById('signupReferralCode');
-            if (refInput && refInput.value.trim()) {
-                localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
-            }
-
-            try {
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                    google.accounts.id.initialize({
-                        client_id: '497352803234-1bcrsjes6bijboj3locnpi6baug9309n.apps.googleusercontent.com',
-                        callback: handleGoogleCredential,
-                        auto_select: false,
-                        cancel_on_tap_outside: false,
-                        use_fedcm_for_prompt: true
-                    });
-                    google.accounts.id.prompt(function(notification) {
-                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                            console.log('[GOOGLE AUTH] GIS prompt not displayed, using redirect fallback');
-                            fallbackGoogleRedirect();
-                        } else if (notification.isDismissedMoment()) {
-                            console.log('[GOOGLE AUTH] User dismissed prompt');
-                            resetGoogleButtons();
-                        }
-                    });
-                } else {
-                    console.log('[GOOGLE AUTH] GIS not loaded, using redirect fallback');
-                    fallbackGoogleRedirect();
-                }
-            } catch(e) {
-                console.error('[GOOGLE AUTH] Error:', e);
-                fallbackGoogleRedirect();
-            }
-        }
-
         var _gisInitialized = false;
 
         async function handleGoogleCredential(response) {
@@ -2613,7 +2488,7 @@
 
         function shareOnTwitter() {
             var videoUrl = _getVideoUrl();
-            var text = '✨ Just toon'd myself with AI and I'm obsessed 😍 Try it free → https://toonit.ai @ToonItAI 🎨🎞️';
+            var text = `✨ Just toon'd myself with AI and I'm obsessed 😍 Try it free → https://toonit.ai @ToonItAI 🎨🎞️`;
             if (videoUrl) text += '\n\n🎬 Watch it here: ' + videoUrl;
             var url = videoUrl || 'https://toonit.ai';
             window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'width=600,height=400');
@@ -4097,10 +3972,7 @@
 
     // Wait for Supabase to be available
     function getSupabase() {
-        // ALWAYS return the single authoritative supabaseClient instance
-        // Never create a second client — separate clients have separate session storage
         if (window.supabaseClient) return window.supabaseClient;
-        // Fallback: create once and store as the authoritative instance
         if (window.supabase && typeof window.supabase.createClient === 'function') {
             window.supabaseClient = window.supabase.createClient(
                 'https://zgfpxdkanwbcieowrqoz.supabase.co',
@@ -4117,7 +3989,27 @@
         });
     }
 
-    // updateUIForUser duplicate removed — single definition above handles all cases
+    function updateUIForUser(email, credits) {
+        console.log('[FAILSAFE] Updating UI for user:', email);
+        var guestView = document.getElementById('guestView');
+        var userView = document.getElementById('userView');
+        var userEmail = document.getElementById('userEmail');
+        var creditCount = document.getElementById('creditCount');
+ var guestButtons = document.getElementById('guestButtons');
+ var userButtons = document.getElementById('userButtons');
+        var loginRequired = document.getElementById('loginRequired');
+        var uploadArea = document.getElementById('uploadArea');
+
+        if (guestView) guestView.style.display = 'none';
+        if (userView) userView.style.display = 'flex';
+        var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.add('logged-in');
+        if (userEmail) userEmail.textContent = email;
+        if (creditCount) creditCount.textContent = credits;
+ if (guestButtons) guestButtons.style.display = 'none';
+ if (userButtons) userButtons.style.display = 'flex';
+        if (loginRequired) loginRequired.style.display = 'none';
+        if (uploadArea) uploadArea.style.display = 'block';
+    }
 
     async function handleLoginSubmit(e) {
         e.preventDefault();
@@ -4329,18 +4221,17 @@
             btn.onclick = closeAllModals;
         });
 
-        // Login/Signup forms: handlers are set via HTML onsubmit attributes.
-        // Do NOT override here - the original handleLogin/handleSignup functions
-        // use the correctly initialized supabaseClient. Overriding caused session
-        // conflicts and the 'invalid login' error. (fixed 2026-02-25)
+        // Login form
         var loginForm = document.getElementById('loginForm');
         if (loginForm) {
-            console.log('[AUTH] Login form ready (using HTML onsubmit handler)');
+            // login handler via HTML onsubmit - no override
         }
 
+        // Signup form
         var signupForm = document.getElementById('signupForm');
         if (signupForm) {
-            console.log('[AUTH] Signup form ready (using HTML onsubmit handler)');
+            signupForm.onsubmit = handleSignupSubmit;
+            console.log('[FAILSAFE] Signup form handler attached');
         }
 
         console.log('[FAILSAFE] All handlers ready!');
