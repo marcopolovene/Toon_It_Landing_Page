@@ -12,150 +12,28 @@
   <link rel="canonical" href="https://toonit.ai/blog/">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #0f0f1a;
-      color: #e8e8f0;
-      min-height: 100vh;
-    }
-    /* NAV */
-    nav {
-      background: rgba(15,15,26,0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(139,92,246,0.2);
-      padding: 0 2rem;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .nav-logo {
-      font-size: 1.4rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #a78bfa, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-decoration: none;
-    }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f0f1a; color: #e8e8f0; min-height: 100vh; }
+    nav { background: rgba(15,15,26,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(139,92,246,0.2); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
     .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-    .nav-links a {
-      color: #c4c4d4;
-      text-decoration: none;
-      font-size: 0.95rem;
-      transition: color 0.2s;
-    }
+    .nav-links a { color: #c4c4d4; text-decoration: none; font-size: 0.95rem; transition: color 0.2s; }
     .nav-links a:hover { color: #a78bfa; }
-    .nav-links .cta {
-      background: linear-gradient(135deg, #7c3aed, #db2777);
-      color: white !important;
-      padding: 0.45rem 1.1rem;
-      border-radius: 8px;
-      font-weight: 600;
-    }
-    /* HERO */
-    .hero {
-      text-align: center;
-      padding: 4rem 1rem 2.5rem;
-      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 70%);
-    }
-    .hero-tag {
-      display: inline-block;
-      background: rgba(139,92,246,0.15);
-      border: 1px solid rgba(139,92,246,0.4);
-      color: #a78bfa;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.9rem;
-      border-radius: 20px;
-      margin-bottom: 1rem;
-    }
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      background: linear-gradient(135deg, #e2d9f3, #a78bfa, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.75rem;
-      line-height: 1.15;
-    }
-    .hero p {
-      color: #9d9db8;
-      font-size: 1.05rem;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    /* GRID */
-    .grid {
-      max-width: 1100px;
-      margin: 3rem auto 4rem;
-      padding: 0 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 1.5rem;
-    }
-    /* CARD */
-    .card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(139,92,246,0.15);
-      border-radius: 14px;
-      padding: 1.6rem;
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(139,92,246,0.5);
-      box-shadow: 0 8px 32px rgba(139,92,246,0.12);
-    }
-    .card-tag {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #a78bfa;
-    }
-    .card h2 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #e2d9f3;
-      line-height: 1.35;
-    }
-    .card p {
-      font-size: 0.88rem;
-      color: #7c7c9a;
-      line-height: 1.55;
-      flex: 1;
-    }
-    .card-meta {
-      font-size: 0.78rem;
-      color: #555570;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.25rem;
-    }
-    .card-read {
-      color: #7c3aed;
-      font-weight: 600;
-      font-size: 0.82rem;
-    }
-    /* FOOTER */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      color: #444460;
-      font-size: 0.85rem;
-      border-top: 1px solid rgba(139,92,246,0.1);
-    }
+    .nav-links .cta { background: linear-gradient(135deg, #7c3aed, #db2777); color: white !important; padding: 0.45rem 1.1rem; border-radius: 8px; font-weight: 600; }
+    .hero { text-align: center; padding: 4rem 1rem 2.5rem; background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 70%); }
+    .hero-tag { display: inline-block; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); color: #a78bfa; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 20px; margin-bottom: 1rem; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; background: linear-gradient(135deg, #e2d9f3, #a78bfa, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.75rem; line-height: 1.15; }
+    .hero p { color: #9d9db8; font-size: 1.05rem; max-width: 500px; margin: 0 auto; }
+    .grid { max-width: 1100px; margin: 3rem auto 4rem; padding: 0 1.5rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.5rem; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(139,92,246,0.15); border-radius: 14px; padding: 1.6rem; text-decoration: none; color: inherit; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; gap: 0.75rem; }
+    .card:hover { transform: translateY(-4px); border-color: rgba(139,92,246,0.5); box-shadow: 0 8px 32px rgba(139,92,246,0.12); }
+    .card-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #a78bfa; }
+    .card h2 { font-size: 1.05rem; font-weight: 700; color: #e2d9f3; line-height: 1.35; }
+    .card p { font-size: 0.88rem; color: #7c7c9a; line-height: 1.55; flex: 1; }
+    .card-meta { font-size: 0.78rem; color: #555570; display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem; }
+    .card-read { color: #7c3aed; font-weight: 600; font-size: 0.82rem; }
+    .featured { border-color: rgba(139,92,246,0.4); background: rgba(124,58,237,0.07); }
+    .featured-badge { display: inline-block; background: linear-gradient(135deg,#7c3aed,#db2777); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.6rem; border-radius: 20px; margin-left: 0.5rem; vertical-align: middle; }
+    footer { text-align: center; padding: 2rem; color: #444460; font-size: 0.85rem; border-top: 1px solid rgba(139,92,246,0.1); }
     footer a { color: #6655aa; text-decoration: none; }
   </style>
 </head>
@@ -178,59 +56,52 @@
 
 <div class="grid">
 
-  <a class="card" href="blog_ai_storybook_generator_20260225_1100AM.html">
-    <span class="card-tag">📖 Storybook</span>
-    <h2>AI Storybook Generator: Revolutionize Your Storytelling</h2>
-    <p>Discover how AI storybook generators are transforming creative storytelling for families, educators, and creators.</p>
+  <a class="card featured" href="blog_ai_storybook_generator_20260225_1100AM.html">
+    <span class="card-tag">📖 Storybook <span class="featured-badge">Complete Guide</span></span>
+    <h2>AI Storybook Generator: Revolutionise Your Storytelling</h2>
+    <p>The definitive guide to AI storybook generators — how they work, use cases from kids' books to D&amp;D, and why animated output changes everything.</p>
     <div class="card-meta"><span>Feb 25, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
   <a class="card" href="blog_cartoon_avatar_maker_20260224_1100AM.html">
     <span class="card-tag">🎭 Avatars</span>
     <h2>Cartoon Avatar Maker: Creating Unique Digital Identities</h2>
-    <p>Learn how cartoon avatar makers help you stand out online with a distinctive, personalized digital identity.</p>
+    <p>Learn how cartoon avatar makers help you stand out online with a distinctive, personalised digital identity.</p>
     <div class="card-meta"><span>Feb 24, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
   <a class="card" href="blog_photo_to_cartoon_app_20260224_1100PM.html">
     <span class="card-tag">📸 Photo to Cartoon</span>
     <h2>Transform Your Photos with the Best Photo to Cartoon App</h2>
-    <p>A guide to the best photo-to-cartoon apps in 2026 — what to look for and why AI-powered tools lead the pack.</p>
+    <p>A guide to the best photo-to-cartoon apps in 2026 — what to look for and why animated AI output leads the pack.</p>
     <div class="card-meta"><span>Feb 24, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
   <a class="card" href="blog_Disney_style_AI_art_20260223_0402PM.html">
     <span class="card-tag">🏰 Disney Style</span>
-    <h2>Unlock the Magic of Disney Style AI Art with Toon It!</h2>
-    <p>Explore how AI brings the enchanting world of Disney-inspired art to life from any photo in seconds.</p>
+    <h2>Disney Style AI Art: Create Magical Cartoon Portraits</h2>
+    <p>How Disney style AI art transforms your photos into enchanting animated portraits — tips, techniques, and best practices.</p>
     <div class="card-meta"><span>Feb 23, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
   <a class="card" href="blog_turn_photo_into_cartoon_20260223_0817PM.html">
     <span class="card-tag">🎨 Tutorial</span>
-    <h2>Turn Photo into Cartoon: A Step-by-Step Creative Guide</h2>
-    <p>A complete walkthrough for turning your favourite photos into vibrant cartoon art using AI tools.</p>
+    <h2>Turn Photo into Cartoon: The Complete 2026 Guide</h2>
+    <p>A complete walkthrough covering all cartoon styles, tips for best results, and how AI photo-to-cartoon tools work in 2026.</p>
     <div class="card-meta"><span>Feb 23, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
   <a class="card" href="pet-cartoon-maker-2026-02-22.html">
     <span class="card-tag">🐾 Pets</span>
     <h2>Pet Cartoon Maker: Turn Your Furry Friend into Art</h2>
-    <p>Your pet deserves their own cartoon portrait. See how AI pet cartoon makers create magical results instantly.</p>
+    <p>Your pet deserves their own cartoon portrait. See how AI pet cartoon makers create magical animated results instantly.</p>
     <div class="card-meta"><span>Feb 22, 2026</span><span class="card-read">Read →</span></div>
-  </a>
-
-  <a class="card" href="ai-storybook-generator-2026-02-21.html">
-    <span class="card-tag">📖 Storybook</span>
-    <h2>AI Storybook Generator: Bring Your Stories to Life</h2>
-    <p>How AI storybook generators make it easy for anyone to create beautiful illustrated stories in minutes.</p>
-    <div class="card-meta"><span>Feb 21, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
   <a class="card" href="turn-pet-photo-into-cartoon-2026-02-20.html">
     <span class="card-tag">🐾 Pets</span>
-    <h2>Turn Your Pet's Photo into a Stunning 3D Cartoon!</h2>
-    <p>Give your pet the Hollywood treatment — transform any pet photo into a charming 3D cartoon portrait.</p>
+    <h2>Turn Your Pet's Photo into a Stunning 3D Cartoon</h2>
+    <p>Step-by-step guide to turning any pet photo into beautiful 3D cartoon art and an animated video — dogs, cats, and all pets.</p>
     <div class="card-meta"><span>Feb 20, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
