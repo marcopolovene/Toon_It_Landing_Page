@@ -15,7 +15,7 @@
     <meta property="og:title" content="Toon It! — Transform Photos into Magical Storybook Videos">
     <meta property="og:description" content="Upload any photo and watch it come alive as an enchanting AI-animated storybook video. 2 free credits to start!">
     <meta property="og:site_name" content="Toon It!">
-    <meta property="og:image" content="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_1200,h_630,c_fill,q_90/job_1771351311926_61mjtnmc4_ugcuo9.jpg">
+    <meta property="og:image" content="https://res.cloudinary.com/dzarqnick/image/upload/v1772100992/toonit_og_card.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
@@ -23,7 +23,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Toon It! — Transform Photos into Magical Storybook Videos">
     <meta name="twitter:description" content="Upload any photo and watch it come alive as an enchanting AI-animated storybook video. Try free!">
-    <meta name="twitter:image" content="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_1200,h_630,c_fill,q_90/job_1771351311926_61mjtnmc4_ugcuo9.jpg">
+    <meta name="twitter:image" content="https://res.cloudinary.com/dzarqnick/image/upload/v1772100992/toonit_og_card.jpg">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dzarqnick/image/upload/w_32,h_32,c_fill/toonit_favicon.png">
@@ -1274,6 +1274,67 @@
             user-select: none;
             letter-spacing: 0.3px;
         }
+
+        /* ===== WATERMARK REMOVAL CTA ===== */
+        .wm-remove-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(212,160,74,0.12), rgba(232,192,96,0.18));
+            border: 1.5px solid var(--primary);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 10px 0 5px;
+            text-align: center;
+            animation: wmBannerIn 0.4s ease;
+        }
+        @keyframes wmBannerIn {
+            0%{opacity:0;transform:translateY(-8px)}
+            100%{opacity:1;transform:translateY(0)}
+        }
+        .wm-remove-banner p {
+            color: var(--text-main);
+            font-size: 0.88em;
+            margin: 0 0 10px;
+            line-height: 1.4;
+        }
+        .wm-remove-banner strong { color: var(--primary); }
+        .wm-btn-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .wm-btn {
+            padding: 7px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.82em;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .wm-btn-this {
+            background: var(--primary);
+            color: var(--text-dark);
+        }
+        .wm-btn-this:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .wm-btn-all {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+        .wm-btn-all:hover { background: var(--primary); color: var(--text-dark); transform: translateY(-1px); }
+        .wm-removed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(74,158,73,0.12);
+            border: 1px solid var(--success);
+            border-radius: 20px;
+            padding: 5px 14px;
+            color: var(--success);
+            font-size: 0.82em;
+            font-weight: 600;
+        }
         </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
@@ -1494,6 +1555,17 @@
             <div class="result-buttons">
                 <button id="downloadBtn">⬇️ Download</button>
                 <button id="newBtn">🔄 Create Another</button>
+            </div>
+            <!-- Watermark Removal CTA (shown to paid users only) -->
+            <div class="wm-remove-banner" id="wmRemoveBanner">
+                <p>✨ <strong>You have credits!</strong> Want to share & download without the ToonIt.ai watermark?</p>
+                <div class="wm-btn-row">
+                    <button class="wm-btn wm-btn-this" onclick="removeWatermark('this')">🎬 Remove from This Video</button>
+                    <button class="wm-btn wm-btn-all" onclick="removeWatermark('all')">🌟 Remove from All Future Videos</button>
+                </div>
+            </div>
+            <div id="wmRemovedBadge" style="text-align:center;margin-top:8px;display:none;">
+                <span class="wm-removed-badge">✅ Watermark removed — clean video ready!</span>
             </div>
         </div>
 
@@ -2584,12 +2656,32 @@
         }
 
         function downloadAndShare(platform) {
+            var videoUrl = _wmState.currentCleanUrl || _getVideoUrl();
+            if (!videoUrl) {
+                _showShareToast('❌ No video to share yet');
+                return;
+            }
+            var isRemoved = _wmState.globalRemoved || _wmState.currentVideoRemoved;
+            _showShareToast(isRemoved ? '⬇️ Downloading video...' : '🔥 Adding watermark...');
+            var platformUrls = {
+                'instagram': 'https://www.instagram.com/',
+                'tiktok': 'https://www.tiktok.com/upload',
+                'youtube': 'https://www.youtube.com/upload'
+            };
+            burnWatermarkAndDownload(videoUrl, isRemoved, 'toonit_creation.mp4', function() {
+                setTimeout(function() {
+                    _showShareToast('✅ Downloaded! Upload it to ' + platform.charAt(0).toUpperCase() + platform.slice(1));
+                    if (platformUrls[platform]) window.open(platformUrls[platform], '_blank');
+                }, 500);
+            });
+            trackEvent('share_' + platform);
+        }
+        function _downloadAndShare_legacy(platform) {
             var videoUrl = _getVideoUrl();
             if (!videoUrl) {
                 _showShareToast('❌ No video to share yet');
                 return;
             }
-
             _showShareToast('⬇️ Downloading video...');
 
             // Download the video
@@ -3762,11 +3854,105 @@
             });
         }
 
-        // === WATERMARK HELPER ===
-        function addWatermark(url) {
-            return url; // watermark is CSS overlay
+        // === WATERMARK SYSTEM ===
+        var _wmState = {
+            hasPurchased: false,
+            globalRemoved: false,
+            currentVideoRemoved: false,
+            currentWmUrl: null,   // burned watermark url
+            currentCleanUrl: null, // clean url
+            currentJobId: null,
+            wmReady: false
+        };
+
+        // Load watermark state for current user
+        async function loadWatermarkState() {
+            var user = window.currentUser || currentUser;
+            if (!user || !supabaseClient) return;
+            try {
+                var { data } = await supabaseClient
+                    .from('profiles')
+                    .select('has_purchased, watermark_removed_global')
+                    .eq('id', user.id)
+                    .single();
+                if (data) {
+                    _wmState.hasPurchased = data.has_purchased || false;
+                    _wmState.globalRemoved = data.watermark_removed_global || false;
+                }
+            } catch(e) { console.log('[WM] State load error:', e); }
         }
-        // === END WATERMARK HELPER ===
+
+        // Get the correct URL to serve (watermarked or clean)
+        function getServeUrl(cleanUrl) {
+            // If global removal is on OR this video is individually removed → serve clean
+            if (_wmState.globalRemoved || _wmState.currentVideoRemoved) {
+                return cleanUrl;
+            }
+            // If burned watermark is ready → serve it
+            if (_wmState.wmReady && _wmState.currentWmUrl) {
+                return _wmState.currentWmUrl;
+            }
+            // Fallback: clean url (CSS overlay shows watermark visually)
+            return cleanUrl;
+        }
+
+        function addWatermark(url) {
+            // Used for gallery/thumbnails - always return url (CSS handles overlay)
+            return url;
+        }
+
+        // Remove watermark for this video or all future videos
+        async function removeWatermark(scope) {
+            var user = window.currentUser || currentUser;
+            if (!user || !supabaseClient) return;
+            var banner = document.getElementById('wmRemoveBanner');
+            var badge = document.getElementById('wmRemovedBadge');
+
+            try {
+                if (scope === 'all') {
+                    // Set global flag on profile
+                    await supabaseClient
+                        .from('profiles')
+                        .update({ watermark_removed_global: true })
+                        .eq('id', user.id);
+                    _wmState.globalRemoved = true;
+                    _wmState.currentVideoRemoved = true;
+                } else {
+                    // Set per-video flag
+                    var jid = _wmState.currentJobId || currentJobId;
+                    if (jid) {
+                        await supabaseClient
+                            .from('generations')
+                            .update({ watermark_removed: true })
+                            .eq('job_id', jid);
+                    }
+                    _wmState.currentVideoRemoved = true;
+                }
+
+                // Switch video source to clean URL
+                if (resultVideo && _wmState.currentCleanUrl) {
+                    var wasPlaying = !resultVideo.paused;
+                    var currentTime = resultVideo.currentTime;
+                    resultVideo.src = _wmState.currentCleanUrl;
+                    resultVideo.currentTime = currentTime;
+                    if (wasPlaying) resultVideo.play();
+                }
+
+                // Update visual state - hide CTA, show badge
+                if (banner) banner.style.display = 'none';
+                if (badge) badge.style.display = 'block';
+
+                // Also update CSS overlay visibility
+                var wmSpan = document.querySelector('#result .toonit-watermark');
+                if (wmSpan) wmSpan.style.display = 'none';
+
+                console.log('[WM] Watermark removed, scope:', scope);
+            } catch(e) {
+                console.error('[WM] Remove error:', e);
+                alert('Could not remove watermark. Please try again.');
+            }
+        }
+        // === END WATERMARK SYSTEM ===
 
         function showVideo(url, jobId) {
             // Guard against double calls (race condition from polling)
@@ -3781,7 +3967,67 @@
                 if (resultDiv) resultDiv.style.display = 'block';
             if (status) status.style.display = 'none';
             if (result) result.style.display = 'block';
-            if (resultVideo) resultVideo.src = addWatermark(url);
+
+            // Store clean URL and job ID in watermark state
+            _wmState.currentCleanUrl = url;
+            _wmState.currentJobId = jobId || currentJobId;
+            _wmState.currentVideoRemoved = false;
+            _wmState.wmReady = false;
+            _wmState.currentWmUrl = null;
+
+            // Show video immediately with clean URL (CSS overlay shows watermark visually)
+            if (resultVideo) resultVideo.src = url;
+
+            // In background: load watermark state + check if burned file is ready
+            (async () => {
+                await loadWatermarkState();
+
+                // Check if per-video watermark_removed already set
+                if (_wmState.currentJobId && supabaseClient) {
+                    try {
+                        var { data: gen } = await supabaseClient
+                            .from('generations')
+                            .select('watermark_url, watermark_ready, watermark_removed')
+                            .eq('job_id', _wmState.currentJobId)
+                            .maybeSingle();
+                        if (gen) {
+                            _wmState.currentVideoRemoved = gen.watermark_removed || false;
+                            if (gen.watermark_ready && gen.watermark_url) {
+                                _wmState.wmReady = true;
+                                _wmState.currentWmUrl = gen.watermark_url;
+                                // Switch to burned watermark URL (only if not removed)
+                                if (!_wmState.globalRemoved && !_wmState.currentVideoRemoved && resultVideo) {
+                                    resultVideo.src = gen.watermark_url;
+                                }
+                            }
+                        }
+                    } catch(e) { console.log('[WM] Generation check error:', e); }
+                }
+
+                // Show/hide watermark overlay and CTA
+                var wmSpan = document.querySelector('#result .toonit-watermark');
+                var banner = document.getElementById('wmRemoveBanner');
+                var badge = document.getElementById('wmRemovedBadge');
+
+                if (_wmState.globalRemoved || _wmState.currentVideoRemoved) {
+                    // Watermark removed - hide overlay, show badge
+                    if (wmSpan) wmSpan.style.display = 'none';
+                    if (banner) banner.style.display = 'none';
+                    if (badge) badge.style.display = 'block';
+                    if (resultVideo) resultVideo.src = url; // ensure clean
+                } else if (_wmState.hasPurchased) {
+                    // Paid user, watermark showing - show removal CTA
+                    if (wmSpan) wmSpan.style.display = '';
+                    if (banner) banner.style.display = 'block';
+                    if (badge) badge.style.display = 'none';
+                } else {
+                    // Free user - watermark stays, no CTA
+                    if (wmSpan) wmSpan.style.display = '';
+                    if (banner) banner.style.display = 'none';
+                    if (badge) badge.style.display = 'none';
+                }
+            })();
+
             // Video appearing is the completion signal — hide progress bar
 
             // Show share buttons
@@ -3862,46 +4108,134 @@
             } })(); }
         }
 
+        // === CANVAS WATERMARK BURN ===
+        // Burns ToonIt.ai watermark into the video client-side using Canvas + MediaRecorder
+        function burnWatermarkAndDownload(videoUrl, isRemoved, filename, onDone) {
+            filename = filename || 'toon-it-video.mp4';
+
+            // If watermark removed → download clean directly
+            if (isRemoved) {
+                var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (isIOS) {
+                    fetch(videoUrl).then(function(r){return r.blob();}).then(function(blob){
+                        var file = new File([blob], filename, {type:'video/mp4'});
+                        if (navigator.canShare && navigator.canShare({files:[file]})) {
+                            navigator.share({files:[file]}).catch(function(){ window.open(videoUrl,'_blank'); });
+                        } else { window.open(videoUrl,'_blank'); }
+                        if (onDone) onDone();
+                    }).catch(function(){ window.open(videoUrl,'_blank'); if (onDone) onDone(); });
+                } else {
+                    var a = document.createElement('a');
+                    a.href = videoUrl; a.download = filename; a.click();
+                    if (onDone) onDone();
+                }
+                return;
+            }
+
+            // Canvas burn approach
+            var burnVideo = document.createElement('video');
+            burnVideo.crossOrigin = 'anonymous';
+            burnVideo.muted = true;
+            burnVideo.playsInline = true;
+            burnVideo.style.display = 'none';
+            document.body.appendChild(burnVideo);
+
+            var canvas = document.createElement('canvas');
+            canvas.style.display = 'none';
+            document.body.appendChild(canvas);
+            var ctx = canvas.getContext('2d');
+
+            burnVideo.onloadedmetadata = function() {
+                canvas.width = burnVideo.videoWidth || 720;
+                canvas.height = burnVideo.videoHeight || 480;
+
+                // Start MediaRecorder
+                var stream = canvas.captureStream(30);
+                var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                               MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+                var recorder = new MediaRecorder(stream, {mimeType: mimeType, videoBitsPerSecond: 4000000});
+                var chunks = [];
+
+                recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+                recorder.onstop = function() {
+                    var blob = new Blob(chunks, {type: mimeType});
+                    var ext = mimeType.includes('webm') ? 'toon-it-video.webm' : filename;
+                    // Cleanup
+                    document.body.removeChild(burnVideo);
+                    document.body.removeChild(canvas);
+
+                    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                    if (isIOS) {
+                        var file = new File([blob], ext, {type: mimeType});
+                        if (navigator.canShare && navigator.canShare({files:[file]})) {
+                            navigator.share({files:[file]}).catch(function(){});
+                        } else {
+                            var url = URL.createObjectURL(blob);
+                            window.open(url, '_blank');
+                        }
+                    } else {
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url; a.download = ext;
+                        document.body.appendChild(a); a.click();
+                        document.body.removeChild(a);
+                        setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+                    }
+                    if (onDone) onDone();
+                };
+
+                // Draw loop
+                var drawFrame = function() {
+                    if (burnVideo.paused || burnVideo.ended) return;
+                    ctx.drawImage(burnVideo, 0, 0, canvas.width, canvas.height);
+                    // Draw watermark
+                    var fSize = Math.max(18, Math.round(canvas.width * 0.038));
+                    ctx.save();
+                    ctx.font = 'bold ' + fSize + 'px Pacifico, cursive';
+                    ctx.globalAlpha = 0.6;
+                    ctx.fillStyle = 'white';
+                    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                    ctx.shadowBlur = 4;
+                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.07));
+                    ctx.restore();
+                    requestAnimationFrame(drawFrame);
+                };
+
+                recorder.start(100); // collect chunks every 100ms
+                burnVideo.play();
+                drawFrame();
+
+                burnVideo.onended = function() {
+                    setTimeout(function(){ recorder.stop(); }, 200);
+                };
+            };
+
+            burnVideo.onerror = function() {
+                // Fallback: direct download without burn
+                document.body.removeChild(burnVideo);
+                document.body.removeChild(canvas);
+                var a = document.createElement('a');
+                a.href = videoUrl; a.download = filename; a.click();
+                if (onDone) onDone();
+            };
+
+            burnVideo.src = videoUrl;
+            burnVideo.load();
+        }
+        // === END CANVAS WATERMARK BURN ===
+
         function downloadVideo() {
             if (!resultVideo || !resultVideo.src) return;
-            var videoUrl = resultVideo.src;
+            var cleanUrl = _wmState.currentCleanUrl || resultVideo.src;
+            var isRemoved = _wmState.globalRemoved || _wmState.currentVideoRemoved;
 
-            // Detect iOS (iPhone/iPad/iPod)
-            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            var btn = document.getElementById('downloadBtn');
+            if (btn) { btn.textContent = isRemoved ? '⬇️ Downloading...' : '🔥 Burning watermark...'; btn.disabled = true; }
 
-            if (isIOS) {
-                // iOS: Use Web Share API to save video (triggers native share sheet with "Save Video" option)
-                fetch(videoUrl)
-                    .then(function(r) { return r.blob(); })
-                    .then(function(blob) {
-                        var file = new File([blob], 'toon-it-video.mp4', { type: 'video/mp4' });
-                        var shareData = { files: [file] };
-                        if (navigator.canShare && navigator.canShare(shareData)) {
-                            navigator.share(shareData).then(function() {
-                                console.log('[DOWNLOAD] iOS share/save successful');
-                            }).catch(function(err) {
-                                console.log('[DOWNLOAD] iOS share cancelled or failed:', err);
-                                // Fallback: open video in new tab for long-press save
-                                window.open(videoUrl, '_blank');
-                            });
-                        } else {
-                            // Fallback: open in new tab with save instructions
-                            window.open(videoUrl, '_blank');
-                            _showShareToast('💡 Hold the video to save it to your camera roll');
-                        }
-                    })
-                    .catch(function(err) {
-                        console.error('[DOWNLOAD] iOS fetch error:', err);
-                        window.open(videoUrl, '_blank');
-                        _showShareToast('💡 Hold the video to save it to your camera roll');
-                    });
-            } else {
-                // Android/Desktop: standard download
-                const a = document.createElement('a');
-                a.href = videoUrl;
-                a.download = 'toon-it-video.mp4';
-                a.click();
-            }
+            burnWatermarkAndDownload(cleanUrl, isRemoved, 'toon-it-video.mp4', function() {
+                if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
+            });
         }
 
         function resetForNew() {
