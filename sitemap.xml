@@ -14,9 +14,21 @@
   </url>
   <url>
     <loc>https://toonit.ai/blog/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://toonit.ai/blog/blog_dnd_character_creator_20260227_1100AM.html</loc>
+    <lastmod>2026-02-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://toonit.ai/blog/blog_pet_cartoon_maker_20260226_1100AM.html</loc>
+    <lastmod>2026-02-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toonit.ai/blog/blog_ai_storybook_generator_20260225_1100AM.html</loc>
