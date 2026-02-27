@@ -1276,65 +1276,80 @@
         }
 
         /* ===== WATERMARK REMOVAL CTA ===== */
-        .wm-remove-banner {
+        /* ── Watermark Toggle Bar ── */
+        .wm-toggle-bar {
             display: none;
-            background: linear-gradient(135deg, rgba(212,160,74,0.12), rgba(232,192,96,0.18));
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(212,160,74,0.10), rgba(232,192,96,0.15));
             border: 1.5px solid var(--primary);
-            border-radius: 12px;
-            padding: 14px 18px;
+            border-radius: 10px;
+            padding: 10px 18px;
             margin: 10px 0 5px;
-            text-align: center;
-            animation: wmBannerIn 0.4s ease;
+            animation: wmBannerIn 0.35s ease;
         }
         @keyframes wmBannerIn {
-            0%{opacity:0;transform:translateY(-8px)}
+            0%{opacity:0;transform:translateY(-6px)}
             100%{opacity:1;transform:translateY(0)}
         }
-        .wm-remove-banner p {
+        .wm-toggle-label {
             color: var(--text-main);
             font-size: 0.88em;
-            margin: 0 0 10px;
-            line-height: 1.4;
-        }
-        .wm-remove-banner strong { color: var(--primary); }
-        .wm-btn-row {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .wm-btn {
-            padding: 7px 16px;
-            border-radius: 20px;
-            border: none;
             font-weight: 600;
-            font-size: 0.82em;
+            white-space: nowrap;
+        }
+        .wm-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .wm-toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .wm-toggle-slider {
+            position: absolute;
             cursor: pointer;
-            transition: all 0.25s;
+            inset: 0;
+            background: rgba(255,255,255,0.15);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            transition: background 0.25s, border-color 0.25s;
         }
-        .wm-btn-this {
+        .wm-toggle-slider:before {
+            content: "";
+            position: absolute;
+            width: 16px; height: 16px;
+            left: 3px; top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            transition: left 0.25s, background 0.25s;
+        }
+        .wm-toggle-switch input:checked + .wm-toggle-slider {
             background: var(--primary);
-            color: var(--text-dark);
+            border-color: var(--primary);
         }
-        .wm-btn-this:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        .wm-btn-all {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--primary);
+        .wm-toggle-switch input:checked + .wm-toggle-slider:before {
+            left: 21px;
+            background: var(--text-dark);
         }
-        .wm-btn-all:hover { background: var(--primary); color: var(--text-dark); transform: translateY(-1px); }
-        .wm-removed-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(74,158,73,0.12);
-            border: 1px solid var(--success);
-            border-radius: 20px;
-            padding: 5px 14px;
-            color: var(--success);
+        .wm-toggle-status {
             font-size: 0.82em;
             font-weight: 600;
+            min-width: 72px;
+            color: var(--text-muted);
+            transition: color 0.2s;
         }
+        .wm-toggle-status.active { color: var(--primary); }
+        .wm-toggle-saving {
+            font-size: 0.78em;
+            color: var(--text-muted);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .wm-toggle-saving.visible { opacity: 1; }
         </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
@@ -1556,16 +1571,15 @@
                 <button id="downloadBtn">⬇️ Download</button>
                 <button id="newBtn">🔄 Create Another</button>
             </div>
-            <!-- Watermark Removal CTA (shown to paid users only) -->
-            <div class="wm-remove-banner" id="wmRemoveBanner">
-                <p>✨ <strong>You have credits!</strong> Want to share & download without the ToonIt.ai watermark?</p>
-                <div class="wm-btn-row">
-                    <button class="wm-btn wm-btn-this" onclick="removeWatermark('this')">🎬 Remove from This Video</button>
-                    <button class="wm-btn wm-btn-all" onclick="removeWatermark('all')">🌟 Remove from All Future Videos</button>
-                </div>
-            </div>
-            <div id="wmRemovedBadge" style="text-align:center;margin-top:8px;display:none;">
-                <span class="wm-removed-badge">✅ Watermark removed — clean video ready!</span>
+            <!-- Watermark Toggle (paid users only) -->
+            <div class="wm-toggle-bar" id="wmToggleBar">
+                <span class="wm-toggle-label">🎬 Remove Watermark</span>
+                <label class="wm-toggle-switch">
+                    <input type="checkbox" id="wmToggleInput" onchange="toggleWatermark(this.checked)">
+                    <span class="wm-toggle-slider"></span>
+                </label>
+                <span class="wm-toggle-status" id="wmToggleStatus">Showing</span>
+                <span class="wm-toggle-saving" id="wmToggleSaving">Saving…</span>
             </div>
         </div>
 
@@ -3857,7 +3871,7 @@
         }
 
         // === WATERMARK SYSTEM ===
-        var _wmState = {
+        var _wmState = { currentWatermarkedUrl: null, 
             hasPurchased: false,
             globalRemoved: false,
             currentVideoRemoved: false,
@@ -3904,54 +3918,76 @@
         }
 
         // Remove watermark for this video or all future videos
-        async function removeWatermark(scope) {
+        async function toggleWatermark(enabled) {
+            // enabled = true  → watermark removed (clean video)
+            // enabled = false → watermark showing
             var user = window.currentUser || currentUser;
             if (!user || !supabaseClient) return;
-            var banner = document.getElementById('wmRemoveBanner');
-            var badge = document.getElementById('wmRemovedBadge');
+            var toggleInput = document.getElementById('wmToggleInput');
+            var statusEl   = document.getElementById('wmToggleStatus');
+            var savingEl   = document.getElementById('wmToggleSaving');
+            var wmSpan     = document.querySelector('#result .toonit-watermark');
+
+            // Show saving indicator, lock toggle
+            if (toggleInput) toggleInput.disabled = true;
+            if (savingEl) savingEl.classList.add('visible');
 
             try {
-                if (scope === 'all') {
-                    // Set global flag on profile
+                // ── Persist to DB ──
+                var jid = _wmState.currentJobId || currentJobId;
+                await supabaseClient
+                    .from('profiles')
+                    .update({ watermark_removed_global: enabled })
+                    .eq('id', user.id);
+                if (jid) {
                     await supabaseClient
-                        .from('profiles')
-                        .update({ watermark_removed_global: true })
-                        .eq('id', user.id);
-                    _wmState.globalRemoved = true;
-                    _wmState.currentVideoRemoved = true;
-                } else {
-                    // Set per-video flag
-                    var jid = _wmState.currentJobId || currentJobId;
-                    if (jid) {
-                        await supabaseClient
-                            .from('generations')
-                            .update({ watermark_removed: true })
-                            .eq('job_id', jid);
-                    }
-                    _wmState.currentVideoRemoved = true;
+                        .from('generations')
+                        .update({ watermark_removed: enabled })
+                        .eq('job_id', jid);
                 }
 
-                // Switch video source to clean URL
-                if (resultVideo && _wmState.currentCleanUrl) {
+                // ── Update state ──
+                _wmState.globalRemoved = enabled;
+                _wmState.currentVideoRemoved = enabled;
+
+                // ── Swap video source ──
+                if (resultVideo) {
                     var wasPlaying = !resultVideo.paused;
                     var currentTime = resultVideo.currentTime;
-                    resultVideo.src = _wmState.currentCleanUrl;
+                    if (enabled && _wmState.currentCleanUrl) {
+                        resultVideo.src = _wmState.currentCleanUrl;
+                    } else if (!enabled && _wmState.currentWatermarkedUrl) {
+                        resultVideo.src = _wmState.currentWatermarkedUrl;
+                    }
                     resultVideo.currentTime = currentTime;
                     if (wasPlaying) resultVideo.play();
                 }
 
-                // Update visual state - hide CTA, show badge
-                if (banner) banner.style.display = 'none';
-                if (badge) badge.style.display = 'block';
+                // ── CSS watermark overlay ──
+                if (wmSpan) wmSpan.style.display = enabled ? 'none' : '';
 
-                // Also update CSS overlay visibility
-                var wmSpan = document.querySelector('#result .toonit-watermark');
-                if (wmSpan) wmSpan.style.display = 'none';
+                // ── Update toggle label ──
+                _wmUpdateToggleUI(enabled);
 
-                console.log('[WM] Watermark removed, scope:', scope);
+                console.log('[WM] Watermark toggled:', enabled ? 'removed' : 'restored');
             } catch(e) {
-                console.error('[WM] Remove error:', e);
-                alert('Could not remove watermark. Please try again.');
+                console.error('[WM] Toggle error:', e);
+                // Revert toggle on error
+                if (toggleInput) toggleInput.checked = !enabled;
+                alert('Could not update watermark preference. Please try again.');
+            } finally {
+                if (toggleInput) toggleInput.disabled = false;
+                if (savingEl) savingEl.classList.remove('visible');
+            }
+        }
+
+        function _wmUpdateToggleUI(removed) {
+            var toggleInput = document.getElementById('wmToggleInput');
+            var statusEl    = document.getElementById('wmToggleStatus');
+            if (toggleInput) toggleInput.checked = removed;
+            if (statusEl) {
+                statusEl.textContent = removed ? '✅ Removed' : 'Showing';
+                statusEl.className   = 'wm-toggle-status' + (removed ? ' active' : '');
             }
         }
         // === END WATERMARK SYSTEM ===
@@ -4008,25 +4044,25 @@
 
                 // Show/hide watermark overlay and CTA
                 var wmSpan = document.querySelector('#result .toonit-watermark');
-                var banner = document.getElementById('wmRemoveBanner');
-                var badge = document.getElementById('wmRemovedBadge');
 
-                if (_wmState.globalRemoved || _wmState.currentVideoRemoved) {
-                    // Watermark removed - hide overlay, show badge
-                    if (wmSpan) wmSpan.style.display = 'none';
-                    if (banner) banner.style.display = 'none';
-                    if (badge) badge.style.display = 'block';
-                    if (resultVideo) resultVideo.src = url; // ensure clean
-                } else if (_wmState.hasPurchased) {
-                    // Paid user, watermark showing - show removal CTA
-                    if (wmSpan) wmSpan.style.display = '';
-                    if (banner) banner.style.display = 'block';
-                    if (badge) badge.style.display = 'none';
+                // Store watermarked URL for toggle revert
+                _wmState.currentWatermarkedUrl = url;
+
+                if (_wmState.hasPurchased) {
+                    // Paid user — show toggle in correct state
+                    var toggleBar = document.getElementById('wmToggleBar');
+                    if (toggleBar) toggleBar.style.display = 'flex';
+                    var removed = _wmState.globalRemoved || _wmState.currentVideoRemoved;
+                    _wmUpdateToggleUI(removed);
+                    if (wmSpan) wmSpan.style.display = removed ? 'none' : '';
+                    if (removed && resultVideo && _wmState.currentCleanUrl) {
+                        resultVideo.src = _wmState.currentCleanUrl;
+                    }
                 } else {
-                    // Free user - watermark stays, no CTA
+                    // Free user — watermark always showing, no toggle
+                    var toggleBar = document.getElementById('wmToggleBar');
+                    if (toggleBar) toggleBar.style.display = 'none';
                     if (wmSpan) wmSpan.style.display = '';
-                    if (banner) banner.style.display = 'none';
-                    if (badge) badge.style.display = 'none';
                 }
             })();
 
