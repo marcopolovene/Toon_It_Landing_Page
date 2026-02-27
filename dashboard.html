@@ -567,64 +567,80 @@
         }
 
         /* ===== WATERMARK REMOVAL CTA - DASHBOARD ===== */
-        .dash-wm-banner {
-            background: linear-gradient(135deg, rgba(212,160,74,0.10), rgba(232,192,96,0.15));
-            border: 1.5px solid var(--primary);
-            border-radius: 12px;
-            padding: 14px 18px;
-            margin: 12px 0 4px;
-            text-align: center;
-            animation: wmBannerIn 0.4s ease;
-        }
+        /* ── Dashboard Watermark Toggle Bar ── */
         @keyframes wmBannerIn {
             0%{opacity:0;transform:translateY(-6px)}
             100%{opacity:1;transform:translateY(0)}
         }
-        .dash-wm-banner p {
+        .dash-wm-toggle-bar {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(212,160,74,0.10), rgba(232,192,96,0.15));
+            border: 1.5px solid var(--primary);
+            border-radius: 10px;
+            padding: 10px 18px;
+            margin: 12px 0 4px;
+            animation: wmBannerIn 0.35s ease;
+        }
+        .dash-wm-toggle-label {
             color: var(--text-main);
             font-size: 0.85em;
-            margin: 0 0 10px;
-            line-height: 1.4;
-        }
-        .dash-wm-banner strong { color: var(--primary); }
-        .dash-wm-btn-row {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .dash-wm-btn {
-            padding: 7px 14px;
-            border-radius: 20px;
-            border: none;
             font-weight: 600;
-            font-size: 0.80em;
+            white-space: nowrap;
+        }
+        .dash-wm-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .dash-wm-toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .dash-wm-toggle-slider {
+            position: absolute;
             cursor: pointer;
-            transition: all 0.25s;
+            inset: 0;
+            background: rgba(255,255,255,0.15);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            border-radius: 24px;
+            transition: background 0.25s, border-color 0.25s;
         }
-        .dash-wm-btn-this {
+        .dash-wm-toggle-slider:before {
+            content: "";
+            position: absolute;
+            width: 16px; height: 16px;
+            left: 3px; top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            transition: left 0.25s, background 0.25s;
+        }
+        .dash-wm-toggle-switch input:checked + .dash-wm-toggle-slider {
             background: var(--primary);
-            color: var(--text-dark);
+            border-color: var(--primary);
         }
-        .dash-wm-btn-this:hover { background: var(--primary-hover); }
-        .dash-wm-btn-all {
-            background: transparent;
-            color: var(--primary);
-            border: 1.5px solid var(--primary);
+        .dash-wm-toggle-switch input:checked + .dash-wm-toggle-slider:before {
+            left: 21px;
+            background: var(--text-dark);
         }
-        .dash-wm-btn-all:hover { background: var(--primary); color: var(--text-dark); }
-        .dash-wm-removed {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(74,158,73,0.10);
-            border: 1px solid var(--success);
-            border-radius: 20px;
-            padding: 5px 14px;
-            color: var(--success);
-            font-size: 0.80em;
+        .dash-wm-toggle-status {
+            font-size: 0.82em;
             font-weight: 600;
+            min-width: 72px;
+            color: var(--text-muted);
+            transition: color 0.2s;
         }
+        .dash-wm-toggle-status.active { color: var(--primary); }
+        .dash-wm-toggle-saving {
+            font-size: 0.78em;
+            color: var(--text-muted);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .dash-wm-toggle-saving.visible { opacity: 1; }
         /* Dashboard overview watermark callout */
         .dash-wm-callout {
             display: none;
@@ -707,7 +723,7 @@
 
                 <!-- Watermark Callout for Paid Users -->
                 <div class="dash-wm-callout" id="dashWmCallout">
-                    0001f48e <strong>As a credit purchaser</strong>, you can remove the ToonIt.ai watermark from your videos — open any video below to manage it.
+                    💎 <strong>As a credit purchaser</strong>, you can toggle the ToonIt.ai watermark on your videos — open any video below to manage it.
                 </div>
 
             </div>
@@ -795,16 +811,15 @@
                 &nbsp;
                 <button id="dashDownloadBtn" onclick="dashDownloadVideo()" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);padding:10px 24px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;">⬇️ Download</button>
             </div>
-            <!-- Watermark Removal CTA (paid users only) -->
-            <div class="dash-wm-banner" id="dashWmBanner" style="display:none;">
-                <p>✨ <strong>Remove the ToonIt.ai watermark</strong> for sharing & downloading</p>
-                <div class="dash-wm-btn-row">
-                    <button class="dash-wm-btn dash-wm-btn-this" onclick="dashRemoveWatermark('this')">🎬 This Video</button>
-                    <button class="dash-wm-btn dash-wm-btn-all" onclick="dashRemoveWatermark('all')">🌟 All Future Videos</button>
-                </div>
-            </div>
-            <div id="dashWmRemovedBadge" style="text-align:center;margin-top:8px;display:none;">
-                <span class="dash-wm-removed">✅ Watermark removed — clean video ready!</span>
+            <!-- Watermark Toggle (paid users only) -->
+            <div class="dash-wm-toggle-bar" id="dashWmToggleBar">
+                <span class="dash-wm-toggle-label">🎬 Remove Watermark</span>
+                <label class="dash-wm-toggle-switch">
+                    <input type="checkbox" id="dashWmToggleInput" onchange="dashToggleWatermark(this.checked)">
+                    <span class="dash-wm-toggle-slider"></span>
+                </label>
+                <span class="dash-wm-toggle-status" id="dashWmToggleStatus">Showing</span>
+                <span class="dash-wm-toggle-saving" id="dashWmToggleSaving">Saving…</span>
             </div>
         </div>
     </div>
@@ -1236,6 +1251,7 @@
             currentVideoJobId: null,
             currentCleanUrl: null,
             currentWmUrl: null,
+            currentWatermarkedUrl: null,
             currentVideoRemoved: false,
             wmReady: false
         };
@@ -1251,9 +1267,9 @@
                 if (data) {
                     _dashWmState.hasPurchased = data.has_purchased || false;
                     _dashWmState.globalRemoved = data.watermark_removed_global || false;
-                    // Show callout for paid users
+                    // Show callout for all paid users
                     var callout = document.getElementById('dashWmCallout');
-                    if (callout) callout.style.display = _dashWmState.hasPurchased && !_dashWmState.globalRemoved ? 'block' : 'none';
+                    if (callout) callout.style.display = _dashWmState.hasPurchased ? 'block' : 'none';
                 }
             } catch(e) { console.log('[DASH-WM] State load error:', e); }
         }
@@ -1271,8 +1287,6 @@
 
             var modal = document.getElementById('videoModal');
             var video = document.getElementById('modalVideo');
-            var banner = document.getElementById('dashWmBanner');
-            var badge = document.getElementById('dashWmRemovedBadge');
             var wmSpan = document.querySelector('#videoModal .toonit-watermark');
 
             video.src = url;
@@ -1280,8 +1294,8 @@
             video.play();
 
             // Reset UI
-            if (banner) banner.style.display = 'none';
-            if (badge) badge.style.display = 'none';
+            var dashToggleBar = document.getElementById('dashWmToggleBar');
+            if (dashToggleBar) dashToggleBar.style.display = 'none';
             if (wmSpan) wmSpan.style.display = '';
 
             // Background: find job_id from url, load wm state
@@ -1313,16 +1327,21 @@
                     } catch(e) { console.log('[DASH-WM] Gen check error:', e); }
                 }
 
+                // Store watermarked URL for toggle revert
+                _dashWmState.currentWatermarkedUrl = video.src;
+
                 // Update UI based on state
-                if (_dashWmState.globalRemoved || _dashWmState.currentVideoRemoved) {
-                    if (wmSpan) wmSpan.style.display = 'none';
-                    if (banner) banner.style.display = 'none';
-                    if (badge) badge.style.display = 'block';
-                    video.src = _dashWmState.currentCleanUrl;
-                } else if (_dashWmState.hasPurchased) {
+                if (_dashWmState.hasPurchased) {
+                    var tBar = document.getElementById('dashWmToggleBar');
+                    if (tBar) tBar.style.display = 'flex';
+                    var removed = _dashWmState.globalRemoved || _dashWmState.currentVideoRemoved;
+                    _dashWmUpdateToggleUI(removed);
+                    if (wmSpan) wmSpan.style.display = removed ? 'none' : '';
+                    if (removed && _dashWmState.currentCleanUrl) {
+                        video.src = _dashWmState.currentCleanUrl;
+                    }
+                } else {
                     if (wmSpan) wmSpan.style.display = '';
-                    if (banner) banner.style.display = 'block';
-                    if (badge) badge.style.display = 'none';
                 }
             })();
         }
@@ -1349,41 +1368,67 @@
             }
         }
 
-        async function dashRemoveWatermark(scope) {
+        async function dashToggleWatermark(enabled) {
+            // enabled = true  → watermark removed (clean video)
+            // enabled = false → watermark showing
             if (!currentUser || !supabaseClient) return;
-            var banner = document.getElementById('dashWmBanner');
-            var badge = document.getElementById('dashWmRemovedBadge');
-            var wmSpan = document.querySelector('#videoModal .toonit-watermark');
-            var video = document.getElementById('modalVideo');
+            var toggleInput = document.getElementById('dashWmToggleInput');
+            var savingEl    = document.getElementById('dashWmToggleSaving');
+            var wmSpan      = document.querySelector('#videoModal .toonit-watermark');
+            var video       = document.getElementById('modalVideo');
+
+            if (toggleInput) toggleInput.disabled = true;
+            if (savingEl) savingEl.classList.add('visible');
 
             try {
-                if (scope === 'all') {
-                    await supabaseClient.from('profiles').update({ watermark_removed_global: true }).eq('id', currentUser.id);
-                    _dashWmState.globalRemoved = true;
-                    _dashWmState.currentVideoRemoved = true;
-                    // Hide overview callout
-                    var callout = document.getElementById('dashWmCallout');
-                    if (callout) callout.style.display = 'none';
-                } else {
-                    var jid = _dashWmState.currentVideoJobId;
-                    if (jid) {
-                        await supabaseClient.from('generations').update({ watermark_removed: true }).eq('job_id', jid);
-                    }
-                    _dashWmState.currentVideoRemoved = true;
+                // ── Persist to DB ──
+                var jid = _dashWmState.currentVideoJobId;
+                await supabaseClient.from('profiles').update({ watermark_removed_global: enabled }).eq('id', currentUser.id);
+                if (jid) {
+                    await supabaseClient.from('generations').update({ watermark_removed: enabled }).eq('job_id', jid);
                 }
-                // Switch to clean URL
-                if (video && _dashWmState.currentCleanUrl) {
+
+                // ── Update state ──
+                _dashWmState.globalRemoved = enabled;
+                _dashWmState.currentVideoRemoved = enabled;
+
+                // ── Swap video source ──
+                if (video) {
                     var ct = video.currentTime;
-                    video.src = _dashWmState.currentCleanUrl;
+                    var wasPlaying = !video.paused;
+                    if (enabled && _dashWmState.currentCleanUrl) {
+                        video.src = _dashWmState.currentCleanUrl;
+                    } else if (!enabled && _dashWmState.currentWatermarkedUrl) {
+                        video.src = _dashWmState.currentWatermarkedUrl;
+                    }
                     video.currentTime = ct;
-                    video.play();
+                    if (wasPlaying) video.play();
                 }
-                if (wmSpan) wmSpan.style.display = 'none';
-                if (banner) banner.style.display = 'none';
-                if (badge) badge.style.display = 'block';
+
+                // ── CSS watermark overlay ──
+                if (wmSpan) wmSpan.style.display = enabled ? 'none' : '';
+
+                // ── Update toggle UI ──
+                _dashWmUpdateToggleUI(enabled);
+
+                console.log('[DASH-WM] Watermark toggled:', enabled ? 'removed' : 'restored');
             } catch(e) {
-                console.error('[DASH-WM] Remove error:', e);
-                alert('Could not remove watermark. Please try again.');
+                console.error('[DASH-WM] Toggle error:', e);
+                if (toggleInput) toggleInput.checked = !enabled;
+                alert('Could not update watermark preference. Please try again.');
+            } finally {
+                if (toggleInput) toggleInput.disabled = false;
+                if (savingEl) savingEl.classList.remove('visible');
+            }
+        }
+
+        function _dashWmUpdateToggleUI(removed) {
+            var toggleInput = document.getElementById('dashWmToggleInput');
+            var statusEl    = document.getElementById('dashWmToggleStatus');
+            if (toggleInput) toggleInput.checked = removed;
+            if (statusEl) {
+                statusEl.textContent = removed ? '✅ Removed' : 'Showing';
+                statusEl.className   = 'dash-wm-toggle-status' + (removed ? ' active' : '');
             }
         }
 
