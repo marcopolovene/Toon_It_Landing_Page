@@ -1262,7 +1262,7 @@
         }
         .toonit-watermark {
             position: absolute;
-            bottom: 14px;
+            bottom: 6px;
             left: 16px;
             font-family: 'Pacifico', cursive;
             font-size: 18px;
@@ -3878,7 +3878,12 @@
             currentWmUrl: null,   // burned watermark url
             currentCleanUrl: null, // clean url
             currentJobId: null,
-            wmReady: false
+            wmReady: false,
+            preBurnBlobUrl: null,  // pre-burned blob ready for instant download
+            preBurnMimeType: null,
+            preBurnReady: false,
+            preBurnRunning: false,
+            preBurnGenId: 0       // incremented each new video to cancel stale burns
         };
 
         // Load watermark state for current user
@@ -3970,6 +3975,11 @@
                 _wmUpdateToggleUI(enabled);
 
                 console.log('[WM] Watermark toggled:', enabled ? 'removed' : 'restored');
+                // If re-showing watermark and pre-burn not ready, restart it
+                if (!enabled && !_wmState.preBurnReady) {
+                    var burnSrc = (_wmState.wmReady && _wmState.currentWmUrl) ? _wmState.currentWmUrl : _wmState.currentCleanUrl;
+                    if (burnSrc) _startPreBurn(burnSrc);
+                }
             } catch(e) {
                 console.error('[WM] Toggle error:', e);
                 // Revert toggle on error
@@ -4064,6 +4074,11 @@
                     if (toggleBar) toggleBar.style.display = 'none';
                     if (wmSpan) wmSpan.style.display = '';
                 }
+
+                // Kick off silent pre-burn so download is instant when user clicks
+                // Use wmUrl if available (already has watermark), otherwise burn clean URL
+                var burnSrc = (_wmState.wmReady && _wmState.currentWmUrl) ? _wmState.currentWmUrl : _wmState.currentCleanUrl;
+                if (burnSrc) _startPreBurn(burnSrc);
             })();
 
             // Video appearing is the completion signal — hide progress bar
@@ -4235,7 +4250,7 @@
                     ctx.fillStyle = 'white';
                     ctx.shadowColor = 'rgba(0,0,0,0.7)';
                     ctx.shadowBlur = 4;
-                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.07));
+                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.025));
                     ctx.restore();
                     requestAnimationFrame(drawFrame);
                 };
@@ -4263,17 +4278,135 @@
         }
         // === END CANVAS WATERMARK BURN ===
 
+        // ── Pre-burn: silently burn watermark into blob in background after each result ──
+        function _startPreBurn(videoUrl) {
+            // Reset pre-burn state for this video
+            if (_wmState.preBurnBlobUrl) { try { URL.revokeObjectURL(_wmState.preBurnBlobUrl); } catch(e){} }
+            _wmState.preBurnBlobUrl  = null;
+            _wmState.preBurnReady   = false;
+            _wmState.preBurnRunning = true;
+            _wmState.preBurnMimeType = null;
+            var genId = ++_wmState.preBurnGenId; // stamp for this burn job
+
+            var burnVideo = document.createElement('video');
+            burnVideo.crossOrigin = 'anonymous';
+            burnVideo.muted = true;
+            burnVideo.playsInline = true;
+            burnVideo.style.display = 'none';
+            document.body.appendChild(burnVideo);
+
+            var canvas = document.createElement('canvas');
+            canvas.style.display = 'none';
+            document.body.appendChild(canvas);
+            var ctx = canvas.getContext('2d');
+
+            function _cleanup() {
+                try { document.body.removeChild(burnVideo); } catch(e){}
+                try { document.body.removeChild(canvas);    } catch(e){}
+            }
+
+            burnVideo.onloadedmetadata = function() {
+                if (genId !== _wmState.preBurnGenId) { _cleanup(); return; } // stale
+                canvas.width  = burnVideo.videoWidth  || 720;
+                canvas.height = burnVideo.videoHeight || 480;
+
+                var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                               MediaRecorder.isTypeSupported('video/webm')            ? 'video/webm' : 'video/mp4';
+                var recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: mimeType, videoBitsPerSecond: 4000000 });
+                var chunks = [];
+
+                recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+                recorder.onstop = function() {
+                    _cleanup();
+                    if (genId !== _wmState.preBurnGenId) return; // superseded
+                    var blob = new Blob(chunks, { type: mimeType });
+                    _wmState.preBurnBlobUrl  = URL.createObjectURL(blob);
+                    _wmState.preBurnMimeType = mimeType;
+                    _wmState.preBurnReady   = true;
+                    _wmState.preBurnRunning = false;
+                    console.log('[WM] Pre-burn complete ' + Math.round(blob.size/1024) + 'KB');
+                };
+
+                var drawFrame = function() {
+                    if (burnVideo.paused || burnVideo.ended) return;
+                    if (genId !== _wmState.preBurnGenId) { recorder.stop(); return; }
+                    ctx.drawImage(burnVideo, 0, 0, canvas.width, canvas.height);
+                    var fSize = Math.max(18, Math.round(canvas.width * 0.038));
+                    ctx.save();
+                    ctx.font = 'bold ' + fSize + 'px Pacifico, cursive';
+                    ctx.globalAlpha = 0.6;
+                    ctx.fillStyle = 'white';
+                    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                    ctx.shadowBlur = 4;
+                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.025));
+                    ctx.restore();
+                    requestAnimationFrame(drawFrame);
+                };
+
+                recorder.start(100);
+                burnVideo.play();
+                drawFrame();
+                burnVideo.onended = function() { setTimeout(function(){ recorder.stop(); }, 200); };
+            };
+
+            burnVideo.onerror = function() {
+                _cleanup();
+                _wmState.preBurnRunning = false;
+                console.warn('[WM] Pre-burn video load error');
+            };
+
+            burnVideo.src = videoUrl;
+            burnVideo.load();
+            console.log('[WM] Pre-burn started');
+        }
+
         function downloadVideo() {
             if (!resultVideo || !resultVideo.src) return;
-            var cleanUrl = _wmState.currentCleanUrl || resultVideo.src;
+            var cleanUrl  = _wmState.currentCleanUrl || resultVideo.src;
             var isRemoved = _wmState.globalRemoved || _wmState.currentVideoRemoved;
-
             var btn = document.getElementById('downloadBtn');
-            if (btn) { btn.textContent = isRemoved ? '⬇️ Downloading...' : '🔥 Burning watermark...'; btn.disabled = true; }
 
-            burnWatermarkAndDownload(cleanUrl, isRemoved, 'toon-it-video.mp4', function() {
-                if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
-            });
+            // Watermark removed → direct clean download, no burn needed
+            if (isRemoved) {
+                if (btn) { btn.textContent = '⬇️ Downloading...'; btn.disabled = true; }
+                burnWatermarkAndDownload(cleanUrl, true, 'toon-it-video.mp4', function() {
+                    if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
+                });
+                return;
+            }
+
+            // Watermark showing — use pre-burned blob if ready (instant!)
+            if (_wmState.preBurnReady && _wmState.preBurnBlobUrl) {
+                if (btn) { btn.textContent = '⬇️ Downloading...'; btn.disabled = true; }
+                var ext = (_wmState.preBurnMimeType && _wmState.preBurnMimeType.includes('webm')) ? 'toon-it-video.webm' : 'toon-it-video.mp4';
+                var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (isIOS) {
+                    window.open(_wmState.preBurnBlobUrl, '_blank');
+                } else {
+                    var a = document.createElement('a');
+                    a.href = _wmState.preBurnBlobUrl; a.download = ext;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+                if (btn) { setTimeout(function(){ btn.textContent = '⬇️ Download'; btn.disabled = false; }, 400); }
+                return;
+            }
+
+            // Pre-burn still in progress — show friendly wait and poll
+            if (btn) { btn.textContent = '⏳ Almost ready...'; btn.disabled = true; }
+            var pollInterval = setInterval(function() {
+                if (_wmState.preBurnReady && _wmState.preBurnBlobUrl) {
+                    clearInterval(pollInterval);
+                    downloadVideo(); // recurse — will hit instant path above
+                } else if (!_wmState.preBurnRunning) {
+                    // Pre-burn failed/errored — fall back to on-demand burn
+                    clearInterval(pollInterval);
+                    if (btn) { btn.textContent = '🔥 Burning watermark...'; }
+                    burnWatermarkAndDownload(cleanUrl, false, 'toon-it-video.mp4', function() {
+                        if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
+                    });
+                }
+            }, 200);
         }
 
         function resetForNew() {
