@@ -1351,24 +1351,135 @@
             if (!video || !video.src) return;
             var cleanUrl = _dashWmState.currentCleanUrl || video.src;
             var isRemoved = _dashWmState.globalRemoved || _dashWmState.currentVideoRemoved;
+            var filename = 'toonit-video.mp4';
 
             var btn = document.getElementById('dashDownloadBtn');
+            function _resetBtn() {
+                if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
+            }
+            function _showToast(msg) {
+                var t = document.createElement('div');
+                t.textContent = msg;
+                t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(30,20,10,0.92);color:#fff;padding:12px 22px;border-radius:22px;font-size:14px;z-index:99999;pointer-events:none;max-width:90vw;text-align:center;';
+                document.body.appendChild(t);
+                setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 4000);
+            }
+
+            // ── iOS Safari: MUST be synchronous — any async before share/open kills the gesture ──
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            if (isIOS) {
+                if (btn) { btn.textContent = '⬇️ Saving...'; btn.disabled = true; }
+                // navigator.share({url}) is synchronous relative to gesture — iOS share sheet
+                // lets user pick Save to Files, Photos, AirDrop, etc. No fetch needed.
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'My ToonIt Video',
+                        text: 'Check out my storybook video from ToonIt.ai!',
+                        url: cleanUrl
+                    })
+                    .then(function() { _resetBtn(); })
+                    .catch(function(err) {
+                        // AbortError = user cancelled — not a real error
+                        if (err && err.name === 'AbortError') { _resetBtn(); return; }
+                        // Any other error: open directly
+                        window.open(cleanUrl, '_blank');
+                        _showToast('📱 Tap and hold the video, then tap Save to Files');
+                        _resetBtn();
+                    });
+                } else {
+                    // iOS < 12.1 — no share API, open direct URL
+                    window.open(cleanUrl, '_blank');
+                    _showToast('📱 Tap and hold the video, then tap Save to Files');
+                    _resetBtn();
+                }
+                return; // ← iOS path ends here, never touches fetch/MediaRecorder
+            }
+
+            // ── Non-iOS: watermark removed → direct anchor download ──
             if (btn) { btn.textContent = isRemoved ? '⬇️ Downloading...' : '🔥 Burning watermark...'; btn.disabled = true; }
 
-            // Inline canvas burn (reuse landing page function if available, else simple download)
-            if (typeof burnWatermarkAndDownload === 'function') {
-                burnWatermarkAndDownload(cleanUrl, isRemoved, 'toonit-video.mp4', function() {
-                    if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
-                });
-            } else {
-                // Fallback: direct download
+            if (isRemoved) {
                 var a = document.createElement('a');
-                a.href = cleanUrl; a.download = 'toonit-video.mp4'; a.click();
-                if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
+                a.href = cleanUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                _resetBtn();
+                return;
+            }
+
+            // ── Non-iOS: self-contained canvas watermark burn (desktop + Android) ──
+            if (typeof burnWatermarkAndDownload === 'function') {
+                burnWatermarkAndDownload(cleanUrl, isRemoved, filename, _resetBtn);
+            } else {
+                var burnVid = document.createElement('video');
+                burnVid.crossOrigin = 'anonymous';
+                burnVid.muted = true;
+                burnVid.playsInline = true;
+                burnVid.style.display = 'none';
+                document.body.appendChild(burnVid);
+                var cvs = document.createElement('canvas');
+                cvs.style.display = 'none';
+                document.body.appendChild(cvs);
+                var ctx = cvs.getContext('2d');
+                burnVid.onloadedmetadata = function() {
+                    cvs.width = burnVid.videoWidth || 720;
+                    cvs.height = burnVid.videoHeight || 480;
+                    var stream = cvs.captureStream(30);
+                    var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                                   MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+                    var recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 });
+                    var chunks = [];
+                    recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+                    recorder.onstop = function() {
+                        var blob = new Blob(chunks, { type: mimeType });
+                        var ext = mimeType.includes('webm') ? 'toonit-video.webm' : filename;
+                        document.body.removeChild(burnVid);
+                        document.body.removeChild(cvs);
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url; a.download = ext;
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+                        _resetBtn();
+                    };
+                    var drawFrame = function() {
+                        if (burnVid.paused || burnVid.ended) return;
+                        ctx.drawImage(burnVid, 0, 0, cvs.width, cvs.height);
+                        var fSize = Math.max(18, Math.round(cvs.width * 0.038));
+                        ctx.save();
+                        ctx.font = 'bold ' + fSize + 'px Pacifico, cursive';
+                        ctx.globalAlpha = 0.6;
+                        ctx.fillStyle = 'white';
+                        ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                        ctx.shadowBlur = 4;
+                        ctx.fillText('ToonIt.ai', 16, cvs.height - Math.round(cvs.height * 0.07));
+                        ctx.restore();
+                        requestAnimationFrame(drawFrame);
+                    };
+                    recorder.start(100);
+                    burnVid.play();
+                    drawFrame();
+                    burnVid.onended = function() { setTimeout(function() { recorder.stop(); }, 200); };
+                };
+                burnVid.onerror = function() {
+                    document.body.removeChild(burnVid);
+                    document.body.removeChild(cvs);
+                    var a = document.createElement('a');
+                    a.href = cleanUrl; a.download = filename;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    _resetBtn();
+                };
+                burnVid.src = cleanUrl;
+                burnVid.load();
             }
         }
 
-        async function dashToggleWatermark(enabled) {
+
+                async function dashToggleWatermark(enabled) {
             // enabled = true  → watermark removed (clean video)
             // enabled = false → watermark showing
             if (!currentUser || !supabaseClient) return;
