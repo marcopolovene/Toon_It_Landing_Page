@@ -1346,34 +1346,52 @@
                 setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 4000);
             }
 
-            // ── iOS Safari: MUST be synchronous — any async before share/open kills the gesture ──
+            // ── iOS Safari: fetch → blob → <a download> (iOS 14.5+, no share sheet) ──
+            // Blob URLs are same-origin so the download attribute IS respected on iOS 14.5+
             var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
             if (isIOS) {
                 if (btn) { btn.textContent = '⬇️ Saving...'; btn.disabled = true; }
-                // navigator.share({url}) is synchronous relative to gesture — iOS share sheet
-                // lets user pick Save to Files, Photos, AirDrop, etc. No fetch needed.
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'My ToonIt Video',
-                        text: 'Check out my storybook video from ToonIt.ai!',
-                        url: cleanUrl
-                    })
-                    .then(function() { _resetBtn(); })
-                    .catch(function(err) {
-                        // AbortError = user cancelled — not a real error
-                        if (err && err.name === 'AbortError') { _resetBtn(); return; }
-                        // Any other error: open directly
-                        window.open(cleanUrl, '_blank');
+                // Determine best URL: prefer watermark-burned url if ready, else cleanUrl
+                var iosUrl = (_dashWmState.wmReady && _dashWmState.currentWmUrl)
+                             ? _dashWmState.currentWmUrl
+                             : cleanUrl;
+                // Primary: fetch → blob → <a download> — triggers native save dialog, NOT share sheet
+                try {
+                    var iosResp = await fetch(iosUrl, { mode: 'cors' });
+                    if (!iosResp.ok) throw new Error('fetch ' + iosResp.status);
+                    var iosBlob = await iosResp.blob();
+                    var iosBlobUrl = URL.createObjectURL(iosBlob);
+                    var iosA = document.createElement('a');
+                    iosA.href = iosBlobUrl;
+                    iosA.download = filename;
+                    document.body.appendChild(iosA);
+                    iosA.click();
+                    document.body.removeChild(iosA);
+                    setTimeout(function() { URL.revokeObjectURL(iosBlobUrl); }, 10000);
+                    _resetBtn();
+                } catch(iosErr) {
+                    console.log('[iOS-DL] fetch failed, falling back to share sheet:', iosErr);
+                    // Fallback: CORS/network error — use share sheet as last resort
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'My ToonIt Video',
+                            text: 'Check out my storybook video from ToonIt.ai!',
+                            url: iosUrl
+                        })
+                        .then(function() { _resetBtn(); })
+                        .catch(function(err) {
+                            if (err && err.name === 'AbortError') { _resetBtn(); return; }
+                            window.open(iosUrl, '_blank');
+                            _showToast('📱 Tap and hold the video, then tap Save to Files');
+                            _resetBtn();
+                        });
+                    } else {
+                        window.open(iosUrl, '_blank');
                         _showToast('📱 Tap and hold the video, then tap Save to Files');
                         _resetBtn();
-                    });
-                } else {
-                    // iOS < 12.1 — no share API, open direct URL
-                    window.open(cleanUrl, '_blank');
-                    _showToast('📱 Tap and hold the video, then tap Save to Files');
-                    _resetBtn();
+                    }
                 }
                 return; // ← iOS path ends here
             }
