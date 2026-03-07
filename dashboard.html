@@ -1330,6 +1330,22 @@
                                             body: JSON.stringify({ job_id: gen.job_id, video_url: _dashWmState.currentCleanUrl, user_id: currentUser ? currentUser.id : null })
                                         });
                                     } catch(e) { console.log("[DASH-WM] Pre-burn error:", e); }
+                                    // BUG3b fix: poll in background so wmReady=true before user clicks download
+                                    var _pbJid = gen.job_id;
+                                    var _pbAttempts = 0;
+                                    var _pbTimer = setInterval(async function() {
+                                        if (_dashWmState.wmReady || _pbAttempts >= 12) { clearInterval(_pbTimer); return; }
+                                        _pbAttempts++;
+                                        try {
+                                            var pbRes = await supabaseClient.from('generations').select('watermark_url, watermark_ready').eq('job_id', _pbJid).maybeSingle();
+                                            if (pbRes.data && pbRes.data.watermark_ready && pbRes.data.watermark_url) {
+                                                _dashWmState.wmReady = true;
+                                                _dashWmState.currentWmUrl = pbRes.data.watermark_url;
+                                                clearInterval(_pbTimer);
+                                                console.log('[DASH-WM] Pre-burn complete, wmReady=true');
+                                            }
+                                        } catch(e) { /* ignore */ }
+                                    }, 5000);
                                 })();
                             }
                         }
@@ -1535,6 +1551,12 @@
             if (btn) { btn.textContent = '🔥 Preparing...'; btn.disabled = true; }
 
             var jobId = _dashWmState.currentVideoJobId;
+            // BUG4 fix: race condition — async playVideo() may not have set jobId yet;
+            // extract from URL as fallback so download never shows spurious error toast
+            if (!jobId && cleanUrl) {
+                var _fbMatch = cleanUrl.match(/\/videos\/([^/?]+?)(?:_wm)?(?:\.[^/?]*)?(?:[?#]|$)/);
+                if (_fbMatch) { jobId = _fbMatch[1].replace('_wm',''); _dashWmState.currentVideoJobId = jobId; }
+            }
             if (!jobId || !cleanUrl) {
                 _showToast('⚠️ Could not start watermark process. Try again.');
                 _resetBtn();
