@@ -3357,19 +3357,136 @@
     }
 
     function updateUIForUser(email, credits) {
-        // Sync credits to all globals so the primary function sees correct value
+        // Sync credits to globals
         if (credits !== undefined) {
             window.currentCredits = credits;
-            currentCredits = credits;
+            try { currentCredits = credits; } catch(e) {}
         }
-        if (email !== undefined) {
-            var _u = window.currentUser || currentUser;
-            if (_u) _u.email = email;
+        var activeUser = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null) || null;
+        if (email !== undefined && activeUser) {
+            try { activeUser.email = email; } catch(e) {}
         }
-        // Delegate to authoritative implementation inside DOMContentLoaded closure
+
+        // Try primary implementation first if available
         if (typeof window._updateUIForUser === 'function') {
-            window._updateUIForUser(email, credits);
+            try { window._updateUIForUser(email, credits); } catch(e) { console.log('[FAILSAFE] _updateUIForUser error:', e); }
         }
+
+        // Hard fallback DOM updates so auth works even if primary init never ran
+        var uploadArea = document.getElementById('uploadArea');
+        var guestView = document.getElementById('guestView');
+        var userView = document.getElementById('userView');
+        var guestButtons = document.getElementById('guestButtons');
+        var userButtons = document.getElementById('userButtons');
+        var userEmail = document.getElementById('userEmail');
+        var creditCount = document.getElementById('creditCount');
+        var loginRequired = document.getElementById('loginRequired');
+        var noCredits = document.getElementById('noCredits');
+        var infoBox = document.getElementById('infoBox');
+        var transformBtn = document.getElementById('transformBtn');
+        var styleSelector = document.getElementById('styleSelector');
+
+        if (guestView) guestView.style.display = 'none';
+        if (userView) userView.style.display = '';
+        if (guestButtons) guestButtons.style.display = 'none';
+        if (userButtons) userButtons.style.display = '';
+        if (userEmail) userEmail.textContent = email || (activeUser && activeUser.email) || '';
+        if (creditCount) creditCount.textContent = String(credits !== undefined ? credits : (window.currentCredits !== undefined ? window.currentCredits : 0));
+        if (loginRequired) loginRequired.style.display = 'none';
+        if (infoBox) infoBox.style.display = 'none';
+        if (uploadArea) { uploadArea.style.display = 'block'; uploadArea.classList.remove('disabled'); }
+        if (styleSelector) styleSelector.style.display = 'block';
+        if (transformBtn && !document.getElementById('fileInput')?.files?.length) { transformBtn.disabled = true; }
+        if (noCredits) {
+            var c = Number(credits !== undefined ? credits : (window.currentCredits !== undefined ? window.currentCredits : 0));
+            noCredits.style.display = c > 0 ? 'none' : '';
+        }
+        var container = document.querySelector('.container');
+        if (container) container.classList.add('logged-in');
+        window.updateUIForUser = updateUIForUser;
+    }
+
+    function updateUIForGuestFallback() {
+        var uploadArea = document.getElementById('uploadArea');
+        var guestView = document.getElementById('guestView');
+        var userView = document.getElementById('userView');
+        var guestButtons = document.getElementById('guestButtons');
+        var userButtons = document.getElementById('userButtons');
+        var loginRequired = document.getElementById('loginRequired');
+        var noCredits = document.getElementById('noCredits');
+        var infoBox = document.getElementById('infoBox');
+        var transformBtn = document.getElementById('transformBtn');
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (guestView) guestView.style.display = '';
+        if (userView) userView.style.display = 'none';
+        if (guestButtons) guestButtons.style.display = '';
+        if (userButtons) userButtons.style.display = 'none';
+        if (loginRequired) loginRequired.style.display = '';
+        if (noCredits) noCredits.style.display = 'none';
+        if (infoBox) infoBox.style.display = 'none';
+        if (transformBtn) transformBtn.disabled = true;
+        var container = document.querySelector('.container');
+        if (container) container.classList.remove('logged-in');
+    }
+
+    function showForgotPasswordFallback() {
+        closeAllModals();
+        var step1 = document.getElementById('forgotStep1');
+        var step2 = document.getElementById('forgotStep2');
+        var err = document.getElementById('forgotError');
+        var email = document.getElementById('forgotEmail');
+        var modal = document.getElementById('forgotModal');
+        if (step1) step1.style.display = 'block';
+        if (step2) step2.style.display = 'none';
+        if (err) { err.style.display = 'none'; err.textContent = ''; }
+        if (email) email.value = '';
+        if (modal) modal.classList.add('active');
+    }
+
+    async function handleForgotPasswordFallback(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        var sb = getSupabase();
+        if (!sb) { alert('Authentication service loading... Please try again.'); return; }
+        var email = document.getElementById('forgotEmail').value;
+        var errorEl = document.getElementById('forgotError');
+        if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+        try {
+            var result = await sb.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname + '?reset=true'
+            });
+            if (result.error) {
+                if (errorEl) { errorEl.textContent = result.error.message; errorEl.style.display = 'block'; }
+                return;
+            }
+            var step1 = document.getElementById('forgotStep1');
+            var step2 = document.getElementById('forgotStep2');
+            if (step1) step1.style.display = 'none';
+            if (step2) step2.style.display = 'block';
+        } catch (e) {
+            if (errorEl) { errorEl.textContent = 'An error occurred. Please try again.'; errorEl.style.display = 'block'; }
+        }
+    }
+
+    function handleGoogleOAuthFallback() {
+        var sb = getSupabase();
+        if (!sb) { alert('Authentication service not available. Please refresh.'); return; }
+        sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + window.location.pathname }
+        }).then(function(r) {
+            if (r && r.error) alert('Google sign-in failed: ' + r.error.message);
+        }).catch(function() {
+            alert('Google sign-in failed. Please try again.');
+        });
+    }
+
+    async function logoutFallback() {
+        var sb = getSupabase();
+        try { if (sb) await sb.auth.signOut(); } catch(e) {}
+        window.currentUser = null;
+        try { currentUser = null; currentCredits = 0; } catch(e) {}
+        updateUIForGuestFallback();
+        window.location.reload();
     }
 
     async function handleLoginSubmit(e) {
@@ -3585,14 +3702,30 @@
         // Login form
         var loginForm = document.getElementById('loginForm');
         if (loginForm) {
-            console.log('[FAILSAFE] Login form ready (using HTML onsubmit handler)');
+            loginForm.onsubmit = handleLoginSubmit;
+            window.handleLogin = handleLoginSubmit;
+            console.log('[FAILSAFE] Login form handler attached');
         }
 
         // Signup form
         var signupForm = document.getElementById('signupForm');
         if (signupForm) {
-            console.log('[FAILSAFE] Signup form ready (using HTML onsubmit handler)');
+            signupForm.onsubmit = handleSignupSubmit;
+            window.handleSignup = handleSignupSubmit;
+            console.log('[FAILSAFE] Signup form handler attached');
         }
+
+        // Forgot password form and inline callbacks
+        var forgotForm = document.getElementById('forgotForm');
+        if (forgotForm) {
+            forgotForm.onsubmit = handleForgotPasswordFallback;
+            console.log('[FAILSAFE] Forgot password form handler attached');
+        }
+        window.showForgotPassword = showForgotPasswordFallback;
+        window.handleForgotPassword = handleForgotPasswordFallback;
+        window.handleGoogleOAuth = handleGoogleOAuthFallback;
+        window.logout = logoutFallback;
+        window.updateUIForUser = updateUIForUser;
 
         console.log('[FAILSAFE] All handlers ready!');
     }
