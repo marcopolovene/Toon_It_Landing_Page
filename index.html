@@ -3,8 +3,8 @@
 <html lang="en">
 <head>
     <!-- SEO & Open Graph Meta Tags -->
-    <meta name="description" content="Transform your photos into magical storybook videos with AI. Upload any photo and watch it come alive as an enchanting animated story. Try free!">
-    <meta name="keywords" content="AI photo transformation, storybook video, photo to video, AI animation, magical video, cartoon video maker">
+    <meta name="description" content="Transform your photos into magical animated art with AI. Upload any photo and watch it come alive as an enchanting animated story. Try free!">
+    <meta name="keywords" content="AI photo transformation, magical transformation video, photo to video, AI animation, magical video, cartoon video maker">
     <meta name="author" content="Toon It!">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://toonit.ai/">
@@ -12,8 +12,8 @@
     <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toonit.ai/">
-    <meta property="og:title" content="Toon It! — Transform Photos into Magical Storybook Videos">
-    <meta property="og:description" content="Upload any photo and watch it come alive as an enchanting AI-animated storybook video. 2 free credits to start!">
+    <meta property="og:title" content="Toon It! — Transform Photos into Magical Animated Art">
+    <meta property="og:description" content="Upload any photo and watch it come alive as an enchanting AI-animated magical transformation video. 2 free credits to start!">
     <meta property="og:site_name" content="Toon It!">
     <meta property="og:image" content="https://res.cloudinary.com/dzarqnick/image/upload/v1772100992/toonit_og_card.jpg">
     <meta property="og:image:width" content="1200">
@@ -21,8 +21,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Toon It! — Transform Photos into Magical Storybook Videos">
-    <meta name="twitter:description" content="Upload any photo and watch it come alive as an enchanting AI-animated storybook video. Try free!">
+    <meta name="twitter:title" content="Toon It! — Transform Photos into Magical Animated Art">
+    <meta name="twitter:description" content="Upload any photo and watch it come alive as an enchanting AI-animated magical transformation video. Try free!">
     <meta name="twitter:image" content="https://res.cloudinary.com/dzarqnick/image/upload/v1772100992/toonit_og_card.jpg">
 
     <!-- Favicon -->
@@ -38,1319 +38,203 @@
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toon It! — Transform Photos into Magical Storybook Videos with AI</title>
+    <title>Toon It! — Transform Photos into Magical Animated Art with AI</title>
     
     <style>
-        /* ==========================================
-           TOON IT! BRAND DESIGN
-           Warm storybook/fantasy theme
-           ========================================== */
+
         :root {
-            --bg-dark: #faf6f0;
-            --bg-surface: #ffffff;
-            --bg-card: #fff8ee;
-            --primary: #d4a04a;
-            --primary-hover: #c08830;
-            --secondary: #a06840;
-            --accent: #e8c078;
-            --text-main: #2a2015;
-            --text-muted: #8a7a60;
-            --text-dark: #1a1408;
-            --border: #e0d4c0;
-            --success: #4a9e49;
-            --error: #d94040;
-            --glow: rgba(212, 160, 74, 0.15);
+            --bg-dark: #07070f;
+            --bg-surface: #111120;
+            --bg-card: #181830;
+            --primary: #f0b429;
+            --primary-hover: #d4950f;
+            --secondary: #7c6bfa;
+            --accent: #ffd166;
+            --text-main: #f0ece4;
+            --text-muted: #9090b0;
+            --text-dark: #c8c4bc;
+            --border: #262640;
+            --success: #4ade80;
+            --error: #f87171;
+            --glow: rgba(240,180,41,0.15);
+            --glow-strong: rgba(240,180,41,0.35);
+            --shadow: rgba(0,0,0,0.5);
         }
-
         * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 580px; margin: 0 auto; padding: 20px; }
+        .header h1 { color: var(--primary); font-size: 2.5em; margin-bottom: 8px; }
+        .header p { color: var(--text-muted); font-size: 1.05em; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-main);
-            min-height: 100vh;
-        }
+        /* AUTH BAR — sticky dark nav */
+        .auth-bar { position: sticky; top: 0; z-index: 1000; background: rgba(7,7,15,0.97); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 10px 20px; width: 100%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .credits-display { background: rgba(240,180,41,0.12); border: 1px solid rgba(240,180,41,0.3); border-radius: 20px; padding: 4px 14px; font-size: 0.85em; font-weight: 700; color: var(--accent); }
+        .auth-buttons { display: flex; gap: 8px; align-items: center; }
+        .btn-login { background: transparent; color: var(--primary); border: 1.5px solid rgba(240,180,41,0.45); padding: 7px 18px; border-radius: 25px; cursor: pointer; font-weight: 600; font-size: 0.88em; transition: all 0.25s; }
+        .btn-login:hover { background: rgba(240,180,41,0.1); border-color: var(--primary); }
+        .btn-signup { background: var(--primary); color: #07070f; border: none; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-weight: 700; font-size: 0.88em; transition: all 0.25s; }
+        .btn-signup:hover { background: var(--accent); }
+        .user-account-section { display: flex; flex-direction: column; gap: 4px; }
+        .user-email { font-size: 0.8em; color: var(--text-muted); }
+        .referral-inline { font-size: 0.75em; color: var(--text-muted); }
+        .referral-badge { display: inline-block; background: rgba(240,180,41,0.15); border: 1px solid rgba(240,180,41,0.3); border-radius: 8px; padding: 1px 8px; cursor: pointer; color: var(--accent); font-size: 0.9em; }
+        .user-action-buttons { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .dashboard-link { color: var(--text-muted); font-size: 0.82em; text-decoration: none; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); transition: all 0.2s; }
+        .dashboard-link:hover { color: var(--primary); border-color: var(--primary); }
+        .btn-credits { background: var(--primary); color: #07070f; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.8em; }
+        .btn-logout { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; transition: all 0.2s; }
+        .btn-logout:hover { color: var(--error); border-color: var(--error); }
 
-        .container {
-            max-width: 580px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        /* HERO */
+        .hero { background: linear-gradient(160deg, #0f0f24 0%, #07070f 55%, #130c20 100%); padding: 52px 24px 44px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 560px; height: 560px; background: radial-gradient(circle, rgba(240,180,41,0.08) 0%, transparent 65%); pointer-events: none; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(240,180,41,0.1); border: 1px solid rgba(240,180,41,0.25); border-radius: 100px; padding: 5px 16px; font-size: 0.72em; color: var(--accent); font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; }
+        .hero h1 { font-family: 'Pacifico', cursive; font-size: clamp(1.9em, 9vw, 3em); color: #fff; line-height: 1.2; margin-bottom: 16px; }
+        .hero h1 .highlight { background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-sub { font-size: 1.05em; color: var(--text-muted); max-width: 360px; margin: 0 auto 28px; line-height: 1.6; }
+        .hero-cta { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; font-weight: 800; font-size: 1.08em; padding: 15px 34px; border-radius: 50px; cursor: pointer; border: none; box-shadow: 0 4px 28px rgba(240,180,41,0.42); transition: all 0.25s; text-decoration: none; }
+        .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(240,180,41,0.55); color: #07070f; }
+        .hero-free-note { margin-top: 14px; font-size: 0.8em; color: var(--text-muted); }
 
-        /* Header */
-        .header h1 {
-            color: var(--primary);
-            text-shadow: 0 0 20px var(--glow);
-            font-size: 2.5em;
-            margin-bottom: 8px;
-        }
-        .header p {
-            color: var(--text-muted);
-            font-size: 1.05em;
-        }
+        /* SHOWCASE */
+        .showcase { padding: 52px 0 44px; background: var(--bg-dark); }
+        .showcase-header { text-align: center; padding: 0 20px 28px; }
+        .showcase-header h2 { font-size: 1.6em; font-weight: 800; color: #fff; margin-bottom: 10px; }
+        .showcase-header p { color: var(--text-muted); font-size: 0.95em; }
+        .showcase-scroll { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 0 20px 16px; scrollbar-width: none; }
+        .showcase-scroll::-webkit-scrollbar { display: none; }
+        .showcase-card { flex: 0 0 76vw; max-width: 300px; scroll-snap-align: center; border-radius: 22px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border); position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .showcase-card video { width: 100%; display: block; aspect-ratio: 9/16; object-fit: cover; }
+        .showcase-label { position: absolute; top: 12px; right: 12px; background: rgba(7,7,15,0.82); backdrop-filter: blur(8px); border: 1px solid rgba(240,180,41,0.35); border-radius: 20px; padding: 4px 12px; font-size: 0.72em; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
+        .showcase-dots { display: flex; justify-content: center; gap: 6px; padding-top: 18px; }
+        .showcase-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.3s; cursor: pointer; }
+        .showcase-dot.active { background: var(--primary); width: 22px; border-radius: 3px; }
 
-        /* Auth Bar */
-        .auth-bar {
-            background: var(--bg-surface);
-            box-shadow: 0 2px 8px rgba(42,32,21,0.08);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+        /* UPLOAD AREA */
+        #uploadArea { background: var(--bg-card); border: 2px dashed var(--border); border-radius: 20px; padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.25s; margin-bottom: 16px; }
+        #uploadArea:hover { border-color: var(--primary); background: rgba(240,180,41,0.04); }
+        .upload-icon { font-size: 2.5em; margin-bottom: 12px; }
+        #uploadArea p { color: var(--text-muted); margin-bottom: 4px; }
+        #uploadArea p strong { color: var(--text-main); }
+        #preview { max-width: 100%; border-radius: 12px; margin-top: 14px; display: none; }
 
-        /* Buttons */
-        .btn-login, .btn-signup {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 8px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 0.9em;
-        }
-        .btn-login:hover, .btn-signup:hover {
-            background: var(--primary);
-            color: var(--text-dark);
-        }
-        .btn-signup {
-            background: var(--primary);
-            color: var(--text-dark);
-        }
-        .btn-signup:hover {
-            background: var(--primary-hover);
-        }
+        /* INFO BOX */
+        .info-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; margin-bottom: 16px; color: var(--text-muted); font-size: 0.92em; }
+        .info-box.login-required { text-align: center; padding: 40px 24px; background: linear-gradient(135deg, #0f0f24 0%, var(--bg-card) 100%); border-color: rgba(240,180,41,0.2); }
+        .info-box.no-credits { border-left: 3px solid var(--error); background: rgba(248,113,113,0.06); }
+        .signup-sparkles { font-size: 2em; margin-bottom: 10px; }
+        .signup-headline { font-size: 1.4em; font-weight: 800; color: #fff; margin-bottom: 10px; }
+        .signup-subtext { color: var(--text-muted); margin-bottom: 18px; font-size: 0.95em; line-height: 1.5; }
+        .signup-credits-badge { display: inline-block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 20px; padding: 5px 16px; font-size: 0.85em; font-weight: 700; color: var(--success); margin-bottom: 22px; }
+        .signup-cta-btn { display: inline-block; background: linear-gradient(135deg, var(--primary), #e09000); color: #07070f; font-weight: 800; padding: 13px 30px; border-radius: 50px; cursor: pointer; font-size: 1em; text-decoration: none; box-shadow: 0 4px 20px rgba(240,180,41,0.4); transition: all 0.2s; }
+        .signup-cta-btn:hover { transform: translateY(-1px); color: #07070f; }
 
-        /* Google OAuth Button */
-        .btn-google {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px 16px;
-            background: #fff;
-            color: #3c4043;
-            border: 1px solid #dadce0;
-            border-radius: 8px;
-            font-size: 0.95em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
-            font-family: 'Roboto', 'Segoe UI', sans-serif;
-        }
-        .btn-google:hover {
-            background: #f7f8f8;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-        }
-        .btn-google:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .btn-google svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-        .auth-divider {
-            display: flex;
-            align-items: center;
-            margin: 16px 0;
-            gap: 12px;
-            color: var(--text-muted);
-            font-size: 0.85em;
-        }
-        .auth-divider::before,
-        .auth-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-        .btn-credits {
-            background: var(--secondary);
-            color: var(--text-main);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-credits:hover {
-            background: var(--primary);
-            color: var(--text-dark);
-        }
-        .btn-logout {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-logout:hover {
-            border-color: var(--error);
-            color: var(--error);
-        }
+        /* HOW IT WORKS */
+        .how-it-works { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 24px; text-align: center; margin: 0 -20px; }
+        .how-it-works h2 { font-size: 1.5em; font-weight: 800; color: #fff; margin-bottom: 32px; }
+        .steps-row { display: flex; align-items: flex-start; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .hiw-step { flex: 1; min-width: 90px; max-width: 140px; }
+        .hiw-icon { font-size: 2em; margin-bottom: 8px; }
+        .hiw-num { display: inline-block; width: 22px; height: 22px; background: var(--primary); color: #07070f; border-radius: 50%; font-size: 0.75em; font-weight: 800; line-height: 22px; margin-bottom: 6px; }
+        .hiw-title { font-weight: 700; font-size: 0.92em; color: #fff; margin-bottom: 4px; }
+        .hiw-desc { font-size: 0.8em; color: var(--text-muted); line-height: 1.4; }
+        .steps-arrow { color: var(--primary); font-size: 1.4em; padding-top: 24px; opacity: 0.4; }
 
-        /* Upload Area */
-        #uploadArea {
-            border: 3px dashed var(--primary);
-            border-radius: 16px;
-            padding: 50px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-            background: var(--bg-surface);
-        }
-        #uploadArea:hover {
-            background: var(--bg-card);
-            border-color: var(--accent);
-            box-shadow: 0 5px 25px rgba(212,160,74,0.2);
-        }
-        #uploadArea .upload-icon {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
-        #uploadArea p {
-            color: var(--text-muted);
-        }
-        #uploadArea strong {
-            color: var(--text-main);
-        }
+        /* STYLE SELECTOR */
+        .style-selector { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+        .style-selector h3 { color: var(--accent); font-size: 1em; margin-bottom: 14px; }
+        .style-cards { display: flex; gap: 8px; flex-wrap: wrap; }
+        .style-card { flex: 1; min-width: 76px; background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .style-card:hover { border-color: var(--primary); }
+        .style-card.active { border-color: var(--primary); background: rgba(240,180,41,0.08); }
+        .style-icon { font-size: 1.4em; display: block; margin-bottom: 4px; }
+        .style-name { font-size: 0.72em; color: var(--text-muted); font-weight: 600; }
+        .style-card.active .style-name { color: var(--primary); }
 
-        /* Info boxes */
-        .info-box {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 15px;
-            color: var(--text-muted);
-        }
-        .info-box a {
-            color: var(--primary);
-            cursor: pointer;
-            text-decoration: underline;
-        }
+        /* TRANSFORM BUTTON */
+        #transformBtn { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; border: none; padding: 17px; border-radius: 14px; font-size: 1.12em; font-weight: 800; cursor: pointer; transition: all 0.25s; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(240,180,41,0.35); letter-spacing: 0.5px; }
+        #transformBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(240,180,41,0.5); }
+        #transformBtn:disabled { background: var(--bg-card); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
 
-        /* Transform button */
-        #transformBtn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--text-dark);
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 1.2em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: block;
-            width: 100%;
-            margin: 15px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        #transformBtn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px var(--glow);
-        }
-        #transformBtn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        /* STATUS */
+        #status { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 16px; }
+        #statusText { color: var(--text-muted); font-size: 0.95em; margin-bottom: 16px; }
+        .progress-steps { display: flex; justify-content: center; gap: 24px; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.8em; color: var(--text-muted); }
+        .step.active { color: var(--primary); }
+        .step .step-icon { font-size: 1.4em; }
 
-        /* Progress steps */
-        .progress-steps {
-            display: flex;
-            gap: 8px;
-            margin: 20px 0;
-        }
-        .step {
-            flex: 1;
-            padding: 12px 8px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            text-align: center;
-            font-size: 0.85em;
-            color: var(--text-muted);
-            transition: all 0.3s;
-        }
-        .step.active {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: var(--bg-card);
-            box-shadow: 0 0 15px var(--glow);
-        }
-        .step.completed {
-            border-color: var(--success);
-            color: var(--success);
-        }
+        /* RESULT */
+        #result { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+        .toonit-watermark-wrap { position: relative; display: inline-block; width: 100%; }
+        #resultVideo, .toonit-watermark-wrap video { width: 100%; border-radius: 12px; display: block; }
+        .toonit-watermark { position: absolute; bottom: 8px; right: 10px; color: rgba(255,255,255,0.55); font-size: 0.75em; font-weight: 600; pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+        .result-buttons { display: flex; gap: 10px; margin-top: 14px; }
+        .result-buttons button { flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text-main); cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s; }
+        .result-buttons button:hover { border-color: var(--primary); color: var(--primary); }
+        .wm-remove-banner { background: rgba(124,107,250,0.1); border: 1px solid rgba(124,107,250,0.3); border-radius: 12px; padding: 14px; margin-top: 12px; font-size: 0.9em; }
+        .wm-remove-banner p { margin-bottom: 10px; color: var(--text-muted); }
+        .wm-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .wm-btn { flex: 1; padding: 9px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.82em; transition: all 0.2s; }
+        .wm-btn-this { background: var(--secondary); color: #fff; }
+        .wm-btn-all { background: var(--primary); color: #07070f; }
+        .wm-removed-badge { display: inline-block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 20px; padding: 5px 16px; font-size: 0.82em; color: var(--success); }
 
-        /* Status text */
-        #statusText {
-            color: var(--accent);
-            font-size: 1.1em;
-            text-align: center;
-            margin: 15px 0;
-        }
+        /* SHARE */
+        .share-section { margin-bottom: 24px; }
+        .share-label { text-align: center; color: var(--text-muted); font-size: 0.85em; margin-bottom: 10px; font-weight: 600; }
+        .share-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .share-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); cursor: pointer; font-size: 0.82em; font-weight: 600; transition: all 0.2s; }
+        .share-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .copy-toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,32,0.96); color: #fff; padding: 10px 22px; border-radius: 22px; font-size: 0.88em; z-index: 9999; pointer-events: none; border: 1px solid var(--border); }
 
-        /* Result */
-        #result {
-            text-align: center;
-        }
-        #result video {
-            max-width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(42,32,21,0.15);
-            margin-bottom: 20px;
-        }
+        /* MODALS */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; max-width: 400px; width: 100%; position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal h2 { color: #fff; margin-bottom: 20px; font-size: 1.25em; }
+        .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0; }
+        .modal-close:hover { color: #fff; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 0.85em; color: var(--text-muted); font-weight: 600; }
+        .form-group input { width: 100%; padding: 11px 14px; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text-main); font-size: 0.95em; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus { border-color: var(--primary); }
+        .form-group input::placeholder { color: var(--text-muted); }
+        .form-error { color: var(--error); font-size: 0.83em; margin-bottom: 10px; }
+        .form-success { color: var(--success); font-size: 0.83em; margin-bottom: 10px; }
+        .password-strength { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+        .password-strength-bar { height: 100%; transition: all 0.3s; border-radius: 2px; }
+        .password-strength-text { font-size: 0.75em; color: var(--text-muted); margin-top: 3px; }
+        .btn-primary { width: 100%; background: var(--primary); color: #07070f; border: none; padding: 12px; border-radius: 10px; font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-primary:hover { background: var(--accent); }
+        .divider { text-align: center; color: var(--text-muted); font-size: 0.8em; margin: 14px 0; }
+        .link-btn { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.88em; text-decoration: underline; }
+        .credit-bundles { display: flex; flex-direction: column; gap: 12px; }
+        .bundle-card { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; }
+        .bundle-card:hover, .bundle-card.popular { border-color: var(--primary); }
+        .bundle-popular-badge { background: var(--primary); color: #07070f; font-size: 0.68em; font-weight: 800; padding: 2px 8px; border-radius: 10px; }
+        .bundle-credits { font-size: 1.2em; font-weight: 800; color: #fff; }
+        .bundle-price { color: var(--primary); font-weight: 700; font-size: 1em; }
 
-        /* Modal overlay */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-        .modal {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 450px;
-            width: 90vw;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(42,32,21,0.2);
-        }
-        .modal h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        .modal input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: var(--bg-surface);
-            color: var(--text-main);
-            font-size: 1em;
-            margin-bottom: 12px;
-            transition: border-color 0.3s;
-        }
-        .modal input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 10px var(--glow);
-        }
-        .modal button[type="submit"] {
-            width: 100%;
-            background: var(--primary);
-            color: var(--text-dark);
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .modal button[type="submit"]:hover {
-            background: var(--primary-hover);
-        }
-        .modal-close {
-            position: absolute;
-            top: 15px; right: 15px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5em;
-            cursor: pointer;
-        }
-        .modal-close:hover {
-            color: var(--text-main);
-        }
+        /* GALLERY kept for JS compat, hidden visually */
+        .gallery-section { margin: 0; padding: 0; }
+        .gallery-grid { display: none !important; }
+        #galleryPlayer { display: none !important; }
 
-        /* Credits display */
-        .credits-display {
-            color: var(--accent);
-            font-weight: 600;
-        }
-        .user-email {
-            color: var(--text-muted);
-            font-size: 0.9em;
-        }
+        /* COOKIE */
+        .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-surface); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; z-index: 3000; font-size: 0.85em; color: var(--text-muted); }
+        .cookie-banner button { background: var(--primary); color: #07070f; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.88em; }
 
-        /* Credit bundles */
-        .credits-grid {
-            display: flex;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        .credit-bundle {
-            flex: 1;
-            background: var(--bg-surface);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 20px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .credit-bundle:hover {
-            border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px var(--glow);
-        }
-        .credit-bundle.popular {
-            border-color: var(--primary);
-            background: var(--bg-card);
-            position: relative;
-        }
-        .bundle-credits {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        .bundle-price {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 5px 0;
-        }
-        .bundle-per {
-            color: var(--text-muted);
-            font-size: 0.85em;
-        }
-
-        /* Dashboard link */
-        .dashboard-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        .dashboard-link:hover {
-            color: var(--accent);
-        }
-
-        /* Disabled state */
-        .disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: auto;
-        }
-
-        /* File input hidden */
-        #fileInput {
-            display: none;
-        }
-        #preview {
-            display: none;
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 12px;
-            margin: 10px auto;
-        }
-
-        /* Error text */
-        .error-text {
-            color: var(--error);
-            font-size: 0.9em;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f0ece4;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-
-/* ==========================================
-           MOBILE RESPONSIVE STYLES
-           ========================================== */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .container {
-                padding: 10px;
-                max-width: 100%;
-            }
-            .header h1 {
-                font-size: 1.8em;
-            }
-            .header p {
-                font-size: 0.95em;
-            }
-            .auth-bar {
-                flex-direction: column;
-                gap: 8px;
-                padding: 10px;
-                text-align: center;
-            }
-            .auth-buttons {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                justify-content: center;
-            }
-            .auth-buttons button,
-            .auth-buttons a {
-                font-size: 0.85em;
-                padding: 8px 12px;
-                min-height: 44px;
-            }
-            #uploadArea {
-                padding: 25px 15px;
-            }
-            #uploadArea img {
-                max-width: 100%;
-                max-height: 200px;
-            }
-            .info-box {
-                padding: 12px;
-                font-size: 0.9em;
-            }
-            #transformBtn {
-                width: 100%;
-                padding: 15px;
-                font-size: 1.1em;
-                min-height: 48px;
-            }
-            .progress-steps {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .step {
-                flex-direction: row;
-                gap: 8px;
-                padding: 8px 12px;
-            }
-            #result video {
-                max-width: 100%;
-                max-height: 50vh;
-                border-radius: 10px;
-            }
-            .result-buttons {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .result-buttons button {
-                width: 100%;
-                min-height: 48px;
-            }
-            /* Credits modal */
-            .modal {
-                width: 95vw;
-                max-width: 95vw;
-                padding: 15px;
-                margin: 10px;
-            }
-            .credits-grid {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .credit-bundle {
-                padding: 15px;
-                min-height: 48px;
-            }
-            .bundle-credits {
-                font-size: 2em;
-            }
-            /* Login/Signup modals */
-            .modal input {
-                font-size: 16px; /* Prevents iOS zoom on focus */
-                padding: 12px;
-                min-height: 48px;
-            }
-            .modal button[type="submit"] {
-                width: 100%;
-                min-height: 48px;
-                font-size: 1em;
-            }
-            .modal h2 {
-                font-size: 1.3em;
-            }
-            /* User info */
-            .user-email {
-                font-size: 0.8em;
-                max-width: 120px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .credits-display {
-                font-size: 0.85em;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .header h1 {
-                font-size: 1.5em;
-            }
-            .auth-buttons button {
-                font-size: 0.8em;
-                padding: 6px 10px;
-            }
-            .bundle-credits {
-                font-size: 1.5em;
-            }
-        }
-
-        
-        
-        /* Gallery */
-        .gallery-item {
-            cursor: pointer;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid var(--border);
-            transition: all 0.3s;
-            position: relative;
-            aspect-ratio: 4/3;
-            background: var(--bg-card);
-        }
-        .gallery-item:hover {
-            border-color: var(--primary);
-            transform: scale(1.03);
-            box-shadow: 0 5px 15px rgba(212,160,74,0.2);
-        }
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center top;
-            display: block;
-        }
-        .gallery-thumb {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: var(--bg-card);
-        }
-        .gallery-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .play-overlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.5);
-            color: white;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-        .gallery-item:hover .play-overlay {
-            opacity: 1;
-            background: var(--primary);
-        }
-        @media (max-width: 768px) {
-            .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; justify-content: center; margin: 0 auto; }
-            .gallery-section { padding: 0 15px !important; margin-left: auto !important; margin-right: auto !important; }
-        }
-
-        
-        /* How It Works */
-        .how-it-works {
-            max-width: 580px;
-            margin: 0 auto 25px;
-            padding: 0 20px;
-        }
-        .how-it-works h2 {
-            text-align: center;
-            color: var(--primary);
-            font-size: 1.3em;
-            margin-bottom: 15px;
-        }
-        .steps-row {
-            display: flex;
-            gap: 12px;
-            align-items: stretch;
-        }
-        .hiw-step {
-            flex: 1;
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 18px 12px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .hiw-step:hover {
-            border-color: var(--primary);
-            box-shadow: 0 3px 15px rgba(212,160,74,0.12);
-        }
-        .hiw-icon {
-            font-size: 2em;
-            margin-bottom: 8px;
-        }
-        .hiw-num {
-            display: inline-block;
-            width: 24px; height: 24px;
-            background: var(--primary);
-            color: var(--text-dark);
-            border-radius: 50%;
-            font-size: 0.75em;
-            font-weight: 700;
-            line-height: 24px;
-            margin-bottom: 6px;
-        }
-        .hiw-title {
-            font-weight: 600;
-            color: var(--text-main);
-            font-size: 0.9em;
-            margin-bottom: 4px;
-        }
-        .hiw-desc {
-            color: var(--text-muted);
-            font-size: 0.8em;
-            line-height: 1.3;
-        }
-        .steps-arrow {
-            display: flex;
-            align-items: center;
-            color: var(--primary);
-            font-size: 1.2em;
-            opacity: 0.6;
-        }
-        @media (max-width: 768px) {
-            .steps-row { flex-direction: column; }
-            .steps-arrow { justify-content: center; transform: rotate(90deg); }
-        }
-
-        
-        /* Social Sharing */
-        .share-section {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .share-label {
-            color: var(--text-muted);
-            font-size: 0.85em;
-            margin-bottom: 8px;
-        }
-        .share-buttons {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .share-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--bg-surface);
-            color: var(--text-main);
-            font-size: 0.85em;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        .share-btn:hover {
-            border-color: var(--primary);
-            background: var(--bg-card);
-            transform: translateY(-1px);
-        }
-        .share-btn.twitter:hover { color: #000000; border-color: #000000; }
-        .share-btn.facebook:hover { color: #4267B2; border-color: #4267B2; }
-        .share-btn.copy-link:hover { color: var(--primary); }
-        .share-btn.instagram:hover { color: #E4405F; border-color: #E4405F; }
-        .share-btn.tiktok:hover { color: #000000; border-color: #000000; background: #f0f0f0; }
-        .share-btn.youtube:hover { color: #FF0000; border-color: #FF0000; }
-        .share-section-label {
-            font-size: 0.8em;
-            color: var(--text-muted);
-            text-align: center;
-            margin: 8px 0 4px;
-        }
-        .copy-toast {
-            display: none;
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: var(--text-dark);
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 0.9em;
-            z-index: 9999;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-
-        
-        
-        /* User Account Section */
-        .user-account-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
-        }
-        .user-email {
-            font-size: 0.78em;
-            color: var(--text-muted);
-            display: block;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid var(--border);
-            min-width: 100%;
-            text-align: right;
-        }
-        .user-action-buttons {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-        @media (max-width: 768px) {
-            .user-account-section {
-                align-items: center;
-            }
-            .user-action-buttons {
-                justify-content: center;
-            }
-        }
-
-        
-        /* Referral */
-        .referral-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75em;
-            color: var(--primary);
-            cursor: pointer;
-            padding: 3px 10px;
-            border: 1px solid var(--primary);
-            border-radius: 12px;
-            transition: all 0.3s;
-        }
-        .referral-badge:hover {
-            background: var(--primary);
-            color: var(--text-dark);
-        }
-        .referral-welcome {
-            background: linear-gradient(135deg, #d4a04a22, #e8c07822);
-            border: 1px solid var(--primary);
-            border-radius: 12px;
-            padding: 12px 20px;
-            margin: 10px 0;
-            text-align: center;
-            font-size: 0.9em;
-            color: var(--text-main);
-        }
-
-        
-        .referral-inline {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 3px;
-            margin-bottom: 6px;
-        }
-        /* Cookie Consent */
-        .cookie-banner {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-surface);
-            border-top: 1px solid var(--border);
-            padding: 15px 20px;
-            z-index: 10000;
-            box-shadow: 0 -3px 15px rgba(42,32,21,0.1);
-        }
-        .cookie-inner {
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .cookie-text {
-            flex: 1;
-            color: var(--text-muted);
-            font-size: 0.85em;
-            line-height: 1.4;
-            min-width: 200px;
-        }
-        .cookie-text a { color: var(--primary); }
-        .cookie-accept {
-            background: var(--primary);
-            color: var(--text-dark);
-            border: none;
-            padding: 8px 24px;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.85em;
-            white-space: nowrap;
-        }
-        .cookie-accept:hover { opacity: 0.9; }
-
-        
-        /* Password Strength */
-        .password-strength {
-            height: 4px;
-            border-radius: 2px;
-            background: var(--border);
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        .password-strength-bar {
-            height: 100%;
-            width: 0%;
-            border-radius: 2px;
-            transition: width 0.3s, background 0.3s;
-        }
-        .password-strength-text {
-            font-size: 0.75em;
-            margin-top: 3px;
-            color: var(--text-muted);
-        }
-
-        
-    /* ===== MAGICAL TRANSFORMATION EFFECTS ===== */
-    #status.magical-active {
-        position: relative; overflow: hidden;
-        background: linear-gradient(135deg, rgba(26,20,8,0.97), rgba(42,30,15,0.97));
-        border-radius: 20px; padding: 30px 20px;
-        border: 1px solid rgba(212,160,74,0.15);
-    }
-    .magical-shimmer {
-        position: absolute; top:0; left:0; right:0; bottom:0;
-        background: linear-gradient(45deg, transparent 0%, rgba(212,160,74,0.04) 25%, rgba(192,132,252,0.06) 50%, rgba(212,160,74,0.04) 75%, transparent 100%);
-        background-size: 400% 400%; animation: shimmerMove 6s ease-in-out infinite;
-        pointer-events:none; z-index:0; border-radius:20px;
-    }
-    @keyframes shimmerMove { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-    .spell-cast { text-align:center; padding:15px 0 10px; position:relative; z-index:1; }
-    .magic-wand {
-        font-size:2.8em; display:inline-block;
-        animation: wandWave 2.5s ease-in-out infinite;
-        filter: drop-shadow(0 0 12px rgba(212,160,74,0.6));
-        transform-origin: 70% 70%;
-    }
-    @keyframes wandWave {
-        0%,100%{transform:rotate(-8deg)}
-        25%{transform:rotate(12deg) scale(1.08)}
-        50%{transform:rotate(-3deg)}
-        75%{transform:rotate(8deg) scale(1.04)}
-    }
-    .magic-wand.casting { animation: wandCast 1.6s ease-out forwards; }
-    @keyframes wandCast {
-        0%{transform:rotate(-60deg) scale(0.3);opacity:0}
-        20%{opacity:1}
-        40%{transform:rotate(25deg) scale(1.3)}
-        60%{transform:rotate(-15deg) scale(1.1)}
-        80%{transform:rotate(10deg) scale(1.15)}
-        100%{transform:rotate(0deg) scale(1);opacity:1}
-    }
-    .spell-text {
-        font-family:'Georgia','Times New Roman',serif;
-        font-size:1.7em; font-weight:bold;
-        background: linear-gradient(135deg, #d4a04a, #f0d48a, #c084fc, #f0d48a, #d4a04a);
-        background-size:300% 300%;
-        -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-        animation: spellGradient 4s ease-in-out infinite;
-        margin:8px 0 15px; letter-spacing:2px; position:relative; z-index:1;
-    }
-    @keyframes spellGradient { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-    .spell-text.entering {
-        animation: spellEntrance 1.4s cubic-bezier(0.34,1.56,0.64,1) forwards, spellGradient 4s ease-in-out 1.4s infinite;
-    }
-    @keyframes spellEntrance {
-        0%{opacity:0;transform:scale(0.2) rotate(-15deg);letter-spacing:20px;filter:blur(8px)}
-        60%{opacity:1;transform:scale(1.1) rotate(3deg);letter-spacing:3px;filter:blur(0)}
-        80%{transform:scale(0.95) rotate(-1deg)}
-        100%{opacity:1;transform:scale(1) rotate(0deg);letter-spacing:2px}
-    }
-    .spell-text.pulsing {
-        animation: spellPulse 5s ease-in-out infinite, spellGradient 4s ease-in-out infinite;
-    }
-    @keyframes spellPulse {
-        0%,70%,100%{opacity:0.5;transform:scale(0.97)}
-        35%{opacity:1;transform:scale(1.04)}
-    }
-    .sparkle-particle {
-        position:absolute; pointer-events:none; z-index:2;
-        animation: sparkleFloat var(--dur,3s) ease-in-out var(--del,0s) infinite;
-        font-size: var(--sz,14px); opacity:0;
-    }
-    @keyframes sparkleFloat {
-        0%{opacity:0;transform:translateY(30px) rotate(0deg) scale(0.3)}
-        15%{opacity:1}
-        85%{opacity:0.6}
-        100%{opacity:0;transform:translateY(-100px) rotate(360deg) scale(0)}
-    }
-    .step-sparkle-burst {
-        position:absolute; top:50%; left:50%;
-        width:5px; height:5px; border-radius:50%;
-        background:#f0d48a; box-shadow:0 0 6px #d4a04a;
-        animation: burstOut 0.7s ease-out forwards;
-        pointer-events:none; z-index:5;
-    }
-    @keyframes burstOut {
-        0%{transform:translate(-50%,-50%) scale(1);opacity:1}
-        100%{transform:translate(var(--tx,20px),var(--ty,-20px)) scale(0);opacity:0}
-    }
-    #status.magical-active .step.active .step-icon { animation: iconPulse 1.5s ease-in-out infinite; }
-    @keyframes iconPulse {
-        0%,100%{transform:scale(1)}
-        50%{transform:scale(1.25);filter:drop-shadow(0 0 10px rgba(212,160,74,0.7))}
-    }
-    #status.magical-active #statusText {
-        font-style:italic; color:#f0d48a;
-        text-shadow:0 0 25px rgba(212,160,74,0.25);
-        position:relative; z-index:1;
-    }
-    #status.magical-active .progress-steps { position:relative; z-index:1; }
-    #status.magical-active .step.completed .step-icon { filter:drop-shadow(0 0 8px rgba(212,160,74,0.5)); }
-    .sparkle-container {
-        position:absolute; top:0; left:0; right:0; bottom:0;
-        pointer-events:none; overflow:hidden; z-index:2; border-radius:20px;
-    }
-    @media (max-width:600px) {
-        .spell-text { font-size:1.3em; letter-spacing:1px; }
-        .magic-wand { font-size:2.2em; }
-        #status.magical-active { padding:20px 15px; }
-    }
-
-    
-    /* ===== MAGICAL SIGNUP PROMPT ===== */
-    .login-required {
-        background: linear-gradient(135deg, rgba(26,20,8,0.95), rgba(42,30,15,0.95)) !important;
-        border: 1px solid rgba(212,160,74,0.3) !important;
-        border-radius: 16px !important;
-        padding: 24px 20px !important;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-    .login-required::before {
-        content: '';
-        position: absolute; top:0; left:0; right:0; bottom:0;
-        background: linear-gradient(45deg, transparent 0%, rgba(212,160,74,0.05) 25%, rgba(192,132,252,0.07) 50%, rgba(212,160,74,0.05) 75%, transparent 100%);
-        background-size: 400% 400%;
-        animation: shimmerMove 6s ease-in-out infinite;
-        pointer-events: none; border-radius: 16px;
-    }
-    .signup-headline {
-        font-size: 1.5em; font-weight: bold; margin-bottom: 8px;
-        background: linear-gradient(135deg, #d4a04a, #f0d48a, #c084fc, #f0d48a, #d4a04a);
-        background-size: 300% 300%;
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        animation: spellGradient 4s ease-in-out infinite;
-        position: relative; z-index: 1;
-    }
-    .signup-subtext {
-        color: #c4b99a; font-size: 1.05em; margin-bottom: 14px;
-        position: relative; z-index: 1;
-    }
-    .signup-credits-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #d4a04a, #e8c060);
-        color: #1a1408; font-weight: 700; font-size: 0.95em;
-        padding: 6px 16px; border-radius: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 12px rgba(212,160,74,0.3);
-        position: relative; z-index: 1;
-        animation: badgePulse 3s ease-in-out infinite;
-    }
-    @keyframes badgePulse {
-        0%,100%{box-shadow:0 2px 12px rgba(212,160,74,0.3)}
-        50%{box-shadow:0 2px 20px rgba(212,160,74,0.6)}
-    }
-    .signup-cta-btn {
-        display: inline-block;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: #1a1408 !important; font-weight: 700; font-size: 1.1em;
-        padding: 12px 32px; border-radius: 25px;
-        cursor: pointer; border: none;
-        text-decoration: none !important;
-        box-shadow: 0 4px 15px rgba(212,160,74,0.3);
-        transition: transform 0.2s, box-shadow 0.2s;
-        position: relative; z-index: 1;
-        letter-spacing: 0.5px;
-    }
-    .signup-cta-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(212,160,74,0.5);
-    }
-    .signup-sparkles {
-        position: absolute; top:0; left:0; right:0; bottom:0;
-        pointer-events: none; overflow: hidden; z-index: 0;
-        border-radius: 16px;
-    }
-    .signup-sparkle {
-        position: absolute; opacity: 0;
-        animation: signupSparkle var(--dur, 3s) ease-in-out var(--del, 0s) infinite;
-    }
-    @keyframes signupSparkle {
-        0%{opacity:0;transform:scale(0.3) rotate(0deg)}
-        20%{opacity:0.8}
-        80%{opacity:0.4}
-        100%{opacity:0;transform:scale(0) rotate(180deg)}
-    }
-    @media (max-width:600px) {
-        .signup-headline { font-size: 1.25em; }
-        .login-required { padding: 20px 15px !important; }
-    }
-
-    
-    /* ===== LOGGED-IN LAYOUT REORDER ===== */
-    .container.logged-in {
-        display: flex;
-        flex-direction: column;
-    }
-    .container.logged-in .auth-bar      { order: 1; }
-    .container.logged-in .header         { order: 2; }
-    .container.logged-in #uploadArea     { order: 3; }
-    .container.logged-in #loginRequired  { order: 3; }
-    .container.logged-in #noCredits      { order: 4; }
-    .container.logged-in #infoBox        { order: 5; }
-    .container.logged-in #transformBtn   { order: 7; }
-    .container.logged-in #styleSelector  { order: 5; }
-    .container.logged-in #status         { order: 7; }
-    .container.logged-in #result         { order: 8; }
-    .container.logged-in .share-section   { order: 9; }
-    .container.logged-in .gallery-section { order: 10; margin-top: 40px; }
-    .container.logged-in .how-it-works   { order: 11; }
-    .container.logged-in footer            { order: 12; width: 100%; }
-
-    
-    /* ===== IMPROVED SHARE BUTTONS ===== */
-    .share-btn.copy-link {
-        background: linear-gradient(135deg, #d4a04a, #e8c060) !important;
-        color: #1a1408 !important;
-        font-weight: 600;
-    }
-    
-        .share-btn.whatsapp { background: #25d366; color: #fff; }
-        .share-btn.whatsapp:hover { background: #1ebe5d; }
-
-        .share-btn.native-share {
-        background: linear-gradient(135deg, #667eea, #764ba2) !important;
-        color: #fff !important;
-        font-weight: 600;
-    }
-    #shareToast {
-        background: rgba(26,20,8,0.95);
-        color: #f0d48a;
-        padding: 10px 20px;
-        border-radius: 10px;
-        text-align: center;
-        margin-top: 10px;
-        font-size: 0.95em;
-        border: 1px solid rgba(212,160,74,0.3);
-    }
-
-    
-    /* ===== STYLE SELECTOR ===== */
-    .style-selector {
-        margin: 20px 0;
-        display: block;
-    }
-    .style-selector h3 {
-        text-align: center;
-        color: var(--primary);
-        font-size: 1.1em;
-        margin-bottom: 12px;
-    }
-    .style-cards {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        padding: 4px 2px;
-    }
-    .style-card {
-        flex: 0 0 auto;
-        width: 100px;
-        padding: 12px 8px;
-        border: 2px solid var(--border);
-        border-radius: 12px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--card-bg);
-        scroll-snap-align: center;
-    }
-    .style-card:hover {
-        border-color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(212,160,74,0.2);
-    }
-    .style-card.active {
-        border-color: var(--primary);
-        background: linear-gradient(135deg, rgba(212,160,74,0.1), rgba(232,192,96,0.1));
-        box-shadow: 0 0 12px rgba(212,160,74,0.3);
-    }
-    .style-card .style-icon {
-        font-size: 1.8em;
-        display: block;
-        margin-bottom: 6px;
-    }
-    .style-card .style-name {
-        font-size: 0.75em;
-        font-weight: 600;
-        color: var(--text);
-        line-height: 1.2;
-    }
-    .style-card.active .style-name {
-        color: var(--primary);
-    }
-    @media (max-width: 600px) {
-        .style-card { width: 85px; padding: 10px 6px; }
-        .style-card .style-icon { font-size: 1.5em; }
-        .style-card .style-name { font-size: 0.7em; }
-    }
-
-    
-        /* ToonIt watermark overlay */
-        .toonit-watermark-wrap {
-            position: relative;
-            display: block;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .toonit-watermark-wrap video {
-            display: block;
-            width: 100%;
-            margin-bottom: 0 !important; /* override #result video margin so span stays over frame */
-        }
-        .toonit-watermark {
-            position: absolute;
-            bottom: 6px;
-            left: 16px;
-            font-family: 'Pacifico', cursive;
-            font-size: 18px;
-            color: white;
-            opacity: 0.6;
-            pointer-events: none;
-            z-index: 10;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
-            user-select: none;
-            letter-spacing: 0.3px;
-        }
-
-        /* ===== WATERMARK REMOVAL CTA ===== */
-        /* ── Watermark Toggle Bar ── */
-        .wm-toggle-bar {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: linear-gradient(135deg, rgba(212,160,74,0.10), rgba(232,192,96,0.15));
-            border: 1.5px solid var(--primary);
-            border-radius: 10px;
-            padding: 10px 18px;
-            margin: 10px 0 5px;
-            animation: wmBannerIn 0.35s ease;
-        }
-        @keyframes wmBannerIn {
-            0%{opacity:0;transform:translateY(-6px)}
-            100%{opacity:1;transform:translateY(0)}
-        }
-        .wm-toggle-label {
-            color: var(--text-main);
-            font-size: 0.88em;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .wm-toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-        .wm-toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .wm-toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background: rgba(0,0,0,0.40);
-            border: 1.5px solid rgba(255,255,255,0.55);
-            border-radius: 24px;
-            transition: background 0.25s, border-color 0.25s;
-        }
-        .wm-toggle-slider:before {
-            content: "";
-            position: absolute;
-            width: 16px; height: 16px;
-            left: 3px; top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.90);
-            border-radius: 50%;
-            transition: left 0.25s, background 0.25s;
-        }
-        .wm-toggle-switch input:checked + .wm-toggle-slider {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-        .wm-toggle-switch input:checked + .wm-toggle-slider:before {
-            left: 21px;
-            background: var(--text-dark);
-        }
-        .wm-toggle-status {
-            font-size: 0.82em;
-            font-weight: 600;
-            min-width: 72px;
-            color: var(--text-muted);
-            transition: color 0.2s;
-        }
-        .wm-toggle-status.active { color: var(--primary); }
-        .wm-toggle-saving {
-            font-size: 0.78em;
-            color: var(--text-muted);
-            font-style: italic;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .wm-toggle-saving.visible { opacity: 1; }
-        </style>
+        /* FOOTER */
+        footer { background: var(--bg-surface); border-top: 1px solid var(--border); padding: 32px 24px 44px; text-align: center; color: var(--text-muted); font-size: 0.83em; }
+        footer a { color: var(--primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .footer-brand { font-family: 'Pacifico', cursive; color: var(--primary); font-size: 1.1em; margin-bottom: 8px; display: block; }
+        .footer-links { margin: 10px 0; }
+        .footer-links a { margin: 0 10px; }
+        .footer-powered { margin-top: 12px; opacity: 0.6; }
+    </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
     {
@@ -1358,7 +242,7 @@
         "@type": "WebApplication",
         "name": "Toon It!",
         "url": "https://toonit.ai",
-        "description": "Transform your photos into magical storybook videos with AI. Upload any photo and watch it come alive as an enchanting animated story.",
+        "description": "Transform your photos into magical animated art with AI. Upload any photo and watch it come alive as an enchanting animated story.",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "Web",
         "offers": {
@@ -1411,55 +295,70 @@
 
         <div class="header">
             <h1>🎨 Toon It!</h1>
-            <p>Transform your photos into magical storybook videos</p>
+            <p>Transform your photos into magical animated art</p>
         </div>
 
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-badge">✨ AI Photo Transformation</div>
+        <h1>Your Photos.<br><span class="highlight">Transformed.</span></h1>
+        <p class="hero-sub">Watch any photo become breathtaking animated art — kids, pets, family moments reimagined in seconds.</p>
+        <a class="hero-cta" onclick="document.getElementById('uploadArea').scrollIntoView({behavior:'smooth'}); return false;" href="#">
+            ������ Transform a Photo Free
+        </a>
+        <p class="hero-free-note">������ 2 free credits · No credit card needed</p>
+    </section>
 
 
-            <div class="gallery-section" style="max-width:580px;margin:30px auto 30px;padding:0 20px;box-sizing:border-box;">
-        <h2 style="text-align:center;color:var(--primary);font-size:1.4em;margin-bottom:5px;">✨ See the Magic</h2>
-        <p style="text-align:center;color:var(--text-muted);margin-bottom:15px;font-size:0.95em;">Real transformations from our users — click to play</p>
-        <div class="gallery-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-                                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/job_1771351311926_61mjtnmc4_ugcuo9.mp4')">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_480,h_360,c_fill,g_auto/job_1771351311926_61mjtnmc4_ugcuo9.jpg" alt="Storybook video" loading="lazy">
-                    <div class="gallery-play-overlay">▶</div>
-                </div>
-<div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/job_1771600973379_tz3k3qgy4_wdxrib.mp4')">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_480,h_360,c_fill,g_auto/job_1771600973379_tz3k3qgy4_wdxrib.jpg" alt="Storybook video" loading="lazy">
-                    <div class="gallery-play-overlay">▶</div>
-                </div>
-                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/job_1771350754027_4taelxipz_lzga9j.mp4')">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_480,h_360,c_fill,g_auto/job_1771350754027_4taelxipz_lzga9j.jpg" alt="Storybook video" loading="lazy">
-                    <div class="gallery-play-overlay">▶</div>
-                </div>
-                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/job_1771254380696_obci5ha07_gu4a3l.mp4')">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_480,h_360,c_fill,g_auto/job_1771254380696_obci5ha07_gu4a3l.jpg" alt="Storybook video" loading="lazy">
-                    <div class="gallery-play-overlay">▶</div>
-                </div>
-                
-                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/job_1771242712014_3eonp0wgd_jhgf7e.mp4')">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_480,h_360,c_fill,g_auto/job_1771242712014_3eonp0wgd_jhgf7e.jpg" alt="Storybook video" loading="lazy">
-                    <div class="gallery-play-overlay">▶</div>
-                </div>
-                <div class="gallery-item" onclick="playGalleryVideo(this, 'https://res.cloudinary.com/dzarqnick/video/upload/job_1771243728526_r41wbggtk_ejcddc.mp4')">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_1,w_480,h_360,c_fill,g_auto/job_1771243728526_r41wbggtk_ejcddc.jpg" alt="Storybook video" loading="lazy">
-                    <div class="gallery-play-overlay">▶</div>
-                </div>
-            
+
+
+    <!-- TRANSFORMATION SHOWCASE -->
+    <section class="showcase">
+        <div class="showcase-header">
+            <h2>✨ See the Transformation</h2>
+            <p>Real photos → real magic. Swipe to explore.</p>
         </div>
-        <div id="galleryPlayer" style="display:none;margin-top:15px;text-align:center;">
-            <video id="galleryVideo" controls autoplay playsinline style="max-width:100%;border-radius:12px;box-shadow:0 5px 20px rgba(42,32,21,0.15);"></video>
-            <button onclick="closeGalleryPlayer()" style="margin-top:10px;background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:8px 20px;border-radius:20px;cursor:pointer;">Close</button>
+        <div class="showcase-scroll" id="showcaseScroll">
+            <div class="showcase-card">
+                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <div class="showcase-label">������ Superhero</div>
+            </div>
+            <div class="showcase-card">
+                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <div class="showcase-label">������ 3D Cartoon</div>
+            </div>
+            <div class="showcase-card">
+                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <div class="showcase-label">������ Superhero</div>
+            </div>
+            <div class="showcase-card">
+                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <div class="showcase-label">������ 3D Cartoon</div>
+            </div>
+            <div class="showcase-card">
+                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <div class="showcase-label">������ Magical</div>
+            </div>
+            <div class="showcase-card">
+                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                <div class="showcase-label">������ Watercolor</div>
+            </div>
         </div>
-    </div>
-
-
+        <div class="showcase-dots" id="showcaseDots">
+            <div class="showcase-dot active"></div>
+            <div class="showcase-dot"></div>
+            <div class="showcase-dot"></div>
+            <div class="showcase-dot"></div>
+            <div class="showcase-dot"></div>
+            <div class="showcase-dot"></div>
+        </div>
+    </section>
 
         <!-- Login Required Message -->
         <div class="info-box login-required" id="loginRequired" style="display:none">
             <div class="signup-sparkles" id="signupSparkles"></div>
             <div class="signup-headline">✨ Be the Magic! ✨</div>
-            <div class="signup-subtext">Sign up and start transforming your photos into enchanted storybook videos</div>
+            <div class="signup-subtext">Sign up and start transforming your photos into breathtaking animated art</div>
             <div class="signup-credits-badge">🎁 New users get 2 FREE credits!</div>
             <br>
             <a class="signup-cta-btn" onclick="showModal('signup')">🪄 Start Your Story</a>
@@ -1486,31 +385,30 @@
 
     <!-- How It Works -->
     <div class="how-it-works">
-        <h2>📖 How It Works</h2>
+        <h2>⚡ 3 Steps. Pure Magic.</h2>
         <div class="steps-row">
             <div class="hiw-step">
-                <div class="hiw-icon">📸</div>
+                <div class="hiw-icon">������</div>
                 <div class="hiw-num">1</div>
-                <div class="hiw-title">Upload Photo</div>
-                <div class="hiw-desc">Any photo — selfie, pet, landscape, family</div>
+                <div class="hiw-title">Upload Any Photo</div>
+                <div class="hiw-desc">Selfie, pet, family — anything works</div>
             </div>
             <div class="steps-arrow">→</div>
             <div class="hiw-step">
-                <div class="hiw-icon">🎨</div>
+                <div class="hiw-icon">������</div>
                 <div class="hiw-num">2</div>
-                <div class="hiw-title">AI Transforms</div>
-                <div class="hiw-desc">AI transforms your photo into a magical storybook scene</div>
+                <div class="hiw-title">AI Transforms It</div>
+                <div class="hiw-desc">Powerful AI reimagines your photo as stunning animated art</div>
             </div>
             <div class="steps-arrow">→</div>
             <div class="hiw-step">
-                <div class="hiw-icon">🎬</div>
+                <div class="hiw-icon">������</div>
                 <div class="hiw-num">3</div>
-                <div class="hiw-title">Get Video</div>
-                <div class="hiw-desc">Watch your photo come alive as a magical animated video</div>
+                <div class="hiw-title">Get Your Video</div>
+                <div class="hiw-desc">Download and share your magical animated video</div>
             </div>
         </div>
     </div>
-
 
         <!-- Style Selector -->
         <div class="style-selector" id="styleSelector">
@@ -1571,6 +469,8 @@
                 <button id="downloadBtn">⬇️ Download</button>
                 <button id="newBtn">🔄 Create Another</button>
             </div>
+            <!-- Watermark Removal CTA (shown to paid users only) -->
+            
             <!-- Watermark Toggle (paid users only) -->
             <div class="wm-toggle-bar" id="wmToggleBar">
                 <span class="wm-toggle-label">🎬 Remove Watermark</span>
@@ -1581,150 +481,7 @@
                 <span class="wm-toggle-status" id="wmToggleStatus">Showing</span>
                 <span class="wm-toggle-saving" id="wmToggleSaving">Saving…</span>
             </div>
-        </div>
 
-        <div class="share-section">
-        <div class="share-label">Share your creation ✨</div>
-                
-        <div class="share-buttons">
-        <button class="share-btn copy-link" onclick="copyVideoLink()">🔗 Copy Link</button>
-        <button class="share-btn twitter" onclick="shareOnTwitter()">𝕏</button>
-        <button class="share-btn facebook" onclick="shareOnFacebook()">📘 Facebook</button>
-        <button class="share-btn instagram" onclick="downloadAndShare('instagram')">📸 Instagram</button>
-        <button class="share-btn tiktok" onclick="downloadAndShare('tiktok')">🎵 TikTok</button>
-        <button class="share-btn whatsapp" onclick="shareOnWhatsApp()">💬 WhatsApp</button>
-        <button class="share-btn youtube" onclick="downloadAndShare('youtube')">▶️ YouTube</button>
-        <button class="share-btn native-share" id="nativeShareBtn" onclick="nativeShare()" style="display:none;">📤 Share</button>
-        </div>
-        <div id="shareToast" class="copy-toast" style="display:none;"></div>
-        <div id="copyToast" class="copy-toast">✅ Link copied!</div>
-
-    </div>
-
-    
-    
-    <!-- Example Gallery -->
-    
-
-    
-
-    <!-- Footer -->
-    <footer style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.85em;border-top:1px solid var(--border);margin-top:30px;">
-        <p>© 2026 Toon It! — Transform your photos into magical storybook videos</p>
-            <p style="color:var(--text-muted);font-size:0.8em;margin:8px 0 0;">Something not right? Video didn't turn out as expected? We're here to help! Reach out to us at <a href="mailto:support@toonit.ai" style="color:var(--primary);text-decoration:none;">support@toonit.ai</a></p>
-        <p style="margin-top:8px;">
-            <a href="terms.html" style="color:var(--primary);text-decoration:none;">Terms of Service</a>
-            &nbsp;·&nbsp;
-            <a href="privacy.html" style="color:var(--primary);text-decoration:none;">Privacy Policy</a>
-            &nbsp;·&nbsp;
-            <a href="/blog/" style="color:var(--primary);text-decoration:none;">📝 Blog &amp; Tips</a>
-        </p>
-        <p style="margin-top:12px;font-size:0.9em;">Powered by <a href="https://venice.ai" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:none;font-weight:600;">Venice.ai</a></p>
-    </footer>
-
-    <!-- Login Modal -->
-    <div class="modal-overlay" id="loginModal">
-        <div class="modal">
-            <button class="modal-close" data-close-modal>&times;</button>
-            <h2>Welcome Back!</h2>
-            <div id="googleLoginContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
-                <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    Continue with Google
-                </button>
-            </div>
-            <div class="auth-divider">or</div>
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" required placeholder="your@email.com">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" required placeholder="Your password">
-                </div>
-                <div id="loginError" class="form-error"></div>
-                <button type="submit" class="modal-submit" id="loginSubmit">Log In</button>
-                <p style="text-align:center;margin-top:12px;"><a onclick="showForgotPassword()" style="color:var(--primary);cursor:pointer;font-size:0.9em;">Forgot your password?</a></p>
-            </form>
-            <div class="modal-switch">
-                Don't have an account? <a onclick="showModal('signup')">Sign up</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Signup Modal -->
-    <div class="modal-overlay" id="signupModal">
-        <div class="modal">
-            
-                    <button class="modal-close" data-close-modal>&times;</button>
-            <h2>Create Account</h2>
-            <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
-            <div id="googleSignupContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
-                <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    Sign up with Google
-                </button>
-            </div>
-            <div class="auth-divider">or continue with email</div>
-            <form id="signupForm" onsubmit="handleSignup(event)">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="signupEmail" required placeholder="your@email.com">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="signupPassword" required placeholder="Min 6 characters" minlength="6">
-                
-                    <div class="password-strength"><div id="strengthBar" class="password-strength-bar"></div></div>
-                    <div id="strengthText" class="password-strength-text"></div>
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" id="signupConfirm" required placeholder="Confirm password">
-                </div>
-                    <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:0.85em;color:var(--text-muted);margin-bottom:4px;">Referral Code (optional)</label>
-                        <input type="text" id="signupReferralCode" placeholder="e.g. TOON-30DD" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.95em;background:var(--bg-surface);color:var(--text-main);text-transform:uppercase;">
-                    </div>
-                <div id="signupError" class="form-error"></div>
-                <div id="signupSuccess" class="form-success"></div>
-                <button type="submit" class="modal-submit" id="signupSubmit">Create Account</button>
-            </form>
-            <div class="modal-switch">
-                Already have an account? <a onclick="showModal('login')">Log in</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Credits Modal -->
-    <div class="modal-overlay" id="creditsModal">
-        <div class="modal">
-            <button class="modal-close" data-close-modal>&times;</button>
-            <h2>Buy Credits</h2>
-            <p style="text-align: center; margin-bottom: 20px;">1 credit = 1 video transformation</p>
-            <div class="credits-grid">
-                <div class="credit-bundle" onclick="buyCredits('starter')"> 
-                    <div class="bundle-credits">5</div>
-                    <div>credits</div>
-                    <div class="bundle-price">$5.00</div>
-                    <div class="bundle-per">$1.00 each</div>
-                </div>
-                <div class="credit-bundle popular" onclick="buyCredits('popular')">
-                    <div class="bundle-credits">12</div>
-                    <div>credits</div>
-                    <div class="bundle-price">$10.00</div>
-                    <div class="bundle-per">$0.83 each</div>
-                </div>
-                <div class="credit-bundle" onclick="buyCredits('pro')">
-                    <div class="bundle-credits">35</div>
-                    <div>credits</div>
-                    <div class="bundle-price">$25.00</div>
-                    <div class="bundle-per">$0.71 each</div>
-                </div>
-            </div>
-            <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe</p>
-        </div>
     </div>
 
     
@@ -2774,7 +1531,7 @@
                             // Fallback: share URL only
                             navigator.share({
                                 title: 'My Toon It! Creation',
-                                text: '✨ Check out my magical storybook video!',
+                                text: '✨ Check out my magical transformation!',
                                 url: videoUrl
                             });
                             trackEvent('share_native_url');
@@ -2895,8 +1652,8 @@
                     subject = '🎨 Welcome to Toon It! — Your 2 Free Credits Await!';
                     htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>✨ Welcome to Toon It!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Hi there! 👋</p><p style='color:#2a2015;font-size:16px;line-height:1.6;'>We're thrilled to have you! You've received <strong style='color:#d4a04a;'>2 free credits</strong> to get started.</p><div style='background:#fff;border:1px solid #e0d4c0;border-radius:12px;padding:20px;margin:20px 0;'><p style='margin:8px 0;'>📸 <strong>Upload</strong> any photo</p><p style='margin:8px 0;'>🎨 <strong>AI transforms</strong> it into a storybook scene</p><p style='margin:8px 0;'>🎬 <strong>Get</strong> a magical animated video</p></div><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Start Transforming →</a></div><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It! — <a href='https://toonit.ai' style='color:#d4a04a;'>toonit.ai</a></p></div>";
                 } else if (type === 'video_ready') {
-                    subject = '🎬 Your Storybook Video is Ready!';
-                    htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>🎬 Your Video is Ready!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Great news! Your storybook video has been created and is ready to watch.</p><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai/dashboard.html' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Watch Your Video →</a></div><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Find all your videos in your <a href='https://toonit.ai/dashboard.html' style='color:#d4a04a;'>Dashboard</a>.</p><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It! — <a href='https://toonit.ai' style='color:#d4a04a;'>toonit.ai</a></p></div>";
+                    subject = '🎬 Your Transformation is Ready! ✨';
+                    htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>🎬 Your Video is Ready!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Great news! Your magical transformation video has been created and is ready to watch.</p><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai/dashboard.html' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Watch Your Video →</a></div><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Find all your videos in your <a href='https://toonit.ai/dashboard.html' style='color:#d4a04a;'>Dashboard</a>.</p><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It! — <a href='https://toonit.ai' style='color:#d4a04a;'>toonit.ai</a></p></div>";
                 } else if (type === 'referral_success') {
                     subject = '🎁 You Earned a Free Credit!';
                     htmlBody = "<div style='font-family:Segoe UI,Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf6f0;padding:30px;border-radius:16px;'><h1 style='color:#d4a04a;text-align:center;'>🎁 Referral Reward!</h1><p style='color:#2a2015;font-size:16px;line-height:1.6;'>Great news! Someone you referred just signed up for Toon It! You've earned <strong style='color:#d4a04a;'>1 free credit</strong>!</p><div style='text-align:center;margin:25px 0;'><a href='https://toonit.ai' style='background:#d4a04a;color:#1a1408;text-decoration:none;padding:14px 35px;border-radius:25px;font-weight:700;font-size:16px;display:inline-block;'>Create a Video →</a></div><p style='color:#8a7a60;font-size:12px;text-align:center;'>© 2026 Toon It!</p></div>";
@@ -3871,20 +2628,14 @@
         }
 
         // === WATERMARK SYSTEM ===
-        var _wmState = { currentWatermarkedUrl: null, 
+        var _wmState = {
             hasPurchased: false,
             globalRemoved: false,
             currentVideoRemoved: false,
-            currentWmUrl: null,    // server-burned watermark MP4 url
-            currentCleanUrl: null, // original source (may be WEBM)
-            currentCleanMp4Url: null, // server re-encoded clean MP4
+            currentWmUrl: null,   // burned watermark url
+            currentCleanUrl: null, // clean url
             currentJobId: null,
-            wmReady: false,
-            preBurnBlobUrl: null,  // pre-burned blob ready for instant download
-            preBurnMimeType: null,
-            preBurnReady: false,
-            preBurnRunning: false,
-            preBurnGenId: 0       // incremented each new video to cancel stale burns
+            wmReady: false
         };
 
         // Load watermark state for current user
@@ -4000,6 +2751,40 @@
                 statusEl.textContent = removed ? '✅ Removed' : 'Showing';
                 statusEl.className   = 'wm-toggle-status' + (removed ? ' active' : '');
             }
+        } else {
+                    // Set per-video flag
+                    var jid = _wmState.currentJobId || currentJobId;
+                    if (jid) {
+                        await supabaseClient
+                            .from('generations')
+                            .update({ watermark_removed: true })
+                            .eq('job_id', jid);
+                    }
+                    _wmState.currentVideoRemoved = true;
+                }
+
+                // Switch video source to clean URL
+                if (resultVideo && _wmState.currentCleanUrl) {
+                    var wasPlaying = !resultVideo.paused;
+                    var currentTime = resultVideo.currentTime;
+                    resultVideo.src = _wmState.currentCleanUrl;
+                    resultVideo.currentTime = currentTime;
+                    if (wasPlaying) resultVideo.play();
+                }
+
+                // Update visual state - hide CTA, show badge
+                if (banner) banner.style.display = 'none';
+                _wmUpdateToggleUI(true); if(banner) banner.style.display = 'flex';
+
+                // Also update CSS overlay visibility
+                var wmSpan = document.querySelector('#result .toonit-watermark');
+                if (wmSpan) wmSpan.style.display = 'none';
+
+                console.log('[WM] Watermark removed, scope:', scope);
+            } catch(e) {
+                console.error('[WM] Remove error:', e);
+                alert('Could not remove watermark. Please try again.');
+            }
         }
         // === END WATERMARK SYSTEM ===
 
@@ -4019,7 +2804,6 @@
 
             // Store clean URL and job ID in watermark state
             _wmState.currentCleanUrl = url;
-            _wmState.currentCleanMp4Url = null;
             _wmState.currentJobId = jobId || currentJobId;
             _wmState.currentVideoRemoved = false;
             _wmState.wmReady = false;
@@ -4037,12 +2821,11 @@
                     try {
                         var { data: gen } = await supabaseClient
                             .from('generations')
-                            .select('watermark_url, watermark_ready, watermark_removed, clean_mp4_url')
+                            .select('watermark_url, watermark_ready, watermark_removed')
                             .eq('job_id', _wmState.currentJobId)
                             .maybeSingle();
                         if (gen) {
                             _wmState.currentVideoRemoved = gen.watermark_removed || false;
-                            _wmState.currentCleanMp4Url = gen.clean_mp4_url || null;
                             if (gen.watermark_ready && gen.watermark_url) {
                                 _wmState.wmReady = true;
                                 _wmState.currentWmUrl = gen.watermark_url;
@@ -4050,17 +2833,6 @@
                                 if (!_wmState.globalRemoved && !_wmState.currentVideoRemoved && resultVideo) {
                                     resultVideo.src = gen.watermark_url;
                                 }
-                            } else {
-                                // Pre-trigger server burn
-                                (async function preBurn() {
-                                    try {
-                                        await fetch("https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/burn-watermark", {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + SUPABASE_ANON_KEY },
-                                            body: JSON.stringify({ job_id: _wmState.currentJobId, video_url: _wmState.currentCleanUrl, user_id: currentUser ? currentUser.id : null })
-                                        });
-                                    } catch(e) { console.log("[WM] Pre-burn error:", e); }
-                                })();
                             }
                         }
                     } catch(e) { console.log('[WM] Generation check error:', e); }
@@ -4068,31 +2840,26 @@
 
                 // Show/hide watermark overlay and CTA
                 var wmSpan = document.querySelector('#result .toonit-watermark');
+                var banner = document.getElementById('wmToggleBar');
+                
 
-                // Store watermarked URL for toggle revert
-                _wmState.currentWatermarkedUrl = url;
-
-                if (_wmState.hasPurchased) {
-                    // Paid user — show toggle in correct state
-                    var toggleBar = document.getElementById('wmToggleBar');
-                    if (toggleBar) toggleBar.style.display = 'flex';
-                    var removed = _wmState.globalRemoved || _wmState.currentVideoRemoved;
-                    _wmUpdateToggleUI(removed);
-                    if (wmSpan) wmSpan.style.display = removed ? 'none' : '';
-                    if (removed && resultVideo && _wmState.currentCleanUrl) {
-                        resultVideo.src = _wmState.currentCleanUrl;
-                    }
-                } else {
-                    // Free user — watermark always showing, no toggle
-                    var toggleBar = document.getElementById('wmToggleBar');
-                    if (toggleBar) toggleBar.style.display = 'none';
+                if (_wmState.globalRemoved || _wmState.currentVideoRemoved) {
+                    // Watermark removed - hide overlay, show badge
+                    if (wmSpan) wmSpan.style.display = 'none';
+                    if (banner) banner.style.display = 'none';
+                    _wmUpdateToggleUI(true); if(banner) banner.style.display = 'flex';
+                    if (resultVideo) resultVideo.src = url; // ensure clean
+                } else if (_wmState.hasPurchased) {
+                    // Paid user, watermark showing - show removal CTA
                     if (wmSpan) wmSpan.style.display = '';
+                    if (banner) banner.style.display = 'block';
+                    _wmUpdateToggleUI(false); if(banner) banner.style.display = 'flex';
+                } else {
+                    // Free user - watermark stays, no CTA
+                    if (wmSpan) wmSpan.style.display = '';
+                    if (banner) banner.style.display = 'none';
+                    _wmUpdateToggleUI(false); if(banner) banner.style.display = 'flex';
                 }
-
-                // Kick off silent pre-burn so download is instant when user clicks
-                // Use wmUrl if available (already has watermark), otherwise burn clean URL
-                var burnSrc = (_wmState.wmReady && _wmState.currentWmUrl) ? _wmState.currentWmUrl : _wmState.currentCleanUrl;
-                if (burnSrc) _startPreBurn(burnSrc);
             })();
 
             // Video appearing is the completion signal — hide progress bar
@@ -4176,108 +2943,65 @@
         }
 
         // === CANVAS WATERMARK BURN ===
-        // === SERVER-SIDE WATERMARK BURN ===
-        // Uses Supabase edge function (ffmpeg libx264) - always MP4, never WEBM
-        async function burnWatermarkAndDownload(cleanUrl, isRemoved, filename, onDone) {
-            filename = filename || "toon-it-video.mp4";
+        // Burns ToonIt.ai watermark into the video client-side using Canvas + MediaRecorder
+        function burnWatermarkAndDownload(videoUrl, isRemoved, filename, onDone) {
+            filename = filename || 'toon-it-video.mp4';
+
+            // ─── iOS Safari: MediaRecorder NOT supported; <a download> blocked on cross-origin ───
             var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-            function _showToast(msg) {
-                var t = document.createElement("div");
-                t.textContent = msg;
-                t.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(30,20,10,0.92);color:#fff;padding:12px 22px;border-radius:22px;font-size:14px;z-index:99999;pointer-events:none;max-width:90vw;text-align:center;";
-                document.body.appendChild(t);
-                setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 4000);
-            }
-
-            // iOS: fetch blob then native save dialog
             if (isIOS) {
-                var iosUrl = (_wmState.wmReady && _wmState.currentWmUrl) ? _wmState.currentWmUrl : (_wmState.currentCleanMp4Url || cleanUrl);
-                try {
-                    var r = await fetch(iosUrl, { mode: "cors" });
-                    if (!r.ok) throw new Error("fetch " + r.status);
-                    var blob = await r.blob();
-                    var blobUrl = URL.createObjectURL(blob);
-                    var a = document.createElement("a");
-                    a.href = blobUrl; a.download = filename;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 10000);
-                } catch(iosErr) {
-                    if (navigator.share) { navigator.share({ title: "My ToonIt Video", url: iosUrl }).catch(function(){}); }
-                    else { window.open(iosUrl, "_blank"); _showToast("Tap and hold the video, then tap Save to Files"); }
-                }
-                if (onDone) onDone();
-                return;
+                _showShareToast('⬇️ Preparing your video...');
+                fetch(videoUrl)
+                    .then(function(r) {
+                        if (!r.ok) throw new Error('fetch ' + r.status);
+                        return r.blob();
+                    })
+                    .then(function(blob) {
+                        var file = new File([blob], filename, { type: 'video/mp4' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            // iOS 15+ — native share sheet with Save to Files
+                            navigator.share({ files: [file], title: 'My ToonIt Video' })
+                                .then(function() { if (onDone) onDone(); })
+                                .catch(function(err) {
+                                    if (err && err.name !== 'AbortError') {
+                                        var blobUrl = URL.createObjectURL(blob);
+                                        window.open(blobUrl, '_blank');
+                                        _showShareToast('📱 Hold the video and tap Save to Files');
+                                    }
+                                    if (onDone) onDone();
+                                });
+                        } else {
+                            // Older iOS — open blob URL; user long-presses to save
+                            var blobUrl = URL.createObjectURL(blob);
+                            window.open(blobUrl, '_blank');
+                            _showShareToast('📱 Hold the video and tap Save to Files');
+                            if (onDone) onDone();
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('[iOS DL] error:', err);
+                        window.open(videoUrl, '_blank');
+                        _showShareToast('📱 Hold the video and tap Save to Files');
+                        if (onDone) onDone();
+                    });
+                return; // ← iOS exits here; never touches MediaRecorder
             }
 
-            // Paid user / watermark removed: download clean MP4
+            // ─── Non-iOS: watermark removed → direct anchor download ────────────────────────
             if (isRemoved) {
-                var dlUrl = _wmState.currentCleanMp4Url || cleanUrl;
-                var a = document.createElement("a");
-                a.href = dlUrl; a.download = filename;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                var a = document.createElement('a');
+                a.href = videoUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
                 if (onDone) onDone();
                 return;
             }
 
-            // Free user: server-burned watermark MP4
-            if (_wmState.wmReady && _wmState.currentWmUrl) {
-                try {
-                    var r = await fetch(_wmState.currentWmUrl);
-                    var blob = await r.blob();
-                    var blobUrl = URL.createObjectURL(blob);
-                    var a = document.createElement("a");
-                    a.href = blobUrl; a.download = filename;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
-                } catch(e) { window.open(_wmState.currentWmUrl, "_blank"); _showToast("Right-click the video and choose Save As"); }
-                if (onDone) onDone();
-                return;
-            }
-
-            // Not ready: trigger burn + poll
-            var jobId = _wmState.currentJobId || currentJobId;
-            if (!jobId || !cleanUrl) { _showToast("Could not start watermark process. Try again."); if (onDone) onDone(); return; }
-            try {
-                await fetch("https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/burn-watermark", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + SUPABASE_ANON_KEY },
-                    body: JSON.stringify({ job_id: jobId, video_url: cleanUrl, user_id: currentUser ? currentUser.id : null })
-                });
-            } catch(e) { console.log("[BURN] Trigger error:", e); }
-            var wmUrl = null;
-            for (var i = 0; i < 20; i++) {
-                await new Promise(function(r) { setTimeout(r, 3000); });
-                try {
-                    var res = await supabaseClient.from("generations").select("watermark_url, watermark_ready").eq("job_id", jobId).maybeSingle();
-                    if (res.data && res.data.watermark_ready && res.data.watermark_url) {
-                        wmUrl = res.data.watermark_url; _wmState.wmReady = true; _wmState.currentWmUrl = wmUrl; break;
-                    }
-                } catch(e) { console.log("[BURN] Poll error:", e); }
-            }
-            if (!wmUrl) { _showToast("Watermark processing timed out. Try again."); if (onDone) onDone(); return; }
-            try {
-                var r = await fetch(wmUrl); var blob = await r.blob();
-                var blobUrl = URL.createObjectURL(blob);
-                var a = document.createElement("a"); a.href = blobUrl; a.download = filename;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
-            } catch(e) { window.open(wmUrl, "_blank"); _showToast("Right-click the video and choose Save As"); }
-            if (onDone) onDone();
-        }
-        // === END SERVER-SIDE WATERMARK BURN ===
-
-        // ── Pre-burn: silently burn watermark into blob in background after each result ──
-        function _startPreBurn(videoUrl) {
-            // Reset pre-burn state for this video
-            if (_wmState.preBurnBlobUrl) { try { URL.revokeObjectURL(_wmState.preBurnBlobUrl); } catch(e){} }
-            _wmState.preBurnBlobUrl  = null;
-            _wmState.preBurnReady   = false;
-            _wmState.preBurnRunning = true;
-            _wmState.preBurnMimeType = null;
-            var genId = ++_wmState.preBurnGenId; // stamp for this burn job
-
+            // ─── Non-iOS: canvas watermark burn (desktop + Android) ──────────────────────────
             var burnVideo = document.createElement('video');
             burnVideo.crossOrigin = 'anonymous';
             burnVideo.muted = true;
@@ -4290,37 +3014,36 @@
             document.body.appendChild(canvas);
             var ctx = canvas.getContext('2d');
 
-            function _cleanup() {
-                try { document.body.removeChild(burnVideo); } catch(e){}
-                try { document.body.removeChild(canvas);    } catch(e){}
-            }
-
             burnVideo.onloadedmetadata = function() {
-                if (genId !== _wmState.preBurnGenId) { _cleanup(); return; } // stale
-                canvas.width  = burnVideo.videoWidth  || 720;
+                canvas.width = burnVideo.videoWidth || 720;
                 canvas.height = burnVideo.videoHeight || 480;
 
+                var stream = canvas.captureStream(30);
                 var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
-                               MediaRecorder.isTypeSupported('video/webm')            ? 'video/webm' : 'video/mp4';
-                var recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: mimeType, videoBitsPerSecond: 4000000 });
+                               MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+                var recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 });
                 var chunks = [];
 
                 recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
 
                 recorder.onstop = function() {
-                    _cleanup();
-                    if (genId !== _wmState.preBurnGenId) return; // superseded
                     var blob = new Blob(chunks, { type: mimeType });
-                    _wmState.preBurnBlobUrl  = URL.createObjectURL(blob);
-                    _wmState.preBurnMimeType = mimeType;
-                    _wmState.preBurnReady   = true;
-                    _wmState.preBurnRunning = false;
-                    console.log('[WM] Pre-burn complete ' + Math.round(blob.size/1024) + 'KB');
+                    var ext = mimeType.includes('webm') ? 'toon-it-video.webm' : filename;
+                    document.body.removeChild(burnVideo);
+                    document.body.removeChild(canvas);
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = ext;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+                    if (onDone) onDone();
                 };
 
                 var drawFrame = function() {
                     if (burnVideo.paused || burnVideo.ended) return;
-                    if (genId !== _wmState.preBurnGenId) { recorder.stop(); return; }
                     ctx.drawImage(burnVideo, 0, 0, canvas.width, canvas.height);
                     var fSize = Math.max(18, Math.round(canvas.width * 0.038));
                     ctx.save();
@@ -4329,7 +3052,7 @@
                     ctx.fillStyle = 'white';
                     ctx.shadowColor = 'rgba(0,0,0,0.7)';
                     ctx.shadowBlur = 4;
-                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.025));
+                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.07));
                     ctx.restore();
                     requestAnimationFrame(drawFrame);
                 };
@@ -4337,37 +3060,39 @@
                 recorder.start(100);
                 burnVideo.play();
                 drawFrame();
-                burnVideo.onended = function() { setTimeout(function(){ recorder.stop(); }, 200); };
+
+                burnVideo.onended = function() {
+                    setTimeout(function() { recorder.stop(); }, 200);
+                };
             };
 
             burnVideo.onerror = function() {
-                _cleanup();
-                _wmState.preBurnRunning = false;
-                console.warn('[WM] Pre-burn video load error');
+                document.body.removeChild(burnVideo);
+                document.body.removeChild(canvas);
+                var a = document.createElement('a');
+                a.href = videoUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                if (onDone) onDone();
             };
 
             burnVideo.src = videoUrl;
             burnVideo.load();
-            console.log('[WM] Pre-burn started');
         }
+        // === END CANVAS WATERMARK BURN ===
+
 
         function downloadVideo() {
             if (!resultVideo || !resultVideo.src) return;
-            var cleanUrl  = _wmState.currentCleanUrl || resultVideo.src;
+            var cleanUrl = _wmState.currentCleanUrl || resultVideo.src;
             var isRemoved = _wmState.globalRemoved || _wmState.currentVideoRemoved;
+
             var btn = document.getElementById('downloadBtn');
+            if (btn) { btn.textContent = isRemoved ? '⬇️ Downloading...' : '🔥 Burning watermark...'; btn.disabled = true; }
 
-            // Watermark removed → direct clean download, no burn needed
-            if (isRemoved) {
-                if (btn) { btn.textContent = '⬇️ Downloading...'; btn.disabled = true; }
-                burnWatermarkAndDownload(cleanUrl, true, 'toon-it-video.mp4', function() {
-                    if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
-                });
-                return;
-            }
-
-            // Free user: use server-side burned MP4 (never WEBM)
-            burnWatermarkAndDownload(cleanUrl, false, 'toon-it-video.mp4', function() {
+            burnWatermarkAndDownload(cleanUrl, isRemoved, 'toon-it-video.mp4', function() {
                 if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
             });
         }
@@ -4898,4 +3623,22 @@
     </div>
 
 </body>
+<script>
+(function(){
+    var sc = document.getElementById('showcaseScroll');
+    var dots = document.querySelectorAll('.showcase-dot');
+    if (!sc || !dots.length) return;
+    sc.addEventListener('scroll', function(){
+        var idx = Math.round(sc.scrollLeft / (sc.scrollWidth / dots.length));
+        idx = Math.max(0, Math.min(idx, dots.length - 1));
+        dots.forEach(function(d,i){ d.classList.toggle('active', i===idx); });
+    }, {passive:true});
+    dots.forEach(function(d,i){
+        d.addEventListener('click', function(){
+            sc.scrollTo({left: i * sc.clientWidth, behavior:'smooth'});
+        });
+    });
+})();
+</script>
+
 </html>

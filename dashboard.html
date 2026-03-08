@@ -627,7 +627,7 @@
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
             video.src = addWatermark(url);
-            modal.classList.add('show');
+            modal.classList.add('open');
             video.play();
         }
 
@@ -636,7 +636,7 @@
             const video = document.getElementById('modalVideo');
             video.pause();
             video.src = '';
-            modal.classList.remove('show');
+            modal.classList.remove('open');
         }
 
         function shareCurrentVideo() {
@@ -798,7 +798,7 @@
             var wmSpan = document.querySelector('#videoModal .toonit-watermark');
 
             video.src = url;
-            modal.classList.add('show');
+            modal.classList.add('open');
             video.play();
 
             // Reset UI
