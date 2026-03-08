@@ -486,6 +486,112 @@
 
     
     <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <button class="modal-close" data-close-modal>&times;</button>
+            <h2>Welcome Back!</h2>
+            <div id="googleLoginContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
+                <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Continue with Google
+                </button>
+            </div>
+            <div class="auth-divider">or</div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Your password">
+                </div>
+                <div id="loginError" class="form-error"></div>
+                <button type="submit" class="modal-submit" id="loginSubmit">Log In</button>
+                <p style="text-align:center;margin-top:12px;"><a onclick="showForgotPassword()" style="color:var(--primary);cursor:pointer;font-size:0.9em;">Forgot your password?</a></p>
+            </form>
+            <div class="modal-switch">
+                Don't have an account? <a onclick="showModal('signup')">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal">
+            
+                    <button class="modal-close" data-close-modal>&times;</button>
+            <h2>Create Account</h2>
+            <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
+            <div id="googleSignupContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
+                <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Sign up with Google
+                </button>
+            </div>
+            <div class="auth-divider">or continue with email</div>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required placeholder="Min 6 characters" minlength="6">
+                
+                    <div class="password-strength"><div id="strengthBar" class="password-strength-bar"></div></div>
+                    <div id="strengthText" class="password-strength-text"></div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="signupConfirm" required placeholder="Confirm password">
+                </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:0.85em;color:var(--text-muted);margin-bottom:4px;">Referral Code (optional)</label>
+                        <input type="text" id="signupReferralCode" placeholder="e.g. TOON-30DD" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.95em;background:var(--bg-surface);color:var(--text-main);text-transform:uppercase;">
+                    </div>
+                <div id="signupError" class="form-error"></div>
+                <div id="signupSuccess" class="form-success"></div>
+                <button type="submit" class="modal-submit" id="signupSubmit">Create Account</button>
+            </form>
+            <div class="modal-switch">
+                Already have an account? <a onclick="showModal('login')">Log in</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Modal -->
+    <div class="modal-overlay" id="creditsModal">
+        <div class="modal">
+            <button class="modal-close" data-close-modal>&times;</button>
+            <h2>Buy Credits</h2>
+            <p style="text-align: center; margin-bottom: 20px;">1 credit = 1 video transformation</p>
+            <div class="credits-grid">
+                <div class="credit-bundle" onclick="buyCredits('starter')"> 
+                    <div class="bundle-credits">5</div>
+                    <div>credits</div>
+                    <div class="bundle-price">$5.00</div>
+                    <div class="bundle-per">$1.00 each</div>
+                </div>
+                <div class="credit-bundle popular" onclick="buyCredits('popular')">
+                    <div class="bundle-credits">12</div>
+                    <div>credits</div>
+                    <div class="bundle-price">$10.00</div>
+                    <div class="bundle-per">$0.83 each</div>
+                </div>
+                <div class="credit-bundle" onclick="buyCredits('pro')">
+                    <div class="bundle-credits">35</div>
+                    <div>credits</div>
+                    <div class="bundle-price">$25.00</div>
+                    <div class="bundle-per">$0.71 each</div>
+                </div>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 0.85em;">💳 Secure payment via Stripe</p>
+        </div>
+    </div>
+
+    
+    <!-- Forgot Password Modal -->
     <div class="modal-overlay" id="forgotModal">
         <div class="modal">
             <button class="modal-close" data-close-modal>&times;</button>
@@ -523,7 +629,7 @@
                 <div style="font-size:3em;margin-bottom:15px;">✅</div>
                 <h3 style="color:var(--success);margin-bottom:10px;">Password Updated!</h3>
                 <p style="color:var(--text-muted);">You can now log in with your new password.</p>
-                <button onclick="closeModals();showModal('loginModal')" style="margin-top:15px;background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:10px;cursor:pointer;font-weight:600;">Log In</button>
+                <button onclick="closeModals();showModal('login')" style="margin-top:15px;background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:10px;cursor:pointer;font-weight:600;">Log In</button>
             </div>
         </div>
     </div>
@@ -1578,7 +1684,7 @@
             trackEvent('buy_credits_click', { bundle: bundle });
             const user = window.currentUser || currentUser;
             if (!user) {
-                showModal('loginModal');
+                showModal('login');
                 return;
             }
 
