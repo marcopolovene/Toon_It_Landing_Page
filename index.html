@@ -3519,7 +3519,7 @@
             } else if (result.data && result.data.session) {
                 window.currentUser = result.data.session.user; // Set global currentUser
                 console.log('[FAILSAFE] Login successful!');
-                    trackEvent('login', { method: 'email' });
+                try { if (typeof trackEvent === 'function') trackEvent('login', { method: 'email' }); } catch (trackErr) { console.log('[FAILSAFE] trackEvent skipped:', trackErr); }
                 closeAllModals();
 
                 // Fetch credits from profile
@@ -3600,7 +3600,7 @@
 
             // Try auto-login
             if (successEl) successEl.textContent = 'Account created! Logging you in...';
-                                hideSignupForm();
+            try { if (typeof hideSignupForm === 'function') hideSignupForm(); } catch (hideErr) { console.log('[FAILSAFE] hideSignupForm skipped:', hideErr); }
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
@@ -3623,7 +3623,7 @@
 
             if (loginResult.error) {
                 if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
-                                hideSignupForm();
+                try { if (typeof hideSignupForm === 'function') hideSignupForm(); } catch (hideErr) { console.log('[FAILSAFE] hideSignupForm skipped:', hideErr); }
                     // Hide form fields, show only success message
                     var sf = document.getElementById('signupForm');
                     if (sf) {
