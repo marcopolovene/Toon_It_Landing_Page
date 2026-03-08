@@ -3489,6 +3489,200 @@
         window.location.reload();
     }
 
+
+    var WEBHOOK_URL_FALLBACK = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-original-style';
+    var failsafeSelectedFile = null;
+
+    function getSelectedStyleFallback() {
+        var active = document.querySelector('.style-card.active');
+        return (active && active.getAttribute('data-style')) || 'cartoon3d';
+    }
+
+    function saveJobFallback(jobId) {
+        try {
+            localStorage.setItem('toonit_job', JSON.stringify({ jobId: jobId, timestamp: Date.now() }));
+            var url = new URL(window.location);
+            url.searchParams.set('job', jobId);
+            window.history.replaceState({}, '', url);
+        } catch(e) {}
+    }
+
+    function showResultFallback(videoUrl, jobId) {
+        var uploadArea = document.getElementById('uploadArea');
+        var transformBtn = document.getElementById('transformBtn');
+        var status = document.getElementById('status');
+        var statusText = document.getElementById('statusText');
+        var result = document.getElementById('result');
+        var resultVideo = document.getElementById('resultVideo');
+        var infoBox = document.getElementById('infoBox');
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (transformBtn) transformBtn.style.display = 'none';
+        if (infoBox) infoBox.style.display = 'none';
+        if (status) status.style.display = 'none';
+        if (statusText) statusText.textContent = '';
+        if (resultVideo) {
+            resultVideo.src = videoUrl;
+            resultVideo.load();
+        }
+        if (result) result.style.display = 'block';
+        if (jobId) {
+            try {
+                localStorage.removeItem('toonit_job');
+                var url = new URL(window.location);
+                url.searchParams.delete('job');
+                window.history.replaceState({}, '', url);
+            } catch(e) {}
+        }
+    }
+
+    function compressImageFallback(file, maxWidth, quality) {
+        maxWidth = maxWidth || 1024;
+        quality = quality || 0.8;
+        return new Promise(function(resolve) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var width = img.width;
+                    var height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round(height * maxWidth / width);
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function handleFileFallback(file) {
+        if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+            alert('Please select an image file');
+            return;
+        }
+        failsafeSelectedFile = file;
+        try { selectedFile = file; } catch(e) {}
+        var uploadArea = document.getElementById('uploadArea');
+        var transformBtn = document.getElementById('transformBtn');
+        if (uploadArea) {
+            uploadArea.innerHTML = '<img id="preview" src="' + URL.createObjectURL(file) + '" style="max-width:100%;max-height:300px;border-radius:10px;">' +
+                '<p style="margin-top:10px;color:#667eea;">Photo selected! Click Toon It! below</p>' +
+                '<input type="file" id="fileInput" accept="image/*" style="display:none;">';
+        }
+        if (transformBtn) {
+            transformBtn.style.display = 'inline-block';
+            transformBtn.disabled = false;
+        }
+        // Re-bind hidden file input after replacing uploadArea HTML
+        var reboundInput = document.getElementById('fileInput');
+        if (reboundInput) {
+            reboundInput.onclick = function(e) { e.stopPropagation(); };
+            reboundInput.onchange = function(e) {
+                if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
+            };
+        }
+    }
+
+    async function pollGenerationFallback(sb, jobId) {
+        var status = document.getElementById('status');
+        var statusText = document.getElementById('statusText');
+        for (var i = 0; i < 60; i++) {
+            if (status) status.style.display = 'block';
+            if (statusText) statusText.textContent = 'Processing your video... (' + (i + 1) + '/60)';
+            try {
+                var result = await sb.from('generations').select('status,video_url,job_id').eq('job_id', jobId).single();
+                if (result && result.data && result.data.status === 'complete' && result.data.video_url) {
+                    showResultFallback(result.data.video_url, jobId);
+                    return true;
+                }
+                if (result && result.data && (result.data.status === 'failed' || result.data.status === 'error')) {
+                    if (statusText) statusText.textContent = 'Error: Video generation failed. Please try again.';
+                    return false;
+                }
+            } catch(e) {}
+            await new Promise(function(r) { setTimeout(r, 5000); });
+        }
+        if (statusText) statusText.textContent = 'Still processing. Please check your dashboard shortly.';
+        return false;
+    }
+
+    async function startTransformationFallback(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        var sb = getSupabase();
+        if (!sb) { alert('Authentication service not available. Please refresh.'); return; }
+        var fileInput = document.getElementById('fileInput');
+        var file = failsafeSelectedFile || ((typeof selectedFile !== 'undefined' && selectedFile) ? selectedFile : null) || (fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null);
+        if (!file) { alert('Please select a photo first'); return; }
+
+        var sessionResult = await sb.auth.getSession();
+        var session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
+        if (!session || !session.user) { alert('Please log in first'); return; }
+        window.currentUser = session.user;
+        try { currentUser = session.user; } catch(e) {}
+
+        var credits = 0;
+        try {
+            var profileResult = await sb.from('profiles').select('credits').eq('id', session.user.id).single();
+            if (profileResult && profileResult.data) credits = profileResult.data.credits || 0;
+        } catch(e) {}
+        if (credits < 1) {
+            alert('No credits remaining. Please buy more!');
+            return;
+        }
+        updateUIForUser(session.user.email, credits);
+
+        var uploadArea = document.getElementById('uploadArea');
+        var transformBtn = document.getElementById('transformBtn');
+        var status = document.getElementById('status');
+        var statusText = document.getElementById('statusText');
+        var infoBox = document.getElementById('infoBox');
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (transformBtn) transformBtn.style.display = 'none';
+        if (infoBox) infoBox.style.display = 'none';
+        if (status) status.style.display = 'block';
+        if (statusText) statusText.textContent = 'Preparing your photo...';
+
+        var base64 = await compressImageFallback(file, 1024, 0.8);
+        var authToken = session.access_token || '';
+
+        var response = await fetch(WEBHOOK_URL_FALLBACK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image: base64,
+                user_id: session.user.id,
+                auth_token: authToken,
+                style: getSelectedStyleFallback(),
+                duration: 5
+            })
+        });
+        if (!response.ok) {
+            if (statusText) statusText.textContent = 'Error: Server returned ' + response.status;
+            return;
+        }
+        var responseText = await response.text();
+        var payload = {};
+        try { payload = JSON.parse(responseText || '{}'); } catch(e) { payload = {}; }
+        if (!payload.job_id) {
+            if (statusText) statusText.textContent = 'Error: Failed to start transformation';
+            return;
+        }
+        try { currentJobId = payload.job_id; } catch(e) {}
+        saveJobFallback(payload.job_id);
+        await pollGenerationFallback(sb, payload.job_id);
+        try {
+            var refreshed = await sb.from('profiles').select('credits').eq('id', session.user.id).single();
+            if (refreshed && refreshed.data) updateUIForUser(session.user.email, refreshed.data.credits || 0);
+        } catch(e) {}
+    }
+
     async function handleLoginSubmit(e) {
         e.preventDefault();
         console.log('[FAILSAFE] Login form submitted');
@@ -3721,11 +3915,34 @@
             forgotForm.onsubmit = handleForgotPasswordFallback;
             console.log('[FAILSAFE] Forgot password form handler attached');
         }
+
+        // Upload + transform fallback handlers
+        var uploadArea = document.getElementById('uploadArea');
+        var fileInput = document.getElementById('fileInput');
+        var transformBtn = document.getElementById('transformBtn');
+        if (uploadArea && fileInput) {
+            uploadArea.onclick = function(e) {
+                if (e.target === fileInput) return;
+                fileInput.click();
+            };
+            fileInput.onclick = function(e) { e.stopPropagation(); };
+            fileInput.onchange = function(e) {
+                if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
+            };
+            console.log('[FAILSAFE] Upload handlers attached');
+        }
+        if (transformBtn) {
+            transformBtn.onclick = startTransformationFallback;
+            console.log('[FAILSAFE] Transform handler attached');
+        }
+
         window.showForgotPassword = showForgotPasswordFallback;
         window.handleForgotPassword = handleForgotPasswordFallback;
         window.handleGoogleOAuth = handleGoogleOAuthFallback;
         window.logout = logoutFallback;
         window.updateUIForUser = updateUIForUser;
+        window.handleFileFallback = handleFileFallback;
+        window.startTransformationFallback = startTransformationFallback;
 
         console.log('[FAILSAFE] All handlers ready!');
     }
