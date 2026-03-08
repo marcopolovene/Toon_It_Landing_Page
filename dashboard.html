@@ -838,6 +838,8 @@
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
                                     body: JSON.stringify({ job_id: _preBurnJobId, video_url: _preBurnUrl, user_id: currentUser ? currentUser.id : null })
+                                }).catch(e => console.error('Pre-burn error:', e));
+                            }
                                 }).then(function(r) { return r.json(); }).then(function(data) {
                                     if (data && data.watermark_url) {
                                         _dashWmState.wmReady = true;
