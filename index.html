@@ -2918,8 +2918,8 @@
                 _wmUpdateToggleUI(enabled);
 
                 console.log('[WM] Watermark toggled:', enabled ? 'removed' : 'restored');
-                // If re-showing watermark and pre-burn not ready, restart it
-                if (!enabled && !_wmState.preBurnReady) {
+                // If re-showing watermark and pre-burn support exists, restart it
+                if (!enabled && !_wmState.preBurnReady && typeof _startPreBurn === 'function') {
                     var burnSrc = (_wmState.wmReady && _wmState.currentWmUrl) ? _wmState.currentWmUrl : _wmState.currentCleanUrl;
                     if (burnSrc) _startPreBurn(burnSrc);
                 }
