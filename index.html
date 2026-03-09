@@ -176,7 +176,20 @@
         #status { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 16px; }
         #statusText { color: var(--text-muted); font-size: 0.95em; margin-bottom: 10px; }
         .status-fact { color: var(--accent); font-size: 0.82em; line-height: 1.5; min-height: 2.4em; margin: 0 auto 16px; max-width: 34ch; opacity: 0.92; }
-        .progress-steps { display: flex; justify-content: center; gap: 24px; }
+        #styleLoaderHost { margin: 0 auto 16px; max-width: 460px; }
+        .style-loader { text-align: left; }
+        .style-loader-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 0.78em; color: var(--text-muted); }
+        .style-loader-label { color: #fff; font-weight: 700; }
+        .style-loader-step { color: var(--text-muted); font-weight: 600; }
+        .style-loader-track { position: relative; height: 12px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
+        .style-loader-fill { height: 100%; width: 20%; border-radius: 999px; transition: width 1s ease, box-shadow 0.3s ease; background-size: 200% 100%; animation: loaderShift 4.5s linear infinite; }
+        .style-loader--storybook .style-loader-fill { background-image: linear-gradient(90deg, #f0b429, #ffd166, #7c6bfa); box-shadow: 0 0 16px rgba(240,180,41,0.28); }
+        .style-loader--cartoon3d .style-loader-fill { background-image: linear-gradient(90deg, #7c6bfa, #a78bfa, #f0b429); box-shadow: 0 0 16px rgba(124,107,250,0.26); }
+        .style-loader--comic .style-loader-fill { background-image: linear-gradient(90deg, #f87171, #f0b429, #fb7185); box-shadow: 0 0 16px rgba(248,113,113,0.25); }
+        .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
+        .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
+        @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
+        .progress-steps { display: none; justify-content: center; gap: 24px; }
         .step { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.8em; color: var(--text-muted); }
         .step.active { color: var(--primary); }
         .step .step-icon { font-size: 1.4em; }
@@ -441,6 +454,20 @@
         <h2>⚡ 3 Steps. Pure Magic.</h2>
         <div class="steps-row">
             <div class="hiw-step">
+                <div class="hiw-icon">📸</div>
+                <div class="hiw-num">1</div>
+                <div class="hiw-title">Upload Your Photo</div>
+                <div class="hiw-desc">Choose a favorite image to transform</div>
+            </div>
+            <div class="steps-arrow">→</div>
+            <div class="hiw-step">
+                <div class="hiw-icon">✨</div>
+                <div class="hiw-num">2</div>
+                <div class="hiw-title">Pick Your Style</div>
+                <div class="hiw-desc">Choose a magical look for your transformation</div>
+            </div>
+            <div class="steps-arrow">→</div>
+            <div class="hiw-step">
                 <div class="hiw-icon">🎬</div>
                 <div class="hiw-num">3</div>
                 <div class="hiw-title">Get Your Video</div>
@@ -481,6 +508,7 @@
         <!-- Status Section -->
         <div id="status" style="display:none;">
             <div id="statusText"></div>
+            <div id="styleLoaderHost"></div>
             <div id="statusFunFact" class="status-fact"></div>
             <div class="progress-steps" id="progressSteps">
                 <div class="step" data-step="1">
@@ -2200,6 +2228,7 @@
             uploadArea.addEventListener('click', function(e) {
                 // Prevent loop: ignore clicks from fileInput itself
                 if (e.target === fileInput) return;
+                if (selectedFile || (fileInput && fileInput.files && fileInput.files.length) || (e.target && e.target.closest && e.target.closest('#preview'))) return;
                 console.log('[UPLOAD] Click detected');
 
                 // iOS requires synchronous fileInput.click() in user gesture
@@ -2494,7 +2523,7 @@
             else step = 3;
             setStep(step);
             _renderMagicStatus(step);
-        }, 3000);
+        }, 6000);
 
  // Set initial step immediately
  setStep(1);
@@ -2721,31 +2750,38 @@
 
     var _mIdx = 0, _mFactIdx = 0, _mSpkInt = null, _mActive = false;
 
+    function _getStyleLoaderMeta() {
+        var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+        var map = {
+            storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook' },
+            cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' },
+            comic: { cls: 'style-loader--comic', label: 'Superhero' },
+            anime: { cls: 'style-loader--anime', label: 'Studio Ghibli' },
+            watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor' },
+            steves_poc: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' }
+        };
+        return map[style] || map.storybook;
+    }
+
+    function _updateStyleLoader(stepNum) {
+        var meta = _getStyleLoaderMeta();
+        var loader = document.getElementById('styleLoader');
+        var label = document.getElementById('styleLoaderLabel');
+        var step = document.getElementById('styleLoaderStep');
+        var fill = document.getElementById('styleLoaderFill');
+        var widths = { 1: '22%', 2: '58%', 3: '92%' };
+        if (loader) loader.className = 'style-loader ' + meta.cls;
+        if (label) label.textContent = meta.label + ' transformation';
+        if (step) step.textContent = 'Step ' + stepNum + ' of 3';
+        if (fill) fill.style.width = widths[stepNum] || '22%';
+    }
+
     function initMagic() {
-        var el = document.getElementById('status');
-        if (!el || _mActive) return;
+        var host = document.getElementById('styleLoaderHost');
+        if (!host) return;
         _mActive = true;
-        el.classList.add('magical-active');
-        if (!el.querySelector('.magical-shimmer')) {
-            var s = document.createElement('div'); s.className = 'magical-shimmer';
-            el.insertBefore(s, el.firstChild);
-        }
-        var old = document.getElementById('spellCast'); if (old) old.remove();
-        var d = document.createElement('div'); d.className = 'spell-cast'; d.id = 'spellCast';
-        var _t = _getTheme(); d.innerHTML = '<div class="magic-wand casting" id="magicWand">' + _t.wand + '</div><div class="spell-text entering" id="spellText">' + _t.spell + '</div>';
-        var st = document.getElementById('statusText');
-        if (st) el.insertBefore(d, st); else el.prepend(d);
-        if (!el.querySelector('.sparkle-container')) {
-            var sc = document.createElement('div'); sc.className = 'sparkle-container'; sc.id = 'sparkleContainer';
-            el.appendChild(sc);
-        }
-        _genSpk();
-        _mSpkInt = setInterval(_genSpk, 2500);
-        setTimeout(function() {
-            var w = document.getElementById('magicWand'), sp = document.getElementById('spellText');
-            if (w) w.classList.remove('casting');
-            if (sp) { sp.classList.remove('entering'); sp.classList.add('pulsing'); }
-        }, 2200);
+        host.innerHTML = '<div class="style-loader" id="styleLoader"><div class="style-loader-top"><span class="style-loader-label" id="styleLoaderLabel"></span><span class="style-loader-step" id="styleLoaderStep"></span></div><div class="style-loader-track"><div class="style-loader-fill" id="styleLoaderFill"></div></div></div>';
+        _updateStyleLoader(1);
     }
 
     function _genSpk() {
@@ -2836,11 +2872,14 @@
         if (el) { var sh=el.querySelector('.magical-shimmer'); if(sh)sh.remove(); }
         var fact = document.getElementById('statusFunFact');
         if (fact) fact.textContent = '';
+        var loaderHost = document.getElementById('styleLoaderHost');
+        if (loaderHost) loaderHost.innerHTML = '';
         _mIdx = 0;
         _mFactIdx = 0;
     }
 
     function setStep(stepNum) {
+            _updateStyleLoader(stepNum);
             document.querySelectorAll('.step').forEach((step, i) => {
                 var wasActive = step.classList.contains('active');
             step.classList.remove('active', 'completed');
@@ -4038,6 +4077,7 @@
         if (uploadArea && fileInput) {
             uploadArea.onclick = function(e) {
                 if (e.target === fileInput) return;
+                if (failsafeSelectedFile || selectedFile || (fileInput && fileInput.files && fileInput.files.length) || (e.target && e.target.closest && e.target.closest('#preview'))) return;
                 fileInput.click();
             };
             fileInput.onclick = function(e) { e.stopPropagation(); };

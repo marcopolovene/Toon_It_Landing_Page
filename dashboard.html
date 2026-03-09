@@ -175,6 +175,7 @@
         .footer-brand { font-family: 'Pacifico', cursive; color: var(--primary); font-size: 1.05em; margin-bottom: 8px; display: block; }
         .footer-links { margin: 10px 0; }
         .footer-links a { margin: 0 10px; }
+        .footer-powered { margin-top: 12px; opacity: 0.6; }
     </style>
 </head>
 
@@ -350,14 +351,15 @@
 
     <!-- Footer -->
     <footer>
-        <span class="footer-brand">&#127912; Toon It!</span>
-        <p>&copy; 2026 Toon It! &mdash; Transform your photos into magical animated art</p>
-        <p style="margin-top:8px;">Something not right? We're here to help! <a href="mailto:support@toonit.ai">support@toonit.ai</a></p>
+        <span class="footer-brand">Toon It!</span>
+        <p>© 2026 Toon It! — Transform your photos into magical storybook videos</p>
+        <p>Something not right? Video didn't turn out as expected? We're here to help! Reach out to us at <a href="mailto:support@toonit.ai">support@toonit.ai</a></p>
         <div class="footer-links">
             <a href="terms.html">Terms of Service</a>
             <a href="privacy.html">Privacy Policy</a>
+            <a href="blog/">Blog &amp; How-To</a>
         </div>
-        <p style="margin-top:10px;opacity:0.6;">Powered by <a href="https://venice.ai" target="_blank" rel="noopener noreferrer" style="font-weight:700;">Venice.ai</a></p>
+        <p class="footer-powered">Powered by <a href="https://venice.ai" target="_blank" rel="noopener noreferrer">Venice.ai</a></p>
     </footer>
     <script>
         // Supabase config
@@ -915,13 +917,15 @@
                 // Update UI based on state
                 if (_dashWmState.globalRemoved || _dashWmState.currentVideoRemoved) {
                     if (wmSpan) wmSpan.style.display = 'none';
-                    if (toggleBar) toggleBar.style.display = 'none';
-                    if (badge) badge.style.display = 'block';
-                    video.src = _dashWmState.currentCleanUrl;
-                } else if (_dashWmState.hasPurchased) {
-                    if (wmSpan) wmSpan.style.display = '';
-                    if (banner) banner.style.display = 'block';
+                    if (toggleBar) toggleBar.style.display = _dashWmState.hasPurchased ? 'flex' : 'none';
                     if (badge) badge.style.display = 'none';
+                    _dashWmUpdateToggleUI(true);
+                    video.src = _dashWmState.currentCleanUrl;
+                } else {
+                    if (wmSpan) wmSpan.style.display = '';
+                    if (toggleBar) toggleBar.style.display = _dashWmState.hasPurchased ? 'flex' : 'none';
+                    if (badge) badge.style.display = 'none';
+                    _dashWmUpdateToggleUI(false);
                 }
             })();
         }
