@@ -347,7 +347,7 @@
             <div class="auth-buttons" id="userButtons" style="display: none;">
                 <div class="user-account-section">
                     <span class="user-email" id="userEmail"></span>
-                        <div class="referral-inline" id="referralBadge" style="display:none;margin-top:10px;"><div style="font-size:0.75em;color:var(--text-muted);margin-bottom:8px;">🎁 Refer friends, earn credits!</div><span class="referral-badge" onclick="copyReferralLink()" title="Click to copy your referral link"><span id="referralCode"></span> 📋</span></div>
+                        <div class="referral-inline" id="referralBadge" style="display:none;margin-top:10px;"><div style="font-size:0.75em;color:var(--text-muted);display:inline-block;margin-right:14px;">🎁 Refer friends, earn credits!</div><span class="referral-badge" onclick="copyReferralLink()" title="Click to copy your referral link"><span id="referralCode"></span> 📋</span></div>
                     <div class="user-action-buttons">
                         <a href="dashboard.html" class="dashboard-link" onclick="event.stopPropagation(); window.location.href='dashboard.html'; return false;">📊 Dashboard</a>
                         <button class="btn-credits" id="creditsBtn">Buy Credits</button>
@@ -2228,35 +2228,29 @@
         // ==========================================
         function setupUploadHandlers() {
             if (!uploadArea || !fileInput) return;
+            if (uploadArea.dataset.primaryUploadHandlers === '1') return;
+            uploadArea.dataset.primaryUploadHandlers = '1';
 
             uploadArea.addEventListener('click', function(e) {
                 // Prevent loop: ignore clicks from fileInput itself
                 if (e.target === fileInput) return;
+                if (uploadArea && uploadArea.dataset && uploadArea.dataset.pickerOpening === '1') return;
                 if (selectedFile || (fileInput && fileInput.files && fileInput.files.length) || (e.target && e.target.closest && e.target.closest('#preview'))) return;
                 console.log('[UPLOAD] Click detected');
 
-                // iOS requires synchronous fileInput.click() in user gesture
-                // Check cached user first (set on login/page load)
-                if (window.currentUser) {
-                    fileInput.click();
+                var activeUser = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+                if (!activeUser) {
+                    showModal('login');
                     return;
                 }
 
-                // No cached user - check session asynchronously
-                if (supabaseClient) {
-                    supabaseClient.auth.getSession().then(function(result) {
-                        if (result.data && result.data.session) {
-                            window.currentUser = result.data.session.user;
-                            fileInput.click();
-                        } else {
-                            showModal('login');
-                        }
-                    }).catch(function() {
-                        showModal('login');
-                    });
-                } else {
-                    showModal('login');
-                }
+                if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '1';
+                setTimeout(function() {
+                    if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '0';
+                }, 800);
+
+                // Keep fileInput.click() synchronous within the user gesture
+                fileInput.click();
             });
 
         // Stop fileInput clicks from bubbling to uploadArea
@@ -2282,6 +2276,7 @@
             });
 
             fileInput.addEventListener('change', (e) => {
+                if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '0';
                 if (e.target.files.length) {
                     handleFile(e.target.files[0]);
                 }
@@ -3283,8 +3278,10 @@
                 canvas.height = burnVideo.videoHeight || 480;
 
                 var stream = canvas.captureStream(30);
-                var mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
-                               MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+                var mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' :
+                               MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+                               MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                               'video/webm';
                 var recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 });
                 var chunks = [];
 
@@ -3385,23 +3382,20 @@
                     }
                 } catch (e) { console.log('[DL] watermark lookup error:', e && e.message ? e.message : e); }
             }
-            var requested = await _requestLandingWatermarkMp4(cleanUrl);
-            if (requested) return requested;
-            if (jid && supabaseClient) {
-                for (var i = 0; i < 8; i++) {
-                    await new Promise(function(r){ setTimeout(r, 1500); });
-                    try {
-                        var poll = await supabaseClient.from('generations').select('watermark_url, watermark_ready').eq('job_id', jid).maybeSingle();
-                        var polled = poll && poll.data ? poll.data : null;
-                        if (polled && polled.watermark_ready && polled.watermark_url) {
-                            _wmState.currentWmUrl = polled.watermark_url;
-                            _wmState.wmReady = true;
-                            return polled.watermark_url;
-                        }
-                    } catch (e) {}
+
+            // Do not block the user on server-side watermark burning. If a burned MP4 is not
+            // already ready, fall back immediately to the clean video and let the client-side
+            // download pipeline add the watermark locally. This keeps Download responsive.
+            _requestLandingWatermarkMp4(cleanUrl).then(function(requested) {
+                if (requested) {
+                    _wmState.currentWmUrl = requested;
+                    _wmState.wmReady = true;
                 }
-            }
-            return '';
+            }).catch(function(e) {
+                console.log('[DL] background burn request skipped:', e && e.message ? e.message : e);
+            });
+
+            return cleanUrl || '';
         }
 
         async function downloadVideo() {
@@ -3456,10 +3450,12 @@
             uploadArea.style.cursor = 'pointer';
             uploadArea.style.pointerEvents = 'auto';
             uploadArea.removeAttribute('data-file-selected');
+            if (uploadArea.dataset) uploadArea.dataset.pickerOpening = '0';
             var styleSelector = document.getElementById('styleSelector'); if (styleSelector) styleSelector.style.display = 'block';
             fileInput = document.getElementById('fileInput');
             if (fileInput) {
-                fileInput.addEventListener('change', function(e) { if (e.target.files[0]) handleFile(e.target.files[0]); });
+                fileInput.addEventListener('click', function(e) { e.stopPropagation(); });
+                fileInput.addEventListener('change', function(e) { if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '0'; if (e.target.files[0]) handleFile(e.target.files[0]); });
             }
         }
         if (transformBtn) {
@@ -4156,7 +4152,7 @@
         var uploadArea = document.getElementById('uploadArea');
         var fileInput = document.getElementById('fileInput');
         var transformBtn = document.getElementById('transformBtn');
-        if (uploadArea && fileInput) {
+        if (uploadArea && fileInput && uploadArea.dataset.primaryUploadHandlers !== '1') {
             uploadArea.onclick = function(e) {
                 if (e.target === fileInput) return;
                 if (failsafeSelectedFile || selectedFile || (fileInput && fileInput.files && fileInput.files.length) || (e.target && e.target.closest && e.target.closest('#preview'))) return;
@@ -4167,6 +4163,8 @@
                 if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
             };
             console.log('[FAILSAFE] Upload handlers attached');
+        } else if (uploadArea && fileInput) {
+            console.log('[FAILSAFE] Primary upload handlers already active; upload fallback skipped');
         }
         if (transformBtn) {
             if (typeof startTransformation === 'function') {
