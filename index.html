@@ -2924,41 +2924,9 @@
                 statusEl.textContent = removed ? '✅ Removed' : 'Showing';
                 statusEl.className   = 'wm-toggle-status' + (removed ? ' active' : '');
             }
-        } else {
-                    // Set per-video flag
-                    var jid = _wmState.currentJobId || currentJobId;
-                    if (jid) {
-                        await supabaseClient
-                            .from('generations')
-                            .update({ watermark_removed: true })
-                            .eq('job_id', jid);
-                    }
-                    _wmState.currentVideoRemoved = true;
-                }
-
-                // Switch video source to clean URL
-                if (resultVideo && _wmState.currentCleanUrl) {
-                    var wasPlaying = !resultVideo.paused;
-                    var currentTime = resultVideo.currentTime;
-                    resultVideo.src = _wmState.currentCleanUrl;
-                    resultVideo.currentTime = currentTime;
-                    if (wasPlaying) resultVideo.play();
-                }
-
-                // Update visual state - hide CTA, show badge
-                if (banner) banner.style.display = 'none';
-                _wmUpdateToggleUI(true); if(banner) banner.style.display = 'flex';
-
-                // Also update CSS overlay visibility
-                var wmSpan = document.querySelector('#result .toonit-watermark');
-                if (wmSpan) wmSpan.style.display = 'none';
-
-                console.log('[WM] Watermark removed, scope:', scope);
-            } catch(e) {
-                console.error('[WM] Remove error:', e);
-                alert('Could not remove watermark. Please try again.');
-            }
         }
+
+        // wm_syntax_fix_20260309
         // === END WATERMARK SYSTEM ===
 
         function showVideo(url, jobId) {
