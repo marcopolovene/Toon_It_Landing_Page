@@ -196,6 +196,24 @@
         .wm-btn-all { background: var(--primary); color: #07070f; }
         .wm-removed-badge { display: inline-block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 20px; padding: 5px 16px; font-size: 0.82em; color: var(--success); }
 
+        /* post_transform_controls_fix_20260308_2220 */
+        .wm-toggle-bar { display: none; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: rgba(124,107,250,0.10); border: 1px solid rgba(124,107,250,0.22); position: relative; z-index: 4; }
+        .wm-toggle-label { color: var(--text-main); font-weight: 700; margin-right: auto; }
+        .wm-toggle-switch { position: relative; display: inline-block; width: 52px; height: 30px; cursor: pointer; flex: 0 0 auto; }
+        .wm-toggle-switch input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .wm-toggle-slider { position: absolute; inset: 0; border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.14); transition: all 0.2s ease; }
+        .wm-toggle-slider::before { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.28); transition: transform 0.2s ease; }
+        .wm-toggle-switch input:checked + .wm-toggle-slider { background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); border-color: rgba(240,180,41,0.70); }
+        .wm-toggle-switch input:checked + .wm-toggle-slider::before { transform: translateX(22px); }
+        .wm-toggle-switch input:disabled + .wm-toggle-slider { opacity: 0.65; cursor: not-allowed; }
+        .wm-toggle-status { min-width: 48px; text-align: center; font-size: 0.82em; font-weight: 700; color: var(--text-muted); padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+        .wm-toggle-status.active { color: #07070f; background: rgba(240,180,41,0.95); border-color: rgba(240,180,41,0.95); }
+        .wm-toggle-saving { display: none; color: var(--text-muted); font-size: 0.8em; font-weight: 600; }
+        .wm-toggle-saving.visible { display: inline-flex; align-items: center; gap: 6px; }
+        .wm-toggle-saving.visible::before { content: '⏳'; }
+        .result-buttons { position: relative; z-index: 4; }
+        .result-buttons button { position: relative; z-index: 5; }
+
         /* SHARE */
         .share-section { margin-bottom: 24px; }
         .share-label { text-align: center; color: var(--text-muted); font-size: 0.85em; margin-bottom: 10px; font-weight: 600; }
@@ -486,19 +504,19 @@
             <span class="toonit-watermark">ToonIt.ai</span>
         </div>
             <div class="result-buttons">
-                <button id="downloadBtn">⬇️ Download</button>
-                <button id="newBtn">🔄 Create Another</button>
+                <button type="button" id="downloadBtn" onclick="downloadVideo(); return false;">⬇️ Download</button>
+                <button type="button" id="newBtn" onclick="resetForNew(); return false;">🔄 Create Another</button>
             </div>
             <!-- Watermark Removal CTA (shown to paid users only) -->
             
             <!-- Watermark Toggle (paid users only) -->
             <div class="wm-toggle-bar" id="wmToggleBar">
-                <span class="wm-toggle-label">🎬 Remove Watermark</span>
+                <span class="wm-toggle-label">🎬 Watermark</span>
                 <label class="wm-toggle-switch">
                     <input type="checkbox" id="wmToggleInput" onchange="toggleWatermark(this.checked)">
                     <span class="wm-toggle-slider"></span>
                 </label>
-                <span class="wm-toggle-status" id="wmToggleStatus">Showing</span>
+                <span class="wm-toggle-status" id="wmToggleStatus">On</span>
                 <span class="wm-toggle-saving" id="wmToggleSaving">Saving…</span>
             </div>
 
@@ -2239,8 +2257,8 @@
 
             const downloadBtn = document.getElementById('downloadBtn');
             const newBtn = document.getElementById('newBtn');
-            if (downloadBtn) downloadBtn.addEventListener('click', downloadVideo);
-            if (newBtn) newBtn.addEventListener('click', resetForNew);
+            if (downloadBtn) downloadBtn.onclick = function(e) { if (e) { e.preventDefault(); e.stopPropagation(); } downloadVideo(); return false; };
+            if (newBtn) newBtn.onclick = function(e) { if (e) { e.preventDefault(); e.stopPropagation(); } resetForNew(); return false; };
         }
 
         function handleFile(file) {
@@ -2886,8 +2904,8 @@
                     var currentTime = resultVideo.currentTime;
                     if (enabled && _wmState.currentCleanUrl) {
                         resultVideo.src = _wmState.currentCleanUrl;
-                    } else if (!enabled && _wmState.currentWatermarkedUrl) {
-                        resultVideo.src = _wmState.currentWatermarkedUrl;
+                    } else if (!enabled && _wmState.currentWmUrl) {
+                        resultVideo.src = _wmState.currentWmUrl;
                     }
                     resultVideo.currentTime = currentTime;
                     if (wasPlaying) resultVideo.play();
@@ -2921,7 +2939,7 @@
             var statusEl    = document.getElementById('wmToggleStatus');
             if (toggleInput) toggleInput.checked = removed;
             if (statusEl) {
-                statusEl.textContent = removed ? '✅ Removed' : 'Showing';
+                statusEl.textContent = removed ? 'Off' : 'On';
                 statusEl.className   = 'wm-toggle-status' + (removed ? ' active' : '');
             }
         }
@@ -2985,22 +3003,26 @@
                 
 
                 if (_wmState.globalRemoved || _wmState.currentVideoRemoved) {
-                    // Watermark removed - hide overlay, show badge
+                    // Watermark removed - keep clean video and show toggle only for paid users
                     if (wmSpan) wmSpan.style.display = 'none';
-                    if (banner) banner.style.display = 'none';
-                    _wmUpdateToggleUI(true); if(banner) banner.style.display = 'flex';
-                    if (resultVideo) resultVideo.src = url; // ensure clean
+                    _wmUpdateToggleUI(true);
+                    if (banner) banner.style.display = _wmState.hasPurchased ? 'flex' : 'none';
+                    if (resultVideo) resultVideo.src = url;
                 } else if (_wmState.hasPurchased) {
-                    // Paid user, watermark showing - show removal CTA
+                    // Paid user with watermark on - show toggle
                     if (wmSpan) wmSpan.style.display = '';
-                    if (banner) banner.style.display = 'block';
-                    _wmUpdateToggleUI(false); if(banner) banner.style.display = 'flex';
+                    _wmUpdateToggleUI(false);
+                    if (banner) banner.style.display = 'flex';
                 } else {
-                    // Free user - watermark stays, no CTA
+                    // Free user - watermark stays, no toggle
                     if (wmSpan) wmSpan.style.display = '';
+                    _wmUpdateToggleUI(false);
                     if (banner) banner.style.display = 'none';
-                    _wmUpdateToggleUI(false); if(banner) banner.style.display = 'flex';
                 }
+                var downloadBtnEl = document.getElementById('downloadBtn');
+                var newBtnEl = document.getElementById('newBtn');
+                if (downloadBtnEl) { downloadBtnEl.disabled = false; downloadBtnEl.textContent = '⬇️ Download'; }
+                if (newBtnEl) { newBtnEl.disabled = false; newBtnEl.textContent = '🔄 Create Another'; }
             })();
 
             // Video appearing is the completion signal — hide progress bar
@@ -3243,6 +3265,15 @@
         currentJobId = null;
         creditDeducted = false;
         videoAlreadyShown = false;
+        _wmState.currentVideoRemoved = false;
+        _wmState.currentCleanUrl = null;
+        _wmState.currentWmUrl = null;
+        _wmState.currentJobId = null;
+        _wmState.wmReady = false;
+        var wmBar = document.getElementById('wmToggleBar'); if (wmBar) wmBar.style.display = 'none';
+        var wmSaving = document.getElementById('wmToggleSaving'); if (wmSaving) wmSaving.classList.remove('visible');
+        var downloadBtnEl = document.getElementById('downloadBtn'); if (downloadBtnEl) { downloadBtnEl.disabled = false; downloadBtnEl.textContent = '⬇️ Download'; }
+        var newBtnEl = document.getElementById('newBtn'); if (newBtnEl) { newBtnEl.disabled = false; newBtnEl.textContent = '🔄 Create Another'; }
         if (preview) {
             preview.style.display = 'none';
             preview.src = '';
