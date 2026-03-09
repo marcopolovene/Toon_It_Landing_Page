@@ -96,6 +96,11 @@
         .hero-cta { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; font-weight: 800; font-size: 1.08em; padding: 15px 34px; border-radius: 50px; cursor: pointer; border: none; box-shadow: 0 4px 28px rgba(240,180,41,0.42); transition: all 0.25s; text-decoration: none; }
         .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(240,180,41,0.55); color: #07070f; }
         .hero-free-note { margin-top: 14px; font-size: 0.8em; color: var(--text-muted); }
+        .logged-in-create-zone { display: none; padding: 28px 0 18px; }
+        .container.logged-in .logged-in-create-zone { display: block; }
+        .container.logged-in .hero { display: none; }
+        .container.logged-in #uploadArea { padding: 54px 28px; margin-bottom: 18px; }
+        .container.logged-in .style-selector { margin-bottom: 18px; }
 
         /* SHOWCASE */
         .showcase { padding: 52px 0 44px; background: var(--bg-dark); }
@@ -110,6 +115,16 @@
         .showcase-dots { display: flex; justify-content: center; gap: 6px; padding-top: 18px; }
         .showcase-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.3s; cursor: pointer; }
         .showcase-dot.active { background: var(--primary); width: 22px; border-radius: 3px; }
+        .showcase-shell { position: relative; max-width: 1120px; margin: 0 auto; }
+        .showcase-arrow { display: none; }
+        @media (min-width: 901px) {
+            .showcase-shell { padding: 0 56px; }
+            .showcase-scroll { padding: 0 0 16px; }
+            .showcase-arrow { display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(240,180,41,0.25); background: rgba(7,7,15,0.92); color: var(--primary); font-size: 1.4em; font-weight: 800; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.35); z-index: 3; }
+            .showcase-arrow:hover { background: rgba(19,12,32,0.98); color: var(--accent); }
+            .showcase-arrow-left { left: 0; }
+            .showcase-arrow-right { right: 0; }
+        }
 
         /* UPLOAD AREA */
         #uploadArea { background: var(--bg-card); border: 2px dashed var(--border); border-radius: 20px; padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.25s; margin-bottom: 16px; }
@@ -167,9 +182,9 @@
 
         /* RESULT */
         #result { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
-        .toonit-watermark-wrap { position: relative; display: inline-block; width: 100%; }
-        #resultVideo, .toonit-watermark-wrap video { width: 100%; border-radius: 12px; display: block; }
-        .toonit-watermark { position: absolute; bottom: 8px; right: 10px; color: rgba(255,255,255,0.55); font-size: 0.75em; font-weight: 600; pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+        .toonit-watermark-wrap { position: relative; display: block; width: 100%; margin-bottom: 20px; }
+        #resultVideo, .toonit-watermark-wrap video { width: 100%; border-radius: 12px; display: block; margin-bottom: 0 !important; }
+        .toonit-watermark { position: absolute; bottom: 14px; left: 16px; font-family: 'Pacifico', cursive; font-size: 18px; color: rgba(255,255,255,0.78); opacity: 0.72; pointer-events: none; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.6); user-select: none; letter-spacing: 0.3px; }
         .result-buttons { display: flex; gap: 10px; margin-top: 14px; }
         .result-buttons button { flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text-main); cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s; }
         .result-buttons button:hover { border-color: var(--primary); color: var(--primary); }
@@ -192,14 +207,27 @@
         /* MODALS */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.active { display: flex; }
-        .modal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; max-width: 400px; width: 100%; position: relative; max-height: 90vh; overflow-y: auto; }
-        .modal h2 { color: #fff; margin-bottom: 20px; font-size: 1.25em; }
-        .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0; }
-        .modal-close:hover { color: #fff; }
+        .modal { background: linear-gradient(180deg, rgba(18,18,32,0.98) 0%, rgba(10,10,18,0.98) 100%); border: 1px solid rgba(240,180,41,0.24); border-radius: 26px; padding: 32px 24px 26px; max-width: 420px; width: 100%; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 28px 80px rgba(0,0,0,0.45); }
+        .modal h2 { color: #fff; margin-bottom: 12px; font-size: 1.45em; font-weight: 800; text-align: center; }
+        .modal-close { position: absolute; top: 14px; right: 16px; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; font-size: 1.35em; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { color: #fff; background: rgba(255,255,255,0.12); }
+        .auth-caption { text-align: center; color: var(--text-muted); margin: 0 0 16px; line-height: 1.5; }
+        .auth-caption.auth-caption-success { color: #98f5a8; font-weight: 700; }
+        .auth-divider { text-align: center; color: var(--text-muted); font-size: 0.82em; margin: 18px 0; position: relative; }
+        .auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: rgba(255,255,255,0.08); }
+        .auth-divider::before { left: 0; }
+        .auth-divider::after { right: 0; }
+        .modal-submit { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; border: none; padding: 14px 18px; border-radius: 14px; font-size: 1em; font-weight: 800; cursor: pointer; box-shadow: 0 8px 28px rgba(240,180,41,0.32); transition: all 0.2s; }
+        .modal-submit:hover { transform: translateY(-1px); box-shadow: 0 12px 34px rgba(240,180,41,0.42); }
+        .modal-switch { text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 0.92em; }
+        .modal-switch a { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: none; }
+        .modal-switch a:hover { color: var(--accent); }
+        #googleLoginContainer button, #googleSignupContainer button { width: 100% !important; max-width: 100% !important; padding: 13px 18px !important; border-radius: 14px !important; border: 1px solid rgba(255,255,255,0.14) !important; background: rgba(255,255,255,0.94) !important; color: #1f2937 !important; box-shadow: 0 10px 28px rgba(0,0,0,0.18); }
+        #googleLoginContainer button:hover, #googleSignupContainer button:hover { transform: translateY(-1px); }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 0.85em; color: var(--text-muted); font-weight: 600; }
-        .form-group input { width: 100%; padding: 11px 14px; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text-main); font-size: 0.95em; outline: none; transition: border-color 0.2s; }
-        .form-group input:focus { border-color: var(--primary); }
+        .form-group input { width: 100%; padding: 13px 14px; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.10); border-radius: 14px; color: var(--text-main); font-size: 0.95em; outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+        .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(240,180,41,0.14); background: rgba(255,255,255,0.06); }
         .form-group input::placeholder { color: var(--text-muted); }
         .form-error { color: var(--error); font-size: 0.83em; margin-bottom: 10px; }
         .form-success { color: var(--success); font-size: 0.83em; margin-bottom: 10px; }
@@ -298,15 +326,17 @@
             <p>Transform your photos into magical animated art</p>
         </div>
 
+    <div class="logged-in-create-zone" id="loggedInCreateZone"></div>
+
     <!-- HERO SECTION -->
     <section class="hero">
-        <div class="hero-badge">✨ AI Photo Transformation</div>
+        <div class="hero-badge">✨ Photo Transformation</div>
         <h1>Your Photos.<br><span class="highlight">Transformed.</span></h1>
         <p class="hero-sub">Watch any photo become breathtaking animated art — kids, pets, family moments reimagined in seconds.</p>
         <a class="hero-cta" onclick="document.getElementById('uploadArea').scrollIntoView({behavior:'smooth'}); return false;" href="#">
-            ������ Transform a Photo Free
+            📸 Transform a Photo Free
         </a>
-        <p class="hero-free-note">������ 2 free credits · No credit card needed</p>
+        <p class="hero-free-note">🎁 2 free credits · No credit card needed</p>
     </section>
 
 
@@ -318,31 +348,35 @@
             <h2>✨ See the Transformation</h2>
             <p>Real photos → real magic. Swipe to explore.</p>
         </div>
-        <div class="showcase-scroll" id="showcaseScroll">
-            <div class="showcase-card">
-                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
-                <div class="showcase-label">������ Superhero</div>
+        <div class="showcase-shell">
+            <button class="showcase-arrow showcase-arrow-left" type="button" aria-label="Scroll showcase left" onclick="scrollShowcase(-1)">←</button>
+            <div class="showcase-scroll" id="showcaseScroll">
+                <div class="showcase-card">
+                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <div class="showcase-label">Superhero</div>
+                </div>
+                <div class="showcase-card">
+                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <div class="showcase-label">3D Cartoon</div>
+                </div>
+                <div class="showcase-card">
+                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <div class="showcase-label">Superhero</div>
+                </div>
+                <div class="showcase-card">
+                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <div class="showcase-label">3D Cartoon</div>
+                </div>
+                <div class="showcase-card">
+                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <div class="showcase-label">Magical Storybook</div>
+                </div>
+                <div class="showcase-card">
+                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <div class="showcase-label">Watercolor</div>
+                </div>
             </div>
-            <div class="showcase-card">
-                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
-                <div class="showcase-label">������ 3D Cartoon</div>
-            </div>
-            <div class="showcase-card">
-                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
-                <div class="showcase-label">������ Superhero</div>
-            </div>
-            <div class="showcase-card">
-                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
-                <div class="showcase-label">������ 3D Cartoon</div>
-            </div>
-            <div class="showcase-card">
-                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
-                <div class="showcase-label">������ Magical</div>
-            </div>
-            <div class="showcase-card">
-                <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
-                <div class="showcase-label">������ Watercolor</div>
-            </div>
+            <button class="showcase-arrow showcase-arrow-right" type="button" aria-label="Scroll showcase right" onclick="scrollShowcase(1)">→</button>
         </div>
         <div class="showcase-dots" id="showcaseDots">
             <div class="showcase-dot active"></div>
@@ -358,8 +392,8 @@
         <div class="info-box login-required" id="loginRequired" style="display:none">
             <div class="signup-sparkles" id="signupSparkles"></div>
             <div class="signup-headline">✨ Be the Magic! ✨</div>
-            <div class="signup-subtext">Sign up and start transforming your photos into breathtaking animated art</div>
-            <div class="signup-credits-badge">🎁 New users get 2 FREE credits!</div>
+            <div class="signup-subtext">Sign up and start transforming your photos into breathtaking animated art — no credit card needed.</div>
+            <div class="signup-credits-badge">🎁 New users get 2 FREE credits — No credit card needed!</div>
             <br>
             <a class="signup-cta-btn" onclick="showModal('signup')">🪄 Start Your Story</a>
         </div>
@@ -388,21 +422,7 @@
         <h2>⚡ 3 Steps. Pure Magic.</h2>
         <div class="steps-row">
             <div class="hiw-step">
-                <div class="hiw-icon">������</div>
-                <div class="hiw-num">1</div>
-                <div class="hiw-title">Upload Any Photo</div>
-                <div class="hiw-desc">Selfie, pet, family — anything works</div>
-            </div>
-            <div class="steps-arrow">→</div>
-            <div class="hiw-step">
-                <div class="hiw-icon">������</div>
-                <div class="hiw-num">2</div>
-                <div class="hiw-title">AI Transforms It</div>
-                <div class="hiw-desc">Powerful AI reimagines your photo as stunning animated art</div>
-            </div>
-            <div class="steps-arrow">→</div>
-            <div class="hiw-step">
-                <div class="hiw-icon">������</div>
+                <div class="hiw-icon">🎬</div>
                 <div class="hiw-num">3</div>
                 <div class="hiw-title">Get Your Video</div>
                 <div class="hiw-desc">Download and share your magical animated video</div>
@@ -485,11 +505,25 @@
     </div>
 
     
+
+    <!-- Footer -->
+    <footer>
+        <span class="footer-brand">Toon It!</span>
+        <p>© 2026 Toon It! — Transform your photos into magical storybook videos</p>
+        <p>Something not right? Video didn't turn out as expected? We're here to help! Reach out to us at <a href="mailto:support@toonit.ai">support@toonit.ai</a></p>
+        <div class="footer-links">
+            <a href="terms.html">Terms of Service</a>
+            <a href="privacy.html">Privacy Policy</a>
+        </div>
+        <p class="footer-powered">Powered by <a href="https://venice.ai" target="_blank" rel="noopener noreferrer">Venice.ai</a></p>
+    </footer>
+
     <!-- Forgot Password Modal -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal">
             <button class="modal-close" data-close-modal>&times;</button>
             <h2>Welcome Back!</h2>
+            <p class="auth-caption">Pick up where your magic left off.</p>
             <div id="googleLoginContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
                 <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -522,7 +556,7 @@
             
                     <button class="modal-close" data-close-modal>&times;</button>
             <h2>Create Account</h2>
-            <p style="text-align: center; color: #28a745; margin-bottom: 15px;">🎁 Get 2 FREE credits when you sign up!</p>
+            <p class="auth-caption auth-caption-success">🎁 Get 2 FREE credits when you sign up — No credit card needed.</p>
             <div id="googleSignupContainer" style="display:flex;justify-content:center;margin-bottom:12px;">
                 <button type="button" onclick="handleGoogleOAuth()" style="display:flex;align-items:center;gap:10px;padding:10px 24px;border:1px solid #dadce0;border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:#3c4043;width:320px;justify-content:center;max-width:100%;">
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -868,6 +902,29 @@
         // ==========================================
         // UI STATE MANAGEMENT
         // ==========================================
+        function moveLoggedInCreateModules() {
+            var zone = document.getElementById('loggedInCreateZone');
+            if (!zone) return;
+            [
+                document.getElementById('noCredits'),
+                document.getElementById('uploadArea'),
+                document.getElementById('styleSelector'),
+                document.getElementById('transformBtn'),
+                document.getElementById('infoBox'),
+                document.getElementById('status'),
+                document.getElementById('result')
+            ].forEach(function(el) { if (el) zone.appendChild(el); });
+        }
+
+        function scrollShowcase(direction) {
+            var scroller = document.getElementById('showcaseScroll');
+            if (!scroller) return;
+            var card = scroller.querySelector('.showcase-card');
+            var step = card ? (card.getBoundingClientRect().width + 14) : 320;
+            scroller.scrollBy({ left: direction * step, behavior: 'smooth' });
+        }
+        window.scrollShowcase = scrollShowcase;
+
         function updateUIForGuest() {
             var uploadArea = document.getElementById('uploadArea');
             if (uploadArea) uploadArea.style.display = 'none';
@@ -894,6 +951,7 @@
             if (credits === undefined) credits = (window.currentCredits !== undefined ? window.currentCredits : currentCredits);
             // Keep all credit globals in sync
             if (credits !== undefined) { currentCredits = credits; window.currentCredits = credits; }
+            moveLoggedInCreateModules();
             // Always enable upload for logged-in users
             const uploadArea = document.getElementById('uploadArea');
             if (uploadArea) { uploadArea.classList.remove('disabled'); uploadArea.style.display = 'block';
