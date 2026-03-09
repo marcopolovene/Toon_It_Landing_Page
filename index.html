@@ -146,7 +146,7 @@
         .signup-cta-btn:hover { transform: translateY(-1px); color: #07070f; }
 
         /* HOW IT WORKS */
-        .how-it-works { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 24px; text-align: center; margin: 0 -20px; }
+        .how-it-works { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 24px; text-align: center; margin: 0 -20px 28px; }
         .how-it-works h2 { font-size: 1.5em; font-weight: 800; color: #fff; margin-bottom: 32px; }
         .steps-row { display: flex; align-items: flex-start; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .hiw-step { flex: 1; min-width: 90px; max-width: 140px; }
@@ -174,7 +174,8 @@
 
         /* STATUS */
         #status { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 16px; }
-        #statusText { color: var(--text-muted); font-size: 0.95em; margin-bottom: 16px; }
+        #statusText { color: var(--text-muted); font-size: 0.95em; margin-bottom: 10px; }
+        .status-fact { color: var(--accent); font-size: 0.82em; line-height: 1.5; min-height: 2.4em; margin: 0 auto 16px; max-width: 34ch; opacity: 0.92; }
         .progress-steps { display: flex; justify-content: center; gap: 24px; }
         .step { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.8em; color: var(--text-muted); }
         .step.active { color: var(--primary); }
@@ -480,6 +481,7 @@
         <!-- Status Section -->
         <div id="status" style="display:none;">
             <div id="statusText"></div>
+            <div id="statusFunFact" class="status-fact"></div>
             <div class="progress-steps" id="progressSteps">
                 <div class="step" data-step="1">
                     <span class="step-icon">🎨</span>
@@ -532,6 +534,7 @@
         <div class="footer-links">
             <a href="terms.html">Terms of Service</a>
             <a href="privacy.html">Privacy Policy</a>
+            <a href="blog/">Blog &amp; How-To</a>
         </div>
         <p class="footer-powered">Powered by <a href="https://venice.ai" target="_blank" rel="noopener noreferrer">Venice.ai</a></p>
     </footer>
@@ -1626,7 +1629,7 @@
                 return;
             }
             var isRemoved = _wmState.globalRemoved || _wmState.currentVideoRemoved;
-            _showShareToast(isRemoved ? '⬇️ Downloading video...' : '🔥 Adding watermark...');
+            _showShareToast(isRemoved ? '⬇️ Downloading video...' : '✨ Preparing download...');
             var platformUrls = {
                 'instagram': 'https://www.instagram.com/',
                 'tiktok': 'https://www.tiktok.com/upload',
@@ -2477,6 +2480,9 @@
  transformStartTime = Date.now();
  _mIdx = 0;
  initMagic();
+        _mFactIdx = 0;
+        var styleSelector = document.getElementById('styleSelector');
+        if (styleSelector) styleSelector.style.display = 'none';
 
  // Visual progress updates every 3 seconds (cosmetic only, no DB calls)
  if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
@@ -2487,12 +2493,12 @@
             else if (elapsed < 35) step = 2;
             else step = 3;
             setStep(step);
-            if (statusText) statusText.textContent = _mMsg(step);
+            _renderMagicStatus(step);
         }, 3000);
 
  // Set initial step immediately
  setStep(1);
- if (statusText) statusText.textContent = _mMsg(1);
+ _renderMagicStatus(1);
 
  // Data polling every 10 seconds 
  // Supabase Realtime: instant detection when video is ready
@@ -2621,13 +2627,13 @@
         function updateStepFromStatus(status) {
             if (status === 'analyzing' || status === 'processing') {
                 setStep(1);
-                if (statusText) statusText.textContent = 'Processing your photo...';
+                _renderMagicStatus(1, 'Processing your photo...');
             } else if (status === 'generating') {
                 setStep(2);
-                if (statusText) statusText.textContent = 'Generating storybook image...';
+                _renderMagicStatus(2, 'Generating storybook image...');
             } else if (status === 'animating') {
                 setStep(3);
-                if (statusText) statusText.textContent = 'Creating video animation...';
+                _renderMagicStatus(3, 'Creating video animation...');
             }
         }
 
@@ -2699,12 +2705,21 @@
         }
     };
 
+    var _magicFacts = {
+        storybook: ['Storybook scenes feel magical when the background is softer than the hero.','Warm highlights and tiny sparkles help storybook art feel bedtime-cozy.','Illustrators often use curved shapes in storybook art to make scenes feel gentler.'],
+        cartoon3d: ['3D cartoon charm usually comes from bold shapes and friendly lighting.','Big eyes and rounded silhouettes make characters feel extra expressive.','A tiny highlight on the cheeks can make a 3D character feel instantly alive.'],
+        comic: ['Comic art uses bold contrast so the action reads fast, even in one glance.','Superhero color palettes are often designed to feel iconic from far away.','Dynamic angles make comic scenes feel like the next panel is about to explode.'],
+        anime: ['Anime-inspired scenes often feel cinematic because the sky and light do so much storytelling.','Soft motion, expressive eyes, and careful color mood are huge parts of the anime look.','A gentle breeze, drifting light, or floating petals can make a scene feel instantly enchanted.'],
+        watercolor: ['Watercolor magic often comes from letting colors softly bleed into each other.','Leaving a little paper texture visible is part of what makes watercolor feel handmade.','Light washes first, tiny details later — that is where a lot of watercolor charm comes from.'],
+        steves_poc: ['Stylized renders feel lively when lighting, shape, and expression all agree on the mood.','Character-driven scenes usually look best when the face stays readable before the background shines.','A playful render often starts with simple shapes before the polish arrives.']
+    };
+
     function _getTheme() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         return _magicThemes[style] || _magicThemes.storybook;
     }
 
-    var _mIdx = 0, _mSpkInt = null, _mActive = false;
+    var _mIdx = 0, _mFactIdx = 0, _mSpkInt = null, _mActive = false;
 
     function initMagic() {
         var el = document.getElementById('status');
@@ -2754,6 +2769,19 @@
         var theme = _getTheme();
         var m = theme.msgs[step]||theme.msgs[1];
         return m[_mIdx++%m.length];
+    }
+
+    function _mFact() {
+        var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+        var facts = _magicFacts[style] || _magicFacts.storybook;
+        return '✨ Fun fact: ' + facts[_mFactIdx++ % facts.length];
+    }
+
+    function _renderMagicStatus(step, overrideText) {
+        var st = document.getElementById('statusText');
+        var fact = document.getElementById('statusFunFact');
+        if (st) st.textContent = overrideText || _mMsg(step);
+        if (fact) fact.textContent = _mFact();
     }
 
     function _sparkBurst(el) {
@@ -2806,7 +2834,10 @@
         if (_mSpkInt) { clearInterval(_mSpkInt); _mSpkInt = null; }
         ['sparkleContainer','spellCast'].forEach(function(id){var x=document.getElementById(id);if(x)x.remove();});
         if (el) { var sh=el.querySelector('.magical-shimmer'); if(sh)sh.remove(); }
+        var fact = document.getElementById('statusFunFact');
+        if (fact) fact.textContent = '';
         _mIdx = 0;
+        _mFactIdx = 0;
     }
 
     function setStep(stepNum) {
@@ -2958,6 +2989,7 @@
         if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                 var resultDiv = document.getElementById('result');
                 if (resultDiv) resultDiv.style.display = 'block';
+            var styleSelector = document.getElementById('styleSelector'); if (styleSelector) styleSelector.style.display = 'none';
             if (status) status.style.display = 'none';
             if (result) result.style.display = 'block';
 
@@ -3274,7 +3306,7 @@
             var isRemoved = _wmState.globalRemoved || _wmState.currentVideoRemoved;
 
             var btn = document.getElementById('downloadBtn');
-            if (btn) { btn.textContent = isRemoved ? '⬇️ Downloading...' : '🔥 Burning watermark...'; btn.disabled = true; }
+            if (btn) { btn.textContent = isRemoved ? '⬇️ Downloading...' : '✨ Preparing Download...'; btn.disabled = true; }
 
             burnWatermarkAndDownload(cleanUrl, isRemoved, 'toon-it-video.mp4', function() {
                 if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
@@ -3306,6 +3338,7 @@
         if (uploadArea) {
             uploadArea.innerHTML = '<div class="upload-icon">📸</div><p><strong>Drop your photo here</strong></p><p style="color: #999; font-size: 0.9em;">or click to browse</p><input type="file" id="fileInput" accept="image/*" style="display:none;">';
             uploadArea.style.display = 'block';
+            var styleSelector = document.getElementById('styleSelector'); if (styleSelector) styleSelector.style.display = 'block';
             fileInput = document.getElementById('fileInput');
             if (fileInput) {
                 fileInput.addEventListener('change', function(e) { if (e.target.files[0]) handleFile(e.target.files[0]); });
@@ -3594,6 +3627,8 @@
         var resultVideo = document.getElementById('resultVideo');
         var infoBox = document.getElementById('infoBox');
         if (uploadArea) uploadArea.style.display = 'none';
+        var styleSelector = document.getElementById('styleSelector');
+        if (styleSelector) styleSelector.style.display = 'none';
         if (transformBtn) transformBtn.style.display = 'none';
         if (infoBox) infoBox.style.display = 'none';
         if (status) status.style.display = 'none';
@@ -3722,10 +3757,12 @@
         var statusText = document.getElementById('statusText');
         var infoBox = document.getElementById('infoBox');
         if (uploadArea) uploadArea.style.display = 'none';
+        var styleSelector = document.getElementById('styleSelector');
+        if (styleSelector) styleSelector.style.display = 'none';
         if (transformBtn) transformBtn.style.display = 'none';
         if (infoBox) infoBox.style.display = 'none';
         if (status) status.style.display = 'block';
-        if (statusText) statusText.textContent = 'Preparing your photo...';
+        _renderMagicStatus(1, 'Preparing your photo...');
 
         var base64 = await compressImageFallback(file, 1024, 0.8);
         var authToken = session.access_token || '';
