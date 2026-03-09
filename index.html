@@ -3958,8 +3958,12 @@
             console.log('[FAILSAFE] Upload handlers attached');
         }
         if (transformBtn) {
-            transformBtn.onclick = startTransformationFallback;
-            console.log('[FAILSAFE] Transform handler attached');
+            if (typeof startTransformation === 'function') {
+                console.log('[FAILSAFE] Primary transform handler present; fallback not attached'); // transform_fallback_guard_20260309
+            } else {
+                transformBtn.onclick = startTransformationFallback;
+                console.log('[FAILSAFE] Transform handler attached');
+            }
         }
 
         window.showForgotPassword = showForgotPasswordFallback;
