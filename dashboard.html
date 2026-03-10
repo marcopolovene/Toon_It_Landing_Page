@@ -137,7 +137,7 @@
         .video-modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; }
         .toonit-watermark-wrap { position: relative; display: inline-block; width: 100%; }
         #modalVideo { width: 100%; border-radius: 12px; display: block; }
-        .toonit-watermark { position: absolute; bottom: 14px; left: 16px; font-family: 'Pacifico', cursive; font-size: 18px; color: rgba(255,255,255,0.78); opacity: 0.72; pointer-events: none; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.6); user-select: none; letter-spacing: 0.3px; }
+        .toonit-watermark { position: absolute; bottom: 10px; left: 16px; /* wm_position_fix_20260310 */ font-family: 'Pacifico', cursive; font-size: 18px; color: rgba(255,255,255,0.78); opacity: 0.72; pointer-events: none; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.6); user-select: none; letter-spacing: 0.3px; }
         .dash-wm-banner { background: rgba(124,107,250,0.1); border: 1px solid rgba(124,107,250,0.3); border-radius: 12px; padding: 14px; margin-top: 12px; }
         .dash-wm-banner p { font-size: 0.88em; color: var(--text-muted); margin-bottom: 10px; }
         .dash-wm-banner strong { color: #fff; }
@@ -780,6 +780,11 @@
             wmReady: false
         };
 
+        function _dashIsIOS() { // dashboard_ios_wm_toggle_fix_20260310
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
         function _dashWmUpdateToggleUI(removed) {
             var toggleInput = document.getElementById('dashWmToggleInput');
             var statusEl = document.getElementById('dashWmToggleStatus');
@@ -791,7 +796,7 @@
         }
 
         async function toggleDashWatermark(enabled) {
-            if (!currentUser || !supabaseClient || !_dashWmState.hasPurchased) return;
+            if (!currentUser || !supabaseClient || !_dashWmState.hasPurchased || _dashIsIOS()) return;
             var toggleInput = document.getElementById('dashWmToggleInput');
             var savingEl = document.getElementById('dashWmToggleSaving');
             var wmSpan = document.querySelector('#videoModal .toonit-watermark');
@@ -860,6 +865,7 @@
             var toggleBar = document.getElementById('dashWmToggleBar');
             var badge = document.getElementById('dashWmRemovedBadge');
             var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+            var isIOS = _dashIsIOS(); // dashboard_ios_wm_toggle_fix_20260310
 
             video.src = url;
             modal.classList.add('open');
@@ -917,13 +923,13 @@
                 // Update UI based on state
                 if (_dashWmState.globalRemoved || _dashWmState.currentVideoRemoved) {
                     if (wmSpan) wmSpan.style.display = 'none';
-                    if (toggleBar) toggleBar.style.display = _dashWmState.hasPurchased ? 'flex' : 'none';
+                    if (toggleBar) toggleBar.style.display = (_dashWmState.hasPurchased && !isIOS) ? 'flex' : 'none';
                     if (badge) badge.style.display = 'none';
                     _dashWmUpdateToggleUI(true);
                     video.src = _dashWmState.currentCleanUrl;
                 } else {
                     if (wmSpan) wmSpan.style.display = '';
-                    if (toggleBar) toggleBar.style.display = _dashWmState.hasPurchased ? 'flex' : 'none';
+                    if (toggleBar) toggleBar.style.display = (_dashWmState.hasPurchased && !isIOS) ? 'flex' : 'none';
                     if (badge) badge.style.display = 'none';
                     _dashWmUpdateToggleUI(false);
                 }
@@ -1105,6 +1111,7 @@
             var toggleBar = document.getElementById('dashWmToggleBar');
             var badge = document.getElementById('dashWmRemovedBadge');
             var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+            var isIOS = _dashIsIOS(); // dashboard_ios_wm_toggle_fix_20260310
             var video = document.getElementById('modalVideo');
 
             try {
