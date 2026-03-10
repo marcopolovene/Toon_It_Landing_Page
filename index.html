@@ -2724,15 +2724,6 @@
                 3: ['Activating hero protocol... 🛡️','Cape and mask materializing... 🦸','Your powers are manifesting... ⚡','Superhero transformation complete... 💥','Assembling the final scene... 🌟']
             }
         },
-        steves_poc: {
-            spell: 'Boing Squish Pop!',
-            wand: '🧪',
-            particles: ['🧪','🎬','⭐','🍿','💥','✨','🎈','🌟'],
-            msgs: {
-                1: ['Scanning for the magic... 🧪','Reading your 3D blueprint...','Initializing the render farm...','Pixar scouts reviewing your photo...','Loading the style transfer...'],
-                2: ['Sculpting in 3D... 🎭','Adding that Pixar polish... ✨','Rendering with cinematic lighting... 💡','Building your character model... 🧸','Direct edit in progress... 🎬'],
-                3: ['The director yells ACTION... 🎬','Your premiere is almost ready... 🍿','Final render pass running... ✨','Animation magic happening... 🌟','Standing ovation incoming... 👏']
-            }
         }
     };
 
@@ -2742,7 +2733,6 @@
         comic: ['Comic art uses bold contrast so the action reads fast, even in one glance.','Superhero color palettes are often designed to feel iconic from far away.','Dynamic angles make comic scenes feel like the next panel is about to explode.'],
         anime: ['Anime-inspired scenes often feel cinematic because the sky and light do so much storytelling.','Soft motion, expressive eyes, and careful color mood are huge parts of the anime look.','A gentle breeze, drifting light, or floating petals can make a scene feel instantly enchanted.'],
         watercolor: ['Watercolor magic often comes from letting colors softly bleed into each other.','Leaving a little paper texture visible is part of what makes watercolor feel handmade.','Light washes first, tiny details later — that is where a lot of watercolor charm comes from.'],
-        steves_poc: ['Stylized renders feel lively when lighting, shape, and expression all agree on the mood.','Character-driven scenes usually look best when the face stays readable before the background shines.','A playful render often starts with simple shapes before the polish arrives.']
     };
 
     function _getTheme() {
@@ -2760,7 +2750,6 @@
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
             anime: { cls: 'style-loader--anime', label: 'Studio Ghibli' },
             watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor' },
-            steves_poc: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' }
         };
         return map[style] || map.storybook;
     }
