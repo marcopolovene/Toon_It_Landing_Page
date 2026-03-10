@@ -550,8 +550,8 @@
             <span class="toonit-watermark">ToonIt.ai</span>
         </div>
             <div class="result-buttons">
-                <button type="button" id="downloadBtn" onclick="downloadVideo(); return false;">⬇️ Download</button>
-                <button type="button" id="newBtn" onclick="resetForNew(); return false;">🔄 Create Another</button>
+                <button type="button" id="downloadBtn" onclick="if (window.downloadVideoFallbackLocal) { window.downloadVideoFallbackLocal(); } else if (window.downloadVideo) { window.downloadVideo(); } return false;">⬇️ Download</button>
+                <button type="button" id="newBtn" onclick="if (window.resetForNewFallbackLocal) { window.resetForNewFallbackLocal(); } else if (window.resetForNew) { window.resetForNew(); } return false;">🔄 Create Another</button>
             </div>
             <!-- Watermark Removal CTA (shown to paid users only) -->
             
@@ -4494,14 +4494,18 @@
         window.showForgotPassword = showForgotPasswordFallback;
         window.handleForgotPassword = handleForgotPasswordFallback;
         window.handleGoogleOAuth = handleGoogleOAuthFallback;
+        if (typeof logoutFallback !== 'undefined') window.logoutFallback = logoutFallback;
         window.logout = logoutFallback;
-        window.downloadVideo = downloadVideo;
-        window.resetForNew = resetForNew;
-        window.showResultFallback = showResultFallback;
+        if (typeof downloadVideo !== 'undefined') window.downloadVideo = downloadVideo;
+        if (typeof resetForNew !== 'undefined') window.resetForNew = resetForNew;
+        if (typeof showResultFallback !== 'undefined') window.showResultFallback = showResultFallback;
+        if (typeof downloadVideoFallbackLocal !== 'undefined') window.downloadVideoFallbackLocal = downloadVideoFallbackLocal;
+        if (typeof resetForNewFallbackLocal !== 'undefined') window.resetForNewFallbackLocal = resetForNewFallbackLocal;
         window.updateUIForUser = updateUIForUser;
         window.handleFileFallback = handleFileFallback;
         window.startTransformationFallback = startTransformationFallback;
         // result_buttons_delivery_hide_fix_20260310
+        // result_buttons_safe_exports_fix_20260310
 
         console.log('[FAILSAFE] All handlers ready!');
     }
