@@ -3943,9 +3943,49 @@
         if (transformBtn) transformBtn.style.display = 'none';
         if (infoBox) infoBox.style.display = 'none';
         if (status) status.style.display = 'block';
-        try { if (typeof initMagic === 'function') initMagic(); } catch (e) {}
-        try { if (typeof _renderMagicStatus === 'function') _renderMagicStatus(1, 'Preparing your photo...'); else if (statusText) statusText.textContent = 'Preparing your photo...'; } catch (e) { if (statusText) statusText.textContent = 'Preparing your photo...'; }
-        startFailsafeMagicUi(1); // failsafe_magic_loader_fix_20260310
+        if (statusText) statusText.textContent = 'Preparing your photo...';
+        (function(){
+            var host = document.getElementById('styleLoaderHost');
+            var fact = document.getElementById('statusFunFact') || document.getElementById('statusFact');
+            var active = document.querySelector('.style-card.active');
+            var style = active ? (active.getAttribute('data-style') || 'storybook') : 'storybook';
+            var themes = {
+                storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook', facts: ['Fairytale scenes feel strongest when the light tells part of the story.','Gentle motion helps storybook worlds feel magical instead of static.','Clear subjects and warm atmosphere make whimsical scenes feel premium.'] },
+                cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon', facts: ['3D cartoon scenes pop when shapes stay bold and readable.','Clear silhouettes and expressive poses make stylized characters feel alive.','Simple motion beats often make stylized animation feel more cinematic.'] },
+                comic: { cls: 'style-loader--comic', label: 'Superhero', facts: ['Comic-inspired scenes feel strongest when the action reads in one glance.','Bold contrast and dynamic framing create that heroic energy fast.','Strong poses and clear motion cues make a scene feel instantly cinematic.'] },
+                anime: { cls: 'style-loader--anime', label: 'Studio Ghibli', facts: ['Anime-style scenes often feel alive through atmosphere and subtle motion.','Color mood and environment details do a lot of storytelling in anime.','Soft movement and emotional framing make stylized scenes feel memorable.'] },
+                watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['Watercolor charm comes from soft edges and flowing color transitions.','Gentle motion helps watercolor scenes feel handcrafted instead of mechanical.','Atmosphere and texture often matter more than hard detail in watercolor looks.'] }
+            };
+            var theme = themes[style] || themes.storybook;
+            if (host) {
+                host.innerHTML = '<div class="style-loader ' + theme.cls + '" id="failsafeInlineLoader">' +
+                    '<div class="style-loader-top">' +
+                        '<span class="style-loader-label">' + theme.label + ' transformation</span>' +
+                        '<span class="style-loader-step" id="failsafeInlineLoaderStep">Step 1 of 3</span>' +
+                    '</div>' +
+                    '<div class="style-loader-track"><div class="style-loader-fill" id="failsafeInlineLoaderFill" style="width:22%"></div></div>' +
+                '</div>'; // failsafe_magic_loader_inline_fix_20260310
+            }
+            if (fact) fact.textContent = theme.facts[0] || '';
+            try { if (window.__failsafeInlineMagicInterval) clearInterval(window.__failsafeInlineMagicInterval); } catch(e) {}
+            var widths = [22, 31, 39, 47, 56, 63, 71, 79, 86, 92];
+            var idx = 0;
+            window.__failsafeInlineMagicInterval = setInterval(function() {
+                var liveStatus = document.getElementById('status');
+                if (!liveStatus || getComputedStyle(liveStatus).display === 'none') {
+                    try { clearInterval(window.__failsafeInlineMagicInterval); } catch(e) {}
+                    window.__failsafeInlineMagicInterval = null;
+                    return;
+                }
+                idx = Math.min(idx + 1, widths.length - 1);
+                var fill = document.getElementById('failsafeInlineLoaderFill');
+                var stepEl = document.getElementById('failsafeInlineLoaderStep');
+                var liveFact = document.getElementById('statusFunFact') || document.getElementById('statusFact');
+                if (fill) fill.style.width = widths[idx] + '%';
+                if (stepEl) stepEl.textContent = 'Step ' + (idx < 3 ? 1 : idx < 6 ? 2 : 3) + ' of 3';
+                if (liveFact) liveFact.textContent = theme.facts[idx % theme.facts.length] || '';
+            }, 2200);
+        })();
 
         var base64 = await compressImageFallback(file, 1024, 0.8);
         var authToken = session.access_token || '';
