@@ -999,7 +999,25 @@
             if (transformBtn) transformBtn.disabled = true;
         }
 
-        function updateUIForUser(email, credits) {
+    
+    function enforceLoggedInCreateLayout() {
+        var zone = document.getElementById('loggedInCreateZone');
+        if (!zone) return;
+        [
+            document.getElementById('noCredits'),
+            document.getElementById('uploadArea'),
+            document.getElementById('styleSelector'),
+            document.getElementById('transformBtn'),
+            document.getElementById('infoBox'),
+            document.getElementById('status'),
+            document.getElementById('result')
+        ].forEach(function(el) {
+            if (el && el.parentElement !== zone) zone.appendChild(el);
+        });
+    }
+
+    // logged_in_create_layout_fix_20260310
+    function updateUIForUser(email, credits) {
             // Fallback to globals if not passed
             if (email === undefined) email = (currentUser || window.currentUser || {}).email || '';
             if (credits === undefined) credits = (window.currentCredits !== undefined ? window.currentCredits : currentCredits);
@@ -3618,6 +3636,8 @@
         }
         var container = document.querySelector('.container');
         if (container) container.classList.add('logged-in');
+        enforceLoggedInCreateLayout();
+        window.enforceLoggedInCreateLayout = enforceLoggedInCreateLayout;
         window.updateUIForUser = updateUIForUser;
     }
 
