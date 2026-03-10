@@ -2884,7 +2884,45 @@
         setTimeout(function() { clearInterval(_spkCheck); }, 30000);
     })();
 
+    function stopFailsafeMagicUi() {
+        try {
+            if (window.__failsafeMagicInterval) clearInterval(window.__failsafeMagicInterval);
+        } catch (e) {}
+        window.__failsafeMagicInterval = null;
+    }
+
+    function startFailsafeMagicUi(initialStep) {
+        stopFailsafeMagicUi();
+        try { if (typeof initMagic === 'function') initMagic(); } catch (e) {}
+        try { if (typeof _updateStyleLoader === 'function') _updateStyleLoader(initialStep || 1); } catch (e) {}
+        var fact = document.getElementById('statusFunFact') || document.getElementById('statusFact');
+        var statusText = document.getElementById('statusText');
+        if (statusText && !statusText.textContent) statusText.textContent = 'Preparing your photo...';
+        try {
+            if (fact && typeof _mFact === 'function') fact.textContent = _mFact();
+        } catch (e) {}
+        var steps = [1, 1, 2, 2, 2, 3, 3, 3];
+        var idx = 0;
+        window.__failsafeMagicInterval = setInterval(function() {
+            try {
+                var status = document.getElementById('status');
+                if (!status || getComputedStyle(status).display === 'none') {
+                    stopFailsafeMagicUi();
+                    return;
+                }
+                idx = Math.min(idx + 1, steps.length - 1);
+                var step = steps[idx];
+                if (typeof _updateStyleLoader === 'function') _updateStyleLoader(step);
+                var liveFact = document.getElementById('statusFunFact') || document.getElementById('statusFact');
+                if (liveFact && typeof _mFact === 'function') liveFact.textContent = _mFact();
+            } catch (e) {
+                stopFailsafeMagicUi();
+            }
+        }, 2200);
+    }
+
     function cleanupMagic() {
+        stopFailsafeMagicUi();
         _mActive = false;
         var el = document.getElementById('status');
         if (el) el.classList.remove('magical-active');
@@ -3905,7 +3943,9 @@
         if (transformBtn) transformBtn.style.display = 'none';
         if (infoBox) infoBox.style.display = 'none';
         if (status) status.style.display = 'block';
-        _renderMagicStatus(1, 'Preparing your photo...');
+        try { if (typeof initMagic === 'function') initMagic(); } catch (e) {}
+        try { if (typeof _renderMagicStatus === 'function') _renderMagicStatus(1, 'Preparing your photo...'); else if (statusText) statusText.textContent = 'Preparing your photo...'; } catch (e) { if (statusText) statusText.textContent = 'Preparing your photo...'; }
+        startFailsafeMagicUi(1); // failsafe_magic_loader_fix_20260310
 
         var base64 = await compressImageFallback(file, 1024, 0.8);
         var authToken = session.access_token || '';
