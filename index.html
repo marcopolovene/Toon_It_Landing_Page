@@ -2549,7 +2549,7 @@
                  filter: 'job_id=eq.' + currentJobId
              }, function(payload) {
                  console.log('[REALTIME] Generation updated:', payload.new);
-                 if (payload.new && payload.new.status === 'complete' && payload.new.video_url) {
+                 if (payload.new && payload.new.video_url) { // mobile_completion_fix_20260309
                      console.log('[REALTIME] Video ready! URL:', payload.new.video_url);
                      clearInterval(pollInterval);
                      if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
@@ -2662,7 +2662,7 @@
             } else if (status === 'generating') {
                 setStep(2);
                 _renderMagicStatus(2, 'Generating storybook image...');
-            } else if (status === 'animating') {
+            } else if (status === 'animating' || status === 'complete' || status === 'completed') { // mobile_completion_fix_20260309
                 setStep(3);
                 _renderMagicStatus(3, 'Creating video animation...');
             }
@@ -3541,7 +3541,7 @@
                     return;
                 }
 
-                if (data.status === 'complete' && data.video_url) {
+                if (data.video_url) { // mobile_completion_fix_20260309
                     showVideo(data.video_url, data.job_id || null);
                     clearJob();
                 } else if (data.status === 'failed' || data.status === 'expired') {
@@ -3828,7 +3828,7 @@
             if (statusText) statusText.textContent = 'Processing your video... (' + (i + 1) + '/60)';
             try {
                 var result = await sb.from('generations').select('status,video_url,job_id').eq('job_id', jobId).single();
-                if (result && result.data && result.data.status === 'complete' && result.data.video_url) {
+                if (result && result.data && result.data.video_url) { // mobile_completion_fix_20260309
                     showResultFallback(result.data.video_url, jobId);
                     return true;
                 }
