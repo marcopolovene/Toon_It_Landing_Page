@@ -4055,7 +4055,18 @@
         await pollGenerationFallback(sb, payload.job_id);
         try {
             var refreshed = await sb.from('profiles').select('credits').eq('id', session.user.id).single();
-            if (refreshed && refreshed.data) updateUIForUser(session.user.email, refreshed.data.credits || 0);
+            if (refreshed && refreshed.data) {
+                var refreshedCredits = refreshed.data.credits || 0;
+                window.currentCredits = refreshedCredits;
+                try { currentCredits = refreshedCredits; } catch(e) {}
+                var creditCount = document.getElementById('creditCount');
+                if (creditCount) creditCount.textContent = String(refreshedCredits);
+                var resultEl = document.getElementById('result');
+                var statusEl = document.getElementById('status');
+                var resultVisible = !!(resultEl && getComputedStyle(resultEl).display !== 'none');
+                var statusVisible = !!(statusEl && getComputedStyle(statusEl).display !== 'none');
+                if (!resultVisible && !statusVisible) updateUIForUser(session.user.email, refreshedCredits);
+            }
         } catch(e) {}
     }
 
@@ -4264,6 +4275,35 @@
             };
         }
 
+        var logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = function(e) {
+                if (e && e.preventDefault) e.preventDefault();
+                logoutFallback();
+                return false;
+            };
+        }
+
+        var downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn && downloadBtn.dataset.failsafeBound !== '1') {
+            downloadBtn.dataset.failsafeBound = '1';
+            downloadBtn.onclick = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                downloadVideo();
+                return false;
+            };
+        }
+
+        var newBtn = document.getElementById('newBtn');
+        if (newBtn && newBtn.dataset.failsafeBound !== '1') {
+            newBtn.dataset.failsafeBound = '1';
+            newBtn.onclick = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                resetForNew();
+                return false;
+            };
+        }
+
         // Close buttons
         document.querySelectorAll('[data-close-modal]').forEach(function(btn) {
             btn.onclick = closeAllModals;
@@ -4348,9 +4388,13 @@
         window.handleForgotPassword = handleForgotPasswordFallback;
         window.handleGoogleOAuth = handleGoogleOAuthFallback;
         window.logout = logoutFallback;
+        window.downloadVideo = downloadVideo;
+        window.resetForNew = resetForNew;
+        window.showResultFallback = showResultFallback;
         window.updateUIForUser = updateUIForUser;
         window.handleFileFallback = handleFileFallback;
         window.startTransformationFallback = startTransformationFallback;
+        // result_buttons_delivery_hide_fix_20260310
 
         console.log('[FAILSAFE] All handlers ready!');
     }
