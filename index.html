@@ -3816,6 +3816,32 @@
             resultVideo.load();
         }
         if (result) result.style.display = 'block';
+        var downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn) {
+            downloadBtn.onclick = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                downloadVideo();
+                return false;
+            };
+        }
+        var newBtn = document.getElementById('newBtn');
+        if (newBtn) {
+            newBtn.onclick = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                resetForNew();
+                return false;
+            };
+        }
+        var logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                if (typeof logoutFallback === 'function') logoutFallback();
+                else if (typeof window.logout === 'function') window.logout();
+                return false;
+            };
+        }
+        // result_buttons_runtime_bind_fix_20260310
         if (jobId) {
             try {
                 localStorage.removeItem('toonit_job');
