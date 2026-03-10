@@ -3887,9 +3887,47 @@
     async function pollGenerationFallback(sb, jobId) {
         var status = document.getElementById('status');
         var statusText = document.getElementById('statusText');
+        var finalStyle = 'storybook';
+        try {
+            var active = document.querySelector('.style-card.active');
+            if (active) finalStyle = active.getAttribute('data-style') || finalStyle;
+        } catch (e) {}
+        var finalMessagesByStyle = {
+            storybook: [
+                'Animation complete — tucking in the final storybook magic... 📖',
+                'Bringing the last pages of your tale to life... ✨',
+                'Your enchanted little film is almost ready... 🌟'
+            ],
+            cartoon3d: [
+                'Animation complete — finalizing your film... 🎬',
+                'Adding the last bit of premiere polish... 🍿',
+                'Your 3D cartoon is almost ready for the big screen... ✨'
+            ],
+            comic: [
+                'Animation complete — locking in the final heroic cut... ⚡',
+                'Adding the last superhero sparkle to your film... 💥',
+                'Your action-packed finale is almost ready... 🦸'
+            ],
+            anime: [
+                'Animation complete — adding the final studio glow... 🌸',
+                'The last breeze is drifting through your scene... 🍃',
+                'Your animated dream is almost ready to watch... ✨'
+            ],
+            watercolor: [
+                'Animation complete — letting the final colors settle... 🎨',
+                'The last watercolor touches are drying beautifully... 💧',
+                'Your painted little film is almost ready... ✨'
+            ]
+        };
+        var finalMessages = finalMessagesByStyle[finalStyle] || finalMessagesByStyle.storybook; // failsafe_poll_messages_fix_20260310
+        var finalWidths = [92, 93, 94, 95, 96, 97, 98];
         for (var i = 0; i < 60; i++) {
             if (status) status.style.display = 'block';
-            if (statusText) statusText.textContent = 'Processing your video... (' + (i + 1) + '/60)';
+            if (statusText) statusText.textContent = finalMessages[i % finalMessages.length];
+            var stepEl = document.getElementById('failsafeInlineLoaderStep');
+            if (stepEl) stepEl.textContent = 'Step 3 of 3';
+            var fill = document.getElementById('failsafeInlineLoaderFill');
+            if (fill) fill.style.width = finalWidths[Math.min(i, finalWidths.length - 1)] + '%';
             try {
                 var result = await sb.from('generations').select('status,video_url,job_id').eq('job_id', jobId).single();
                 if (result && result.data && result.data.video_url) { // mobile_completion_fix_20260309
