@@ -4179,14 +4179,39 @@
         var fileInput = document.getElementById('fileInput');
         var transformBtn = document.getElementById('transformBtn');
         if (uploadArea && fileInput && uploadArea.dataset.primaryUploadHandlers !== '1') {
+            function bindFailsafeLiveFileInput() {
+                var liveInput = document.getElementById('fileInput');
+                if (!liveInput) return null;
+                if (liveInput.dataset.failsafeBound !== '1') {
+                    liveInput.dataset.failsafeBound = '1';
+                    liveInput.onclick = function(e) { e.stopPropagation(); };
+                    liveInput.onchange = function(e) {
+                        if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '0';
+                        if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
+                    };
+                }
+                return liveInput;
+            }
+            function failsafeHasSelectedFile() {
+                var liveInput = document.getElementById('fileInput');
+                var hasFailsafe = (typeof failsafeSelectedFile !== 'undefined') && !!failsafeSelectedFile;
+                var hasPrimary = (typeof selectedFile !== 'undefined') && !!selectedFile;
+                var hasInputFile = !!(liveInput && liveInput.files && liveInput.files.length);
+                return hasFailsafe || hasPrimary || hasInputFile;
+            }
+            bindFailsafeLiveFileInput();
+            if (uploadArea.dataset) uploadArea.dataset.failsafeUploadHandlers = '1';
             uploadArea.onclick = function(e) {
-                if (e.target === fileInput) return;
-                if (failsafeSelectedFile || selectedFile || (fileInput && fileInput.files && fileInput.files.length) || (e.target && e.target.closest && e.target.closest('#preview'))) return;
-                fileInput.click();
-            };
-            fileInput.onclick = function(e) { e.stopPropagation(); };
-            fileInput.onchange = function(e) {
-                if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
+                var liveInput = bindFailsafeLiveFileInput();
+                if (!liveInput) return;
+                if (e.target === liveInput) return;
+                if (uploadArea && uploadArea.dataset && uploadArea.dataset.pickerOpening === '1') return;
+                if (failsafeHasSelectedFile() || (e.target && e.target.closest && e.target.closest('#preview'))) return;
+                if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '1';
+                setTimeout(function() {
+                    if (uploadArea && uploadArea.dataset) uploadArea.dataset.pickerOpening = '0';
+                }, 800);
+                liveInput.click(); // failsafe_upload_rebind_fix_20260310
             };
             console.log('[FAILSAFE] Upload handlers attached');
         } else if (uploadArea && fileInput) {
