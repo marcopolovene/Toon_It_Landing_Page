@@ -3773,9 +3773,27 @@
         var sb = getSupabase();
         try { if (sb) await sb.auth.signOut(); } catch(e) {}
         window.currentUser = null;
-        try { currentUser = null; currentCredits = 0; } catch(e) {}
-        updateUIForGuestFallback();
-        window.location.reload();
+        try { currentUser = null; currentCredits = 0; selectedFile = null; } catch(e) {}
+        try { localStorage.removeItem('toonit_job'); } catch(e) {}
+        try {
+            var url = new URL(window.location);
+            url.searchParams.delete('job');
+            window.history.replaceState({}, '', url);
+        } catch(e) {}
+        try { updateUIForGuestFallback(); } catch(e) {}
+        var guestButtons = document.getElementById('guestButtons'); if (guestButtons) guestButtons.style.display = '';
+        var userButtons = document.getElementById('userButtons'); if (userButtons) userButtons.style.display = 'none';
+        var guestView = document.getElementById('guestView'); if (guestView) guestView.style.display = '';
+        var userView = document.getElementById('userView'); if (userView) userView.style.display = 'none';
+        var loginBtn = document.getElementById('loginBtn'); if (loginBtn) loginBtn.style.display = '';
+        var signupBtn = document.getElementById('signupBtn'); if (signupBtn) signupBtn.style.display = '';
+        var logoutBtn = document.getElementById('logoutBtn'); if (logoutBtn) logoutBtn.style.display = 'none';
+        var creditsBtn = document.getElementById('creditsBtn'); if (creditsBtn) creditsBtn.style.display = 'none';
+        var result = document.getElementById('result'); if (result) result.style.display = 'none';
+        var status = document.getElementById('status'); if (status) status.style.display = 'none';
+        var infoBox = document.getElementById('infoBox'); if (infoBox) infoBox.style.display = 'none';
+        var loginRequired = document.getElementById('loginRequired'); if (loginRequired) loginRequired.style.display = '';
+        var noCredits = document.getElementById('noCredits'); if (noCredits) noCredits.style.display = 'none';
     }
 
 
@@ -3794,6 +3812,70 @@
             url.searchParams.set('job', jobId);
             window.history.replaceState({}, '', url);
         } catch(e) {}
+    }
+
+    async function downloadVideoFallbackLocal() {
+        var btn = document.getElementById('downloadBtn');
+        var resultVideo = document.getElementById('resultVideo');
+        var url = '';
+        try {
+            url = ((_wmState && (_wmState.currentCleanUrl || _wmState.currentWmUrl)) || (resultVideo && (resultVideo.currentSrc || resultVideo.src)) || '').trim();
+        } catch(e) {}
+        if (!url) return;
+        if (btn) { btn.disabled = true; btn.textContent = '⬇️ Downloading...'; }
+        try {
+            var isMobileShare = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '') && !!navigator.share;
+            if (isMobileShare) {
+                await navigator.share({ title: 'My Toon It! Creation', text: '✨ Check out my magical transformation!', url: url });
+            } else {
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'toon-it-video.mp4';
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }
+        } catch(e) {
+            console.log('[FAILSAFE] download fallback error:', e && e.message ? e.message : e);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '⬇️ Download'; }
+        }
+    }
+
+    function resetForNewFallbackLocal() {
+        // result_buttons_local_fallback_fix_20260310
+        try { selectedFile = null; } catch(e) {}
+        failsafeSelectedFile = null;
+        try { currentJobId = null; } catch(e) {}
+        try { localStorage.removeItem('toonit_job'); } catch(e) {}
+        try {
+            var url = new URL(window.location);
+            url.searchParams.delete('job');
+            window.history.replaceState({}, '', url);
+        } catch(e) {}
+        var result = document.getElementById('result'); if (result) result.style.display = 'none';
+        var status = document.getElementById('status'); if (status) status.style.display = 'none';
+        var resultVideo = document.getElementById('resultVideo'); if (resultVideo) { resultVideo.pause(); resultVideo.removeAttribute('src'); resultVideo.load(); }
+        var uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.innerHTML = '<div class="upload-icon">📸</div><p><strong>Drop your photo here</strong></p><p style="color: #999; font-size: 0.9em;">or click to browse</p><input type="file" id="fileInput" accept="image/*" style="display:none;">';
+            uploadArea.style.display = 'block';
+            uploadArea.style.cursor = 'pointer';
+            uploadArea.style.pointerEvents = 'auto';
+            uploadArea.removeAttribute('data-file-selected');
+            if (uploadArea.dataset) uploadArea.dataset.pickerOpening = '0';
+        }
+        var styleSelector = document.getElementById('styleSelector'); if (styleSelector) styleSelector.style.display = 'block';
+        var transformBtn = document.getElementById('transformBtn'); if (transformBtn) { transformBtn.style.display = 'block'; transformBtn.disabled = true; }
+        var infoBox = document.getElementById('infoBox'); if (infoBox) infoBox.style.display = '';
+        var reboundInput = document.getElementById('fileInput');
+        if (reboundInput) {
+            reboundInput.onclick = function(e) { e.stopPropagation(); };
+            reboundInput.onchange = function(e) {
+                if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
+            };
+        }
     }
 
     function showResultFallback(videoUrl, jobId) {
@@ -3820,7 +3902,7 @@
         if (downloadBtn) {
             downloadBtn.onclick = function(e) {
                 if (e) { e.preventDefault(); e.stopPropagation(); }
-                downloadVideo();
+                downloadVideoFallbackLocal();
                 return false;
             };
         }
@@ -3828,7 +3910,7 @@
         if (newBtn) {
             newBtn.onclick = function(e) {
                 if (e) { e.preventDefault(); e.stopPropagation(); }
-                resetForNew();
+                resetForNewFallbackLocal();
                 return false;
             };
         }
@@ -3836,8 +3918,7 @@
         if (logoutBtn) {
             logoutBtn.onclick = function(e) {
                 if (e) { e.preventDefault(); e.stopPropagation(); }
-                if (typeof logoutFallback === 'function') logoutFallback();
-                else if (typeof window.logout === 'function') window.logout();
+                logoutFallback();
                 return false;
             };
         }
