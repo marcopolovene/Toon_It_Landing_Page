@@ -309,12 +309,22 @@
         .cb-per { font-size: 0.75em; color: var(--text-muted); }
         .cb-cta {
             flex-shrink: 0; background: var(--primary); color: #07070f;
-            border: none; border-radius: 12px; padding: 10px 18px;
-            font-weight: 800; font-size: 0.9em; cursor: pointer;
-            transition: all 0.2s; white-space: nowrap; min-width: 90px; text-align: center;
+            border: none; border-radius: 12px; padding: 11px 16px;
+            font-weight: 800; font-size: 0.82em; cursor: pointer;
+            transition: all 0.2s; white-space: nowrap; min-width: 110px; text-align: center;
+            line-height: 1.25; display: flex; flex-direction: column; align-items: center;
         }
-        .cb-cta:hover { background: #f5c842; transform: scale(1.04); }
-        .cb-cta.cb-loading { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; }
+        .cb-cta-action { font-size: 1em; font-weight: 900; letter-spacing: 0.01em; }
+        .cb-cta-price  { font-size: 0.9em; font-weight: 700; opacity: 0.85; margin-top: 1px; }
+        .cb-cta:hover { background: #f5c842; transform: scale(1.05); box-shadow: 0 4px 16px rgba(240,180,41,0.4); }
+        .cb-cta.cb-loading { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+        .cb-card:hover .cb-cta { background: #f5c842; }
+        @keyframes cb-pulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(240,180,41,0.5); }
+            50%      { box-shadow: 0 0 0 7px rgba(240,180,41,0); }
+        }
+        .cb-popular .cb-cta { animation: cb-pulse 2s ease-in-out infinite; }
+        .cb-popular .cb-cta.cb-loading { animation: none; }
         .cb-trust {
             display: flex; align-items: center; justify-content: center; gap: 7px;
             margin-top: 4px; color: var(--text-muted); font-size: 0.77em;
@@ -703,8 +713,8 @@
             <div class="cb-wrapper">
 
                 <!-- Starter -->
-                <div class="cb-card" id="cb-starter">
-                    <div class="cb-icon">⚡</div>
+                <div class="cb-card" id="cb-starter" onclick="buyCredits('starter')" style="cursor:pointer;">
+                    <div class="cb-icon">&#9889;</div>
                     <div class="cb-info">
                         <div class="cb-credits-row">
                             <span class="cb-count">5</span>
@@ -712,11 +722,14 @@
                         </div>
                         <div class="cb-per">$1.00 per transformation</div>
                     </div>
-                    <button class="cb-cta" id="cb-btn-starter" onclick="buyCredits('starter')">$5.00</button>
+                    <button class="cb-cta" id="cb-btn-starter" onclick="event.stopPropagation();buyCredits('starter')">
+                        <span class="cb-cta-action">Buy Now &#8594;</span>
+                        <span class="cb-cta-price">$5.00</span>
+                    </button>
                 </div>
 
                 <!-- Popular -->
-                <div class="cb-card cb-popular" id="cb-popular" style="padding-top:26px;">
+                <div class="cb-card cb-popular" id="cb-popular" style="padding-top:26px;cursor:pointer;" onclick="buyCredits('popular')">
                     <div class="cb-badge">&#11088; Most Popular</div>
                     <div class="cb-icon">&#128293;</div>
                     <div class="cb-info">
@@ -726,11 +739,14 @@
                         </div>
                         <div class="cb-per">$0.83 per transformation &mdash; save 17%</div>
                     </div>
-                    <button class="cb-cta" id="cb-btn-popular" onclick="buyCredits('popular')">$10.00</button>
+                    <button class="cb-cta" id="cb-btn-popular" onclick="event.stopPropagation();buyCredits('popular')">
+                        <span class="cb-cta-action">Buy Now &#8594;</span>
+                        <span class="cb-cta-price">$10.00</span>
+                    </button>
                 </div>
 
                 <!-- Pro -->
-                <div class="cb-card" id="cb-pro">
+                <div class="cb-card" id="cb-pro" onclick="buyCredits('pro')" style="cursor:pointer;">
                     <div class="cb-icon">&#128142;</div>
                     <div class="cb-info">
                         <div class="cb-credits-row">
@@ -739,7 +755,10 @@
                         </div>
                         <div class="cb-per">$0.71 per transformation &mdash; save 29%</div>
                     </div>
-                    <button class="cb-cta" id="cb-btn-pro" onclick="buyCredits('pro')">$25.00</button>
+                    <button class="cb-cta" id="cb-btn-pro" onclick="event.stopPropagation();buyCredits('pro')">
+                        <span class="cb-cta-action">Buy Now &#8594;</span>
+                        <span class="cb-cta-price">$25.00</span>
+                    </button>
                 </div>
 
             </div>
