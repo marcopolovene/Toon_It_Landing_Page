@@ -1135,6 +1135,21 @@
       // Don't disable - let user try anyway, backend will check
     }
             updateTransformButton();
+
+            // Auto-resume pending purchase after login
+            if (window.pendingBundle) {
+                var pb = window.pendingBundle;
+                window.pendingBundle = null;
+                // Remove context banner if present
+                var lm = document.getElementById('loginModal');
+                if (lm) { var ctx = lm.querySelector('.cb-login-ctx'); if (ctx) ctx.remove(); }
+                // Small delay so UI settles, then open credits modal and trigger purchase
+                setTimeout(function() {
+                    closeModals();
+                    showModal('credits');
+                    setTimeout(function() { buyCredits(pb); }, 400);
+                }, 300);
+            }
         }
         // Expose primary updateUIForUser to global scope
         window._updateUIForUser = updateUIForUser;
@@ -1895,7 +1910,25 @@
         async function buyCredits(bundle) {
             trackEvent('buy_credits_click', { bundle: bundle });
             const user = window.currentUser || currentUser;
-            if (!user) { showModal('loginModal'); return; }
+            if (!user) {
+                // Store intent so we can auto-resume after login
+                window.pendingBundle = bundle;
+                // Show login modal with purchase context
+                closeModals();
+                const lm = document.getElementById('loginModal');
+                if (lm) {
+                    // Inject a context banner if not already there
+                    if (!lm.querySelector('.cb-login-ctx')) {
+                        const ctx = document.createElement('div');
+                        ctx.className = 'cb-login-ctx';
+                        ctx.style.cssText = 'background:rgba(240,180,41,0.12);border:1px solid rgba(240,180,41,0.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:0.85em;color:var(--text-muted);text-align:center;';
+                        ctx.innerHTML = '&#128274; <strong>Log in to complete your purchase</strong> &mdash; your selected bundle will be ready after you sign in.';
+                        lm.querySelector('.modal').insertBefore(ctx, lm.querySelector('.modal').firstChild);
+                    }
+                    lm.classList.add('active');
+                }
+                return;
+            }
 
             const bundles = {
                 'starter': { credits: 5,  price: '$5.00'  },
