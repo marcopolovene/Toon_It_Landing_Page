@@ -2629,7 +2629,7 @@
                     if (supabaseClient) {
                         var { data, error } = await supabaseClient
                             .from('generations')
-                            .select('video_url, status')
+                            .select('video_url, status, error_message')
                             .eq('job_id', currentJobId)
                             .maybeSingle();
 
@@ -2644,18 +2644,20 @@
                             showVideo(videoUrl, savedJobId);
                             await loadUserCredits();
                             return;
-                        } else if (data && (data.status === 'failed' || data.status === 'error' || data.status === 'expired')) {
-                            // Generation failed — stop polling and show error immediately
-                            console.log('[POLL] Job failed with status:', data.status);
+                        } else if (data && (data.status === 'failed' || data.status === 'error' || data.status === 'expired' || data.status === 'blocked')) {
+                            // Generation failed or blocked — stop polling and show error immediately
+                            console.log('[POLL] Job ended with status:', data.status, data.error_message || '');
                             clearInterval(pollInterval);
                             if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                             clearJob();
                             if (statusText) {
-                                statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ Video generation failed. Please try again.</div>' +
+                                var _blockedMsg = 'The video provider blocked this request. Please try a different photo, crop, or style.';
+                                var _finalMsg = (data.status === 'blocked') ? (data.error_message || _blockedMsg) : (data.error_message || 'Video generation failed. Please try again.');
+                                statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _finalMsg + '</div>' +
                                     '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
-                            }
+            }
                             return;
-                        }
+                        }// blocked_state_frontend_fix_20260311
                     }
 
                     // Fallback: check Supabase Storage directly after 30s
@@ -3601,8 +3603,11 @@
                 if (data.video_url) { // mobile_completion_fix_20260309
                     showVideo(data.video_url, data.job_id || null);
                     clearJob();
-                } else if (data.status === 'failed' || data.status === 'expired') {
+                } else if (data.status === 'failed' || data.status === 'expired' || data.status === 'blocked') {
                     clearJob();
+                    var _bMsg = 'The video provider blocked this request. Please try a different photo, crop, or style.';
+                    var _st = document.getElementById('statusText');
+                    if (_st) _st.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + ((data.status === 'blocked') ? (data.error_message || _bMsg) : (data.error_message || 'Video generation failed. Please try again.')) + '</div>' + '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
                     resetForNew();
                 } else {
                     startPolling();
