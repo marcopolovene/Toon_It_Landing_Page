@@ -2756,7 +2756,6 @@
                 2: ['Power levels rising... 💪','With great power comes great art... 🦸','Energy shields forming... 🛡️','Heroic colors activated... 🔥','The multiverse is aligning... 🌀'],
                 3: ['Activating hero protocol... 🛡️','Cape and mask materializing... 🦸','Your powers are manifesting... ⚡','Superhero transformation complete... 💥','Assembling the final scene... 🌟']
             }
-        },
         }
     };
 
@@ -4146,6 +4145,7 @@
             try { if (window.__failsafeInlineMagicInterval) clearInterval(window.__failsafeInlineMagicInterval); } catch(e) {}
             var widths = [22, 31, 39, 47, 56, 63, 71, 79, 86, 92];
             var idx = 0;
+            var _maxStepSeen = 0; // step_counter_closure_fix_20260311b
             window.__failsafeInlineMagicInterval = setInterval(function() {
                 var liveStatus = document.getElementById('status');
                 if (!liveStatus || getComputedStyle(liveStatus).display === 'none') {
@@ -4159,9 +4159,7 @@
                 var liveFact = document.getElementById('statusFunFact') || document.getElementById('statusFact');
                 if (fill) fill.style.width = widths[idx] + '%';
                 var _newStep = idx < 3 ? 1 : idx < 6 ? 2 : 3;
-                var _curStepText = stepEl ? stepEl.textContent : 'Step 1 of 3';
-                var _curStep = parseInt((_curStepText || '1').replace('Step ','').split(' ')[0]) || 1;
-                if (stepEl && _newStep >= _curStep) stepEl.textContent = 'Step ' + _newStep + ' of 3'; // no-backward-step fix
+                if (_newStep > _maxStepSeen) { _maxStepSeen = _newStep; if (stepEl) stepEl.textContent = 'Step ' + _newStep + ' of 3'; } // step_counter_closure_fix_20260311b
                 if (liveFact) liveFact.textContent = theme.facts[idx % theme.facts.length] || '';
             }, 2200);
         })();
