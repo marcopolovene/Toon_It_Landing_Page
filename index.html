@@ -213,7 +213,7 @@
         #result { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
         .toonit-watermark-wrap { position: relative; display: block; width: 100%; margin-bottom: 20px; }
         #resultVideo, .toonit-watermark-wrap video { width: 100%; border-radius: 12px; display: block; margin-bottom: 0 !important; }
-        .toonit-watermark { position: absolute; bottom: 8px; left: 16px; /* wm_position_tweak_20260310b */ font-family: 'Pacifico', cursive; font-size: 18px; color: rgba(255,255,255,0.78); opacity: 0.72; pointer-events: none; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.6); user-select: none; letter-spacing: 0.3px; }
+        .toonit-watermark { position: absolute; bottom: 2px; left: 16px; /* wm_position_tweak_20260310b */ font-family: 'Pacifico', cursive; font-size: 18px; color: rgba(255,255,255,0.78); opacity: 0.72; pointer-events: none; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.6); user-select: none; letter-spacing: 0.3px; }
         .result-buttons { display: flex; gap: 10px; margin-top: 14px; }
         .result-buttons button { flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text-main); cursor: pointer; font-weight: 600; font-size: 0.9em; transition: all 0.2s; }
         .result-buttons button:hover { border-color: var(--primary); color: var(--primary); }
@@ -2658,6 +2658,7 @@
             }
                             return;
                         }// blocked_state_frontend_fix_20260311
+// multifix_download_android_20260311
                     }
 
                     // Fallback: check Supabase Storage directly after 30s
@@ -3319,7 +3320,32 @@
                 return;
             }
 
-            // ─── Non-iOS: canvas watermark burn (desktop + Android) ──────────────────────────
+            // ─── Android Chrome/Brave: skip canvas-burn (CORS blocks it), do direct blob download ───
+            var isAndroid = /Android/i.test(navigator.userAgent || '');
+            if (isAndroid) {
+                _showShareToast('⬇️ Downloading video...');
+                fetch(videoUrl)
+                    .then(function(r) { if (!r.ok) throw new Error('fetch ' + r.status); return r.blob(); })
+                    .then(function(blob) {
+                        var blobUrl = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = filename;
+                        a.rel = 'noopener';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+                        if (onDone) onDone();
+                    })
+                    .catch(function(err) {
+                        console.log('[DL] Android direct download failed, opening url:', err);
+                        window.open(videoUrl, '_blank');
+                        if (onDone) onDone();
+                    });
+                return;
+            }
+            // ─── Non-iOS, non-Android: canvas watermark burn (desktop Chrome) ──────────────────
             var burnVideo = document.createElement('video');
             burnVideo.crossOrigin = 'anonymous';
             burnVideo.muted = true;
@@ -4132,7 +4158,10 @@
                 var stepEl = document.getElementById('failsafeInlineLoaderStep');
                 var liveFact = document.getElementById('statusFunFact') || document.getElementById('statusFact');
                 if (fill) fill.style.width = widths[idx] + '%';
-                if (stepEl) stepEl.textContent = 'Step ' + (idx < 3 ? 1 : idx < 6 ? 2 : 3) + ' of 3';
+                var _newStep = idx < 3 ? 1 : idx < 6 ? 2 : 3;
+                var _curStepText = stepEl ? stepEl.textContent : 'Step 1 of 3';
+                var _curStep = parseInt((_curStepText || '1').replace('Step ','').split(' ')[0]) || 1;
+                if (stepEl && _newStep >= _curStep) stepEl.textContent = 'Step ' + _newStep + ' of 3'; // no-backward-step fix
                 if (liveFact) liveFact.textContent = theme.facts[idx % theme.facts.length] || '';
             }, 2200);
         })();
