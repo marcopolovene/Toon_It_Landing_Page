@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
     const { code, stderr } = await new Deno.Command(ffmpegBin, {
       args: [
         "-y", "-i", tmpIn,
-        "-vf", "drawtext=text='ToonIt.ai':fontcolor=white@0.55:fontsize=18:x=w-tw-10:y=h-th-8:shadowcolor=black@0.8:shadowx=0:shadowy=1",
+        "-vf", "drawtext=text='ToonIt.ai':fontcolor=white@0.56:fontsize=18:x=16:y=h-th-8:shadowcolor=black@0.6:shadowx=0:shadowy=1",
         "-c:v", "libx264", "-preset", "fast", "-crf", "23",
         "-c:a", "copy", tmpOut
       ],
