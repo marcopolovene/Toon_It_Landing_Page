@@ -3507,12 +3507,13 @@
                     ctx.drawImage(burnVideo, 0, 0, canvas.width, canvas.height);
                     var fSize = Math.max(18, Math.round(canvas.width * 0.038));
                     ctx.save();
-                    ctx.font = 'bold ' + fSize + 'px Pacifico, cursive';
-                    ctx.globalAlpha = 0.6;
+                    ctx.font = '600 ' + fSize + 'px "Segoe UI", system-ui, -apple-system, sans-serif';
+                    ctx.globalAlpha = 0.55;
                     ctx.fillStyle = 'white';
-                    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
                     ctx.shadowBlur = 4;
-                    ctx.fillText('ToonIt.ai', 16, canvas.height - Math.round(canvas.height * 0.07));
+                    var tw = ctx.measureText('ToonIt.ai').width;
+                    ctx.fillText('ToonIt.ai', canvas.width - tw - 10, canvas.height - 10);
                     ctx.restore();
                     requestAnimationFrame(drawFrame);
                 };
