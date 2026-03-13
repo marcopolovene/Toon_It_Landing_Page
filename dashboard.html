@@ -906,9 +906,11 @@
                                 // PRE-BURN: trigger in background — edge fn is now sync, response contains watermark_url
                                 var _preBurnJobId = _dashWmState.currentVideoJobId;
                                 var _preBurnUrl = url;
+                                var _burnSess = await supabaseClient.auth.getSession();
+                                var _burnToken = (_burnSess.data.session && _burnSess.data.session.access_token) ? _burnSess.data.session.access_token : '';
                                 fetch('https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/burn-watermark', {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _burnToken },
                                     body: JSON.stringify({ job_id: _preBurnJobId, video_url: _preBurnUrl, user_id: currentUser ? currentUser.id : null })
                                 }).then(function(r) { return r.json(); }).then(function(data) {
                                     if (data && data.watermark_url) {

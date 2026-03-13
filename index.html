@@ -353,7 +353,9 @@
         .footer-links { margin: 10px 0; }
         .footer-links a { margin: 0 10px; }
         .footer-powered { margin-top: 12px; opacity: 0.6; }
-    </style>
+    
+        .site-brand-wordmark { display: inline; font-size: inherit; font-weight: inherit; color: inherit; margin: 0; padding: 0; }
+        </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
     {
@@ -414,7 +416,7 @@
         </div>
 
         <div class="header">
-            <h1>🎨 Toon It!</h1>
+            <div class="site-brand-wordmark">🎨 Toon It!</div>
             <p>Transform your photos into magical animated art</p>
         </div>
 
@@ -3548,7 +3550,8 @@
 
         async function _requestLandingWatermarkMp4(cleanUrl) {
             var jid = _wmState.currentJobId || currentJobId;
-            var authKey = (typeof SUPABASE_ANON_KEY !== 'undefined' && SUPABASE_ANON_KEY) ? SUPABASE_ANON_KEY : '';
+            var _sess = await supabaseClient.auth.getSession();
+            var authKey = (_sess.data.session && _sess.data.session.access_token) ? _sess.data.session.access_token : '';
             if (!jid || !cleanUrl || !authKey) return null;
             try {
                 var r = await fetch(SUPABASE_URL + '/functions/v1/burn-watermark', {
