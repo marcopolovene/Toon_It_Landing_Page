@@ -3550,8 +3550,7 @@
 
         async function _requestLandingWatermarkMp4(cleanUrl) {
             var jid = _wmState.currentJobId || currentJobId;
-            var _sess = await supabaseClient.auth.getSession();
-            var authKey = (_sess.data.session && _sess.data.session.access_token) ? _sess.data.session.access_token : '';
+            var authKey = (typeof SUPABASE_ANON_KEY !== 'undefined' && SUPABASE_ANON_KEY) ? SUPABASE_ANON_KEY : '';
             if (!jid || !cleanUrl || !authKey) return null;
             try {
                 var r = await fetch(SUPABASE_URL + '/functions/v1/burn-watermark', {
