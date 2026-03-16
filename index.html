@@ -251,6 +251,13 @@
         .share-btn:hover { border-color: var(--primary); color: var(--primary); }
         .copy-toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,32,0.96); color: #fff; padding: 10px 22px; border-radius: 22px; font-size: 0.88em; z-index: 9999; pointer-events: none; border: 1px solid var(--border); }
 
+        /* App toast notifications (replaces browser alert()) */
+        .app-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 22px; font-size: 0.9em; font-weight: 500; z-index: 99999; pointer-events: none; transition: opacity 0.3s ease; max-width: 90vw; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.35); }
+        .app-toast-error { background: rgba(200,50,50,0.97); color: #fff; border: 1px solid rgba(255,100,100,0.4); }
+        .app-toast-warning { background: rgba(230,150,20,0.97); color: #07070f; border: 1px solid rgba(255,200,50,0.4); }
+        .app-toast-success { background: rgba(30,180,80,0.97); color: #fff; border: 1px solid rgba(50,220,100,0.4); }
+        .app-toast-info { background: rgba(18,18,32,0.97); color: #fff; border: 1px solid var(--border); }
+
         /* MODALS */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.active { display: flex; }
@@ -1263,7 +1270,7 @@
         async function handleLogin(event) {
             event.preventDefault();
             if (!supabaseClient) {
-                alert('Authentication service not available. Please refresh the page.');
+                showToast('Authentication service not available. Please refresh the page.', 'error');
                 return;
             }
 
@@ -1310,7 +1317,7 @@
         // Falls back to signInWithOAuth redirect if GIS not available
         function _googleFallbackRedirect() {
             if (!supabaseClient && window.supabaseClient) supabaseClient = window.supabaseClient;
-            if (!supabaseClient) { alert('Authentication service not available. Please refresh.'); return; }
+            if (!supabaseClient) { showToast('Authentication service not available. Please refresh.', 'error'); return; }
             var refInput = document.getElementById('signupReferralCode');
             if (refInput && refInput.value.trim()) {
                 localStorage.setItem('toonit_referral', refInput.value.trim().toUpperCase());
@@ -1319,9 +1326,9 @@
                 provider: 'google',
                 options: { redirectTo: window.location.origin + window.location.pathname }
             }).then(function(r) {
-                if (r.error) { alert('Google sign-in failed: ' + r.error.message); }
+                if (r.error) { showToast('Google sign-in failed: ' + r.error.message, 'error'); }
             }).catch(function(e) {
-                alert('Google sign-in failed. Please try again.');
+                showToast('Google sign-in failed. Please try again.', 'error');
             });
         }
 
@@ -1371,7 +1378,7 @@
 
                 if (error) {
                     console.error('[GOOGLE AUTH] signInWithIdToken error:', error);
-                    alert('Google sign-in failed: ' + error.message);
+                    showToast('Google sign-in failed: ' + error.message, 'error');
                     return;
                 }
 
@@ -1404,7 +1411,7 @@
                 updateUIForUser(data.session.user.email, currentCredits);
             } catch(e) {
                 console.error('[GOOGLE AUTH] Error:', e);
-                alert('Sign-in failed. Please try again.');
+                showToast('Sign-in failed. Please try again.', 'error');
             }
         }
 
@@ -1446,7 +1453,7 @@
         async function handleSignup(event) {
             event.preventDefault();
             if (!supabaseClient) {
-                alert('Authentication service not available. Please refresh the page.');
+                showToast('Authentication service not available. Please refresh the page.', 'error');
                 return;
             }
 
@@ -1978,6 +1985,18 @@
             }
         }
 
+
+        // showToast() — replaces browser alert() with non-blocking toast
+        function showToast(msg, type) {
+            var t = document.createElement('div');
+            t.className = 'app-toast app-toast-' + (type || 'info');
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(function() {
+                t.style.opacity = '0';
+                setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 300);
+            }, 4000);
+        }
         function _showShareToast(msg) {
             var toast = document.getElementById('shareToast');
             if (toast) {
@@ -2035,7 +2054,7 @@
                 'pro':     { credits: 35, price: '$25.00' }
             };
             const selected = bundles[bundle];
-            if (!selected) { alert('Invalid bundle'); return; }
+            if (!selected) { showToast('Invalid bundle', 'warning'); return; }
 
             // Per-button loading state
             const allCards = document.querySelectorAll('.cb-card');
@@ -2072,7 +2091,7 @@
                 }
             } catch (error) {
                 console.error('[CHECKOUT] Error:', error);
-                alert('Payment error: ' + error.message + '. Please try again.');
+                showToast('Payment error: ' + error.message + '. Please try again.', 'error');
                 allCards.forEach(c => c.classList.remove('cb-disabled'));
                 const prices = { 'starter': '$5.00', 'popular': '$10.00', 'pro': '$25.00' };
                 document.querySelectorAll('.cb-cta').forEach(b => {
@@ -2513,7 +2532,7 @@
 
         function handleFile(file) {
             if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
+                showToast('Please select an image file', 'warning');
                 return;
             }
 
@@ -2598,10 +2617,10 @@
             var elapsed = now - lastTransformTime;
             if (lastTransformTime > 0 && elapsed < TRANSFORM_COOLDOWN) {
                 var waitSec = Math.ceil((TRANSFORM_COOLDOWN - elapsed) / 1000);
-                alert('Please wait ' + waitSec + ' seconds before creating another video.');
+                showToast('Please wait ' + waitSec + ' seconds before creating another video.', 'warning');
                 return;
             }
-            if (!selectedFile) { alert('Please select a photo first'); return; }
+            if (!selectedFile) { showToast('Please select a photo first', 'warning'); return; }
             // Sync currentUser from all possible sources
             if (!currentUser && window.currentUser) currentUser = window.currentUser;
             const hasUser = currentUser || window.currentUser;
@@ -2624,7 +2643,7 @@
                 } catch(ce) { console.error('[CREDITS] Fresh check error:', ce); }
             }
             if (currentCredits < 1) {
-                alert('No credits remaining. Please buy more!');
+                showToast('No credits remaining. Please buy more!', 'error');
                 return;
             }
 
@@ -3247,7 +3266,7 @@
                 console.error('[WM] Toggle error:', e);
                 // Revert toggle on error
                 if (toggleInput) toggleInput.checked = !enabled;
-                alert('Could not update watermark preference. Please try again.');
+                showToast('Could not update watermark preference. Please try again.', 'error');
             } finally {
                 if (toggleInput) toggleInput.disabled = false;
                 if (savingEl) savingEl.classList.remove('visible');
@@ -3956,7 +3975,7 @@
     async function handleForgotPasswordFallback(event) {
         if (event && event.preventDefault) event.preventDefault();
         var sb = getSupabase();
-        if (!sb) { alert('Authentication service loading... Please try again.'); return; }
+        if (!sb) { showToast('Authentication service loading... Please try again.', 'error'); return; }
         var email = document.getElementById('forgotEmail').value;
         var errorEl = document.getElementById('forgotError');
         if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
@@ -3979,14 +3998,14 @@
 
     function handleGoogleOAuthFallback() {
         var sb = getSupabase();
-        if (!sb) { alert('Authentication service not available. Please refresh.'); return; }
+        if (!sb) { showToast('Authentication service not available. Please refresh.', 'error'); return; }
         sb.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo: window.location.origin + window.location.pathname }
         }).then(function(r) {
-            if (r && r.error) alert('Google sign-in failed: ' + r.error.message);
+            if (r && r.error) showToast('Google sign-in failed: ' + r.error.message, 'error');
         }).catch(function() {
-            alert('Google sign-in failed. Please try again.');
+            showToast('Google sign-in failed. Please try again.', 'error');
         });
     }
 
@@ -4183,7 +4202,7 @@
 
     function handleFileFallback(file) {
         if (!file || !file.type || file.type.indexOf('image/') !== 0) {
-            alert('Please select an image file');
+            showToast('Please select an image file', 'warning');
             return;
         }
         failsafeSelectedFile = file;
@@ -4276,14 +4295,14 @@
     async function startTransformationFallback(event) {
         if (event && event.preventDefault) event.preventDefault();
         var sb = getSupabase();
-        if (!sb) { alert('Authentication service not available. Please refresh.'); return; }
+        if (!sb) { showToast('Authentication service not available. Please refresh.', 'error'); return; }
         var fileInput = document.getElementById('fileInput');
         var file = failsafeSelectedFile || ((typeof selectedFile !== 'undefined' && selectedFile) ? selectedFile : null) || (fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null);
-        if (!file) { alert('Please select a photo first'); return; }
+        if (!file) { showToast('Please select a photo first', 'warning'); return; }
 
         var sessionResult = await sb.auth.getSession();
         var session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
-        if (!session || !session.user) { alert('Please log in first'); return; }
+        if (!session || !session.user) { showToast('Please log in first', 'warning'); return; }
         window.currentUser = session.user;
         try { currentUser = session.user; } catch(e) {}
 
@@ -4293,7 +4312,7 @@
             if (profileResult && profileResult.data) credits = profileResult.data.credits || 0;
         } catch(e) {}
         if (credits < 1) {
-            alert('No credits remaining. Please buy more!');
+            showToast('No credits remaining. Please buy more!', 'error');
             return;
         }
         updateUIForUser(session.user.email, credits);
@@ -4406,7 +4425,7 @@
 
         var sb = getSupabase();
         if (!sb) {
-            alert('Authentication service loading... Please try again.');
+            showToast('Authentication service loading... Please try again.', 'error');
             return;
         }
 
@@ -4463,7 +4482,7 @@
 
         var sb = getSupabase();
         if (!sb) {
-            alert('Authentication service loading... Please try again.');
+            showToast('Authentication service loading... Please try again.', 'error');
             return;
         }
 
