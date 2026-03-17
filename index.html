@@ -190,6 +190,9 @@
         .style-cards-top .style-card { flex: 1; min-width: 70px; }
         .style-cards-more .style-card { flex: 0 0 calc(33.33% - 6px); min-width: unset; }
         @media (min-width: 480px) { .style-cards-more .style-card { flex: 0 0 calc(20% - 7px); } }
+        .style-loader--actionfigure .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6); box-shadow: 0 0 16px rgba(245,158,11,0.24); }
+        .style-loader--renaissance .style-loader-fill { background-image: linear-gradient(90deg, #92400e, #fbbf24, #7c2d12); box-shadow: 0 0 16px rgba(146,64,14,0.24); }
+        .style-loader--cyberpunk .style-loader-fill { background-image: linear-gradient(90deg, #06b6d4, #ec4899, #8b5cf6); box-shadow: 0 0 16px rgba(6,182,212,0.24); }
 
         /* TRANSFORM BUTTON */
         #transformBtn { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; border: none; padding: 17px; border-radius: 14px; font-size: 1.12em; font-weight: 800; cursor: pointer; transition: all 0.25s; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(240,180,41,0.35); letter-spacing: 0.5px; }
@@ -216,9 +219,6 @@
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
-        .style-loader--actionfigure .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6); box-shadow: 0 0 16px rgba(245,158,11,0.24); }
-        .style-loader--renaissance .style-loader-fill { background-image: linear-gradient(90deg, #92400e, #fbbf24, #7c2d12); box-shadow: 0 0 16px rgba(146,64,14,0.24); }
-        .style-loader--cyberpunk .style-loader-fill { background-image: linear-gradient(90deg, #06b6d4, #ec4899, #8b5cf6); box-shadow: 0 0 16px rgba(6,182,212,0.24); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -601,7 +601,41 @@
             <img id="preview" alt="Preview">
         </div>
 
-        <div class<div class="style-cards">
+        <div class="info-box" id="infoBox" style="display: none;">
+            ✨ Processing typically takes 2-3 minutes. Your video will appear below when ready!
+        </div>
+
+    <!-- How It Works -->
+    <div class="how-it-works">
+        <h2>⚡ 3 Steps. Pure Magic.</h2>
+        <div class="steps-row">
+            <div class="hiw-step">
+                <div class="hiw-icon">📸</div>
+                <div class="hiw-num">1</div>
+                <div class="hiw-title">Upload Your Photo</div>
+                <div class="hiw-desc">Choose a favorite image to transform</div>
+            </div>
+            <div class="steps-arrow">→</div>
+            <div class="hiw-step">
+                <div class="hiw-icon">✨</div>
+                <div class="hiw-num">2</div>
+                <div class="hiw-title">Pick Your Style</div>
+                <div class="hiw-desc">Choose a magical look for your transformation</div>
+            </div>
+            <div class="steps-arrow">→</div>
+            <div class="hiw-step">
+                <div class="hiw-icon">🎬</div>
+                <div class="hiw-num">3</div>
+                <div class="hiw-title">Get Your Video</div>
+                <div class="hiw-desc">Download and share your magical animated video</div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Style Selector -->
+        <div class="style-selector" id="styleSelector">
+            <h3>✨ Choose Your Style</h3>
+            <div class="style-cards">
                 <div class="style-cards-top">
                     <div class="style-card active" data-style="st_patricks" onclick="selectStyle(this)">
                         <span class="sbadge sbadge-today">TODAY</span>
@@ -650,29 +684,6 @@
                     <span>All styles</span>
                     <span class="tarrow">▼</span>
                 </button>
-            </div>YbPnOZtbyqoR1BqRuVEQFfg7Yn5li6jX19UAAAAASUVORK5CYII=" alt="3D Cartoon" style="width:36px;height:36px;border-radius:50%;object-fit:cover;vertical-align:middle"></span>
-                    <span class="style-name">3D Cartoon</span>
-                </div>
-                <div class="style-card" data-style="comic" onclick="selectStyle(this)">
-                    <span class="style-icon">💥</span>
-                    <span class="style-name">Superhero</span>
-                </div>
-                <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
-                    <span class="style-icon">🏰</span>
-                    <span class="style-name">Magical Storybook</span>
-                </div>
-                <div class="style-card" data-style="anime" onclick="selectStyle(this)">
-                    <span class="style-icon">🌸</span>
-                    <span class="style-name">Anime</span>
-                </div>
-                <div class="style-card" data-style="watercolor" onclick="selectStyle(this)">
-                    <span class="style-icon">🎨</span>
-                    <span class="style-name">Watercolor</span>
-                </div>
-                <div class="style-card" data-style="st_patricks" onclick="selectStyle(this)">
-                    <span class="style-icon">🍀</span>
-                    <span class="style-name">Lucky Irish</span>
-                </div>
             </div>
         </div>
 
@@ -2970,40 +2981,6 @@
                 3: ['Activating hero protocol... 🛡️','Cape and mask materializing... 🦸','Your powers are manifesting... ⚡','Superhero transformation complete... 💥','Assembling the final scene... 🌟']
             }
         }
-    ,
-        actionfigure: {
-            spell: 'Unboxing Magic!',
-            wand: '🎁',
-            particles: ['✨','🎁','⭐','🧸','🎀','💫','📦','🌟'],
-            msgs: {
-                analyzing: ['Designing your packaging...', 'Sculpting your figure...', 'Adding accessories...', 'Collectors edition loading...'],
-                transforming: ['Molding plastic perfection...', 'Sealing the blister pack...', 'Printing the box art...', 'Limited edition incoming...'],
-                video: ['Toy commercial rolling...', 'Display case spinning...', 'Unboxing reveal loading...', 'Collectors dream animating...'],
-                fun: ['Action figures debuted in 1964!', 'Most expensive figure sold for $200K!', '400M+ action figures sold yearly!', 'Average collector owns 133 figures!']
-            }
-        },
-        renaissance: {
-            spell: 'By Royal Decree!',
-            wand: '🖼️',
-            particles: ['✨','🖼️','👑','🎨','🕯️','📜','⚜️','🌟'],
-            msgs: {
-                analyzing: ['Summoning the old masters...', 'Mixing oil pigments...', 'Preparing the royal court...', 'Lighting the candlelight...'],
-                transforming: ['Applying golden glazes...', 'Perfecting the chiaroscuro...', 'Draping the velvet robes...', 'Signing the masterpiece...'],
-                video: ['Museum gallery opening...', 'Candlelight flickering...', 'Oil paint glistening...', 'Noble portrait animating...'],
-                fun: ['Mona Lisa has no eyebrows!', 'Michelangelo painted standing up!', 'Artists ground gems for paint!', 'Da Vinci wrote in mirror script!']
-            }
-        },
-        cyberpunk: {
-            spell: 'Neon Dreams Activated!',
-            wand: '🌆',
-            particles: ['✨','🌆','💜','🔮','⚡','💫','🌃','🟣'],
-            msgs: {
-                analyzing: ['Scanning the neon grid...', 'Powering up cybernetics...', 'Loading holographic overlay...', 'Entering the matrix...'],
-                transforming: ['Rain-soaking the streets...', 'Wiring the neon signs...', 'Activating cyber-enhancements...', 'Rendering the cityscape...'],
-                video: ['Blade Runner vibes loading...', 'Neon reflections rippling...', 'Holographic ads flickering...', 'Cyberpunk world animating...'],
-                fun: ['Cyberpunk coined in 1980!', 'Neon signs invented in 1910!', 'Akihabara inspired cyber cities!', 'Neuromancer written on typewriter!']
-            }
-        }
     };
 
     var _magicFacts = {
@@ -3013,10 +2990,6 @@
         anime: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'],
         watercolor: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'],
         st_patricks: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'],
-    ,
-        actionfigure: ['Action figures were first created by Hasbro in 1964 with G.I. Joe!','The most expensive action figure ever sold went for over $200,000!','Over 400 million action figures are sold worldwide each year!','The average serious collector owns around 133 figures!','The term action figure was coined to market toys to boys!','Some rare Star Wars figures from the 1970s are worth thousands!'],
-        renaissance: ['The Mona Lisa has no visible eyebrows - it was the fashion in Renaissance Florence!','Michelangelo painted the Sistine Chapel ceiling while standing up, not lying down!','Vermeer likely used a camera obscura to achieve his photographic accuracy!','Renaissance artists ground precious gems like lapis lazuli to make blue paint!','Leonardo da Vinci wrote all his notes in mirror script from right to left!','The Renaissance period lasted roughly from the 14th to the 17th century!'],
-        cyberpunk: ['The word cyberpunk was coined by author Bruce Bethke in 1980!','Neon signs were invented in 1910 by French engineer Georges Claude!','The Akihabara district in Tokyo inspired most fictional cyberpunk cities!','William Gibson wrote Neuromancer on a typewriter!','The cyberpunk genre combines high technology with low-life street culture!','Blade Runner (1982) is considered the most influential cyberpunk film ever made!']
     };
 
     function _getTheme() {
@@ -4945,24 +4918,68 @@
 </script>
 <script>
 (function(){
-    var btn=document.getElementById('moreStylesBtn');
-    var more=document.getElementById('moreStyles');
-    if(btn&&more){
-        btn.addEventListener('click',function(){
-            more.classList.toggle('open');
-            btn.classList.toggle('open');
-            var lbl=btn.querySelector('span:first-child');
-            if(lbl)lbl.textContent=more.classList.contains('open')?'Less styles':'All styles';
-        });
+  // Extend _magicThemes with new styles
+  if(typeof _magicThemes !== 'undefined'){
+    _magicThemes.actionfigure = {
+      spell: 'Unboxing Magic!',
+      wand: '🎁',
+      particles: ['✨','🎁','⭐','🧸','🎀','💫','📦','🌟'],
+      msgs: {
+        analyzing: ['Designing your packaging...', 'Sculpting your figure...', 'Adding accessories...', 'Collectors edition loading...'],
+        transforming: ['Molding plastic perfection...', 'Sealing the blister pack...', 'Printing the box art...', 'Limited edition incoming...'],
+        video: ['Toy commercial rolling...', 'Display case spinning...', 'Unboxing reveal loading...', 'Collectors dream animating...'],
+        fun: ['Action figures debuted in 1964!', 'Most expensive figure sold for $200K!', '400M+ action figures sold yearly!', 'Average collector owns 133 figures!']
+      }
+    };
+    _magicThemes.renaissance = {
+      spell: 'By Royal Decree!',
+      wand: '🖼️',
+      particles: ['✨','🖼️','👑','🎨','🕯️','📜','⚜️','🌟'],
+      msgs: {
+        analyzing: ['Summoning the old masters...', 'Mixing oil pigments...', 'Preparing the royal court...', 'Lighting the candlelight...'],
+        transforming: ['Applying golden glazes...', 'Perfecting the chiaroscuro...', 'Draping the velvet robes...', 'Signing the masterpiece...'],
+        video: ['Museum gallery opening...', 'Candlelight flickering...', 'Oil paint glistening...', 'Noble portrait animating...'],
+        fun: ['Mona Lisa has no eyebrows!', 'Michelangelo painted standing up!', 'Artists ground gems for paint!', 'Da Vinci wrote in mirror script!']
+      }
+    };
+    _magicThemes.cyberpunk = {
+      spell: 'Neon Dreams Activated!',
+      wand: '🌆',
+      particles: ['✨','🌆','💜','🔮','⚡','💫','🌃','🟣'],
+      msgs: {
+        analyzing: ['Scanning the neon grid...', 'Powering up cybernetics...', 'Loading holographic overlay...', 'Entering the matrix...'],
+        transforming: ['Rain-soaking the streets...', 'Wiring the neon signs...', 'Activating cyber-enhancements...', 'Rendering the cityscape...'],
+        video: ['Blade Runner vibes loading...', 'Neon reflections rippling...', 'Holographic ads flickering...', 'Cyberpunk world animating...'],
+        fun: ['Cyberpunk coined in 1980!', 'Neon signs invented in 1910!', 'Akihabara inspired cyber cities!', 'Neuromancer written on typewriter!']
+      }
+    };
+  }
+  // Extend _magicFacts with new styles
+  if(typeof _magicFacts !== 'undefined'){
+    _magicFacts.actionfigure = ['Action figures were first created by Hasbro in 1964!','The most expensive action figure ever sold went for over $200,000!','Over 400 million action figures are sold worldwide each year!','The average serious collector owns around 133 figures!','The term action figure was coined to market toys to boys!','Some rare Star Wars figures from the 1970s are worth thousands!'];
+    _magicFacts.renaissance = ['The Mona Lisa has no visible eyebrows - it was the fashion in Renaissance Florence!','Michelangelo painted the Sistine Chapel ceiling while standing up, not lying down!','Vermeer likely used a camera obscura to achieve photographic accuracy!','Renaissance artists ground precious gems like lapis lazuli to make blue paint!','Leonardo da Vinci wrote all his notes in mirror script from right to left!','The Renaissance period lasted from the 14th to the 17th century!'];
+    _magicFacts.cyberpunk = ['The word cyberpunk was coined by author Bruce Bethke in 1980!','Neon signs were invented in 1910 by French engineer Georges Claude!','The Akihabara district in Tokyo inspired most fictional cyberpunk cities!','William Gibson wrote Neuromancer on a typewriter!','The cyberpunk genre combines high technology with low-life street culture!','Blade Runner 1982 is considered the most influential cyberpunk film!'];
+  }
+  // Toggle expand/collapse
+  var btn=document.getElementById('moreStylesBtn');
+  var more=document.getElementById('moreStyles');
+  if(btn&&more){
+    btn.addEventListener('click',function(){
+      more.classList.toggle('open');
+      btn.classList.toggle('open');
+      var lbl=btn.querySelector('span:first-child');
+      if(lbl)lbl.textContent=more.classList.contains('open')?'Less styles':'All styles';
+    });
+  }
+  // Auto-expand if preferred style is in collapsed section
+  var pref=localStorage.getItem('toonit_preferred_style');
+  if(pref&&more){
+    var c=more.querySelector('.style-card[data-style="'+pref+'"]');
+    if(c){
+      more.classList.add('open');
+      if(btn){btn.classList.add('open');var l=btn.querySelector('span:first-child');if(l)l.textContent='Less styles';}
     }
-    var pref=localStorage.getItem('toonit_preferred_style');
-    if(pref&&more){
-        var c=more.querySelector('.style-card[data-style="'+pref+'"]');
-        if(c){
-            more.classList.add('open');
-            if(btn){btn.classList.add('open');var l=btn.querySelector('span:first-child');if(l)l.textContent='Less styles';}
-        }
-    }
+  }
 })();
 </script>
 </body>
