@@ -202,6 +202,7 @@
         .style-loader--comic .style-loader-fill { background-image: linear-gradient(90deg, #f87171, #f0b429, #fb7185); box-shadow: 0 0 16px rgba(248,113,113,0.25); }
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
+        .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -638,6 +639,10 @@
                 <div class="style-card" data-style="watercolor" onclick="selectStyle(this)">
                     <span class="style-icon">🎨</span>
                     <span class="style-name">Watercolor</span>
+                </div>
+                <div class="style-card" data-style="st_patricks" onclick="selectStyle(this)">
+                    <span class="style-icon">🍀</span>
+                    <span class="style-name">Lucky Irish</span>
                 </div>
             </div>
         </div>
@@ -2906,6 +2911,16 @@
                 3: ['The watercolors are drying just right... 🌊','Brush strokes finding their flow... 🖌️','Your painting is coming alive... 🎨','Colors settling into place... 💧','A masterpiece emerges... ✨']
             }
         },
+        st_patricks: {
+            spell: 'Emerald Magic Abound!',
+            wand: '🍀',
+            particles: ['🍀','✨','💛','🌈','🟢','🌟','∙','·'],
+            msgs: {
+                1: ['Following the rainbow to your photo... 🌈','Gathering the luck of the Irish... 🍀','The leprechaun is preparing your gold... 💛','Rolling green hills awakening...','Celtic magic beginning...'],
+                2: ['Shamrocks are blooming across the scene... 🍀','Golden coins catching the light... 💛','The rainbow is arching into place... 🌈','Emerald mists rolling in... 🟢','Irish fairy tale magic weaving...'],
+                3: ['The pot of gold is nearly yours... 💛','Lucky charms settling into the scene... 🍀','Your Irish fairy tale comes alive... 🌈','The Celtic magic is complete... ✨','May the luck be with you... 🍀']
+            }
+        },
         cartoon3d: {
             spell: 'Boing Squish Pop!',
             wand: '🎬',
@@ -2934,6 +2949,7 @@
         comic: ['Spider-Man: Into the Spider-Verse was animated at two different frame rates at once to replicate a real comic book — a first in cinema history.','The halftone dot pattern in classic comics was originally a printing limitation — now it is one of the most iconic aesthetics in modern fashion and fine art.','The first Superman comic sold for $6 million at auction in 2022 — the most expensive comic ever sold.','The bold blue and orange combo in superhero films is scientifically linked to urgency, excitement, and heroic energy. Color does the heavy lifting.','Stan Lee created most of the Avengers while commuting on the NYC subway in the 1960s. Great ideas do not wait for perfect conditions.'],
         anime: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'],
         watercolor: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'],
+        st_patricks: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'],
     };
 
     function _getTheme() {
@@ -2951,6 +2967,7 @@
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
             anime: { cls: 'style-loader--anime', label: 'Anime' },
             watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor' },
+            st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish' },
         };
         return map[style] || map.storybook;
     }
@@ -4301,7 +4318,8 @@
                 cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon', facts: ['Pixar animators spent 3 years studying ocean light just to animate one scene in Finding Nemo — your photo gets that same obsession, in seconds.','A single 3D animated character can have 500 individual facial controls — more expressive range than most humans use in a day.','The 12 Principles of Animation were invented by Disney artists in 1937 — every Pixar, DreamWorks, and AI model still follows them today.','Claymation-style 3D is having a massive revival in 2025 across social media, brand ads, and music videos. You are riding the wave.','Inside Out 2 used real neuroscience consultants to design the new emotions — proof that animation is now part psychology, part art.'] },
                 comic: { cls: 'style-loader--comic', label: 'Superhero', facts: ['Spider-Man: Into the Spider-Verse was animated at two different frame rates at once to replicate a real comic book — a first in cinema history.','The halftone dot pattern in classic comics was originally a printing limitation — now it is one of the most iconic aesthetics in modern fashion and fine art.','The first Superman comic sold for $6 million at auction in 2022 — the most expensive comic ever sold.','The bold blue and orange combo in superhero films is scientifically linked to urgency, excitement, and heroic energy. Color does the heavy lifting.','Stan Lee created most of the Avengers while commuting on the NYC subway in the 1960s. Great ideas do not wait for perfect conditions.'] },
                 anime: { cls: 'style-loader--anime', label: 'Anime', facts: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'] },
-                watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] }
+                watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
+                st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] }
             };
             var theme = themes[style] || themes.storybook;
             if (host) {
