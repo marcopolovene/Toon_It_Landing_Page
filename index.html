@@ -970,7 +970,6 @@
         let selectedFile = null;
         let currentJobId = null;
         let pollInterval = null;
-        let realtimeChannel = null;
 
         // ==========================================
         // DOM ELEMENTS (set after DOMContentLoaded)
@@ -2769,47 +2768,9 @@
  setStep(1);
  _renderMagicStatus(1);
 
- // Data polling every 10 seconds 
- // Supabase Realtime: instant detection when video is ready
- if (supabaseClient && currentJobId) {
-     try {
-         // Clean up any previous channel
-         if (realtimeChannel) {
-             supabaseClient.removeChannel(realtimeChannel);
-             realtimeChannel = null;
-         }
-         realtimeChannel = supabaseClient
-             .channel('video-ready-' + currentJobId)
-             .on('postgres_changes', {
-                 event: 'UPDATE',
-                 schema: 'public',
-                 table: 'generations',
-                 filter: 'job_id=eq.' + currentJobId
-             }, function(payload) {
-                 console.log('[REALTIME] Generation updated:', payload.new);
-                 if (payload.new && payload.new.video_url) { // mobile_completion_fix_20260309
-                     console.log('[REALTIME] Video ready! URL:', payload.new.video_url);
-                     clearInterval(pollInterval);
-                     if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
-                     if (realtimeChannel) { supabaseClient.removeChannel(realtimeChannel); realtimeChannel = null; }
-                     var savedJobId = currentJobId;
-                     clearJob();
-                     showVideo(payload.new.video_url, savedJobId);
-                     loadUserCredits();
-                 }
-             })
-             .subscribe(function(status) {
-                 console.log('[REALTIME] Subscription status:', status);
-             });
-         console.log('[REALTIME] Subscribed to generations updates for job:', currentJobId);
-     } catch(e) {
-         console.log('[REALTIME] Setup failed, relying on polling:', e.message);
-     }
- }
-
- // Fallback polling every 10s (Realtime should catch it first)
+ // Data polling every 10 seconds
  pollInterval = setInterval(checkStatus, 10000);
- // First check after 3s (give Realtime time to connect)
+ // First check after 3s
  setTimeout(checkStatus, 3000);
  }
 
@@ -3641,7 +3602,13 @@
 
         async function _requestLandingWatermarkMp4(cleanUrl) {
             var jid = _wmState.currentJobId || currentJobId;
-            var authKey = (typeof SUPABASE_ANON_KEY !== 'undefined' && SUPABASE_ANON_KEY) ? SUPABASE_ANON_KEY : '';
+            var authKey = '';
+            try {
+                if (supabaseClient) {
+                    var _sess = await supabaseClient.auth.getSession();
+                    authKey = (_sess && _sess.data && _sess.data.session) ? _sess.data.session.access_token : '';
+                }
+            } catch(_se) {}
             if (!jid || !cleanUrl || !authKey) return null;
             try {
                 var r = await fetch(SUPABASE_URL + '/functions/v1/burn-watermark', {
@@ -3774,11 +3741,6 @@
         }
 
         function clearJob() {
-            // Clean up Realtime subscription
-            if (realtimeChannel && supabaseClient) {
-                try { supabaseClient.removeChannel(realtimeChannel); } catch(e) {}
-                realtimeChannel = null;
-            }
             localStorage.removeItem('toonit_job');
             const url = new URL(window.location);
             url.searchParams.delete('job');
