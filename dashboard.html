@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <!-- SEO -->
-    <meta name="description" content="Toon It! Dashboard - View your magical transformations, manage credits, and track your transformations.">
+    <meta name="description" content="Toon It! My Videos - View your magical transformations and manage your credits.">
     <meta name="robots" content="noindex">
     <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dzarqnick/image/upload/w_32,h_32,c_fill/toonit_favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="https://res.cloudinary.com/dzarqnick/image/upload/w_180,h_180,c_fill/toonit_favicon.png">
@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toon It! - Dashboard</title>
+    <title>Toon It! - My Videos</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
 
@@ -178,6 +178,26 @@
         .footer-powered { margin-top: 12px; opacity: 0.6; }
     </style>
 <!-- dashboard_new_cta_20260311 -->
+    <!-- dashboard_my_videos_20260317 -->
+    <style>
+        .video-grid{display:grid;grid-template-columns:1fr;gap:14px;padding:4px 0;}
+        @media(min-width:480px){.video-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(min-width:768px){.video-grid{grid-template-columns:repeat(3,1fr);}}
+        .video-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.2s;}
+        .video-card:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(240,180,41,.15);transform:translateY(-2px);}
+        .video-card-thumb{aspect-ratio:16/9;width:100%;background:#000;overflow:hidden;}
+        .video-card-thumb video{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block;}
+        .video-card-info{padding:8px 10px 10px;}
+        .video-card-date{font-size:.75em;color:var(--text-muted);margin-bottom:3px;}
+        .video-card-status{font-size:.78em;margin-bottom:4px;}
+        .video-card-gallery{font-size:.78em;display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--text-muted);margin-top:2px;}
+        .video-history-card{grid-column:1/-1;}
+        .global-wm-bar{background:rgba(124,107,250,.08);border:1px solid rgba(124,107,250,.25);border-radius:14px;padding:14px 16px;margin-bottom:18px;}
+        .global-wm-note{font-size:.85em;color:var(--text-muted);margin-bottom:10px;line-height:1.5;}
+        .global-wm-note strong{color:#fff;}
+        .global-wm-toggle-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+        .global-wm-toggle-text{flex:1;font-size:.88em;font-weight:600;color:var(--text-main);min-width:120px;}
+    </style>
 </head>
 
     <!-- Free Credits Expiry Banner -->
@@ -217,41 +237,40 @@
 
     <!-- Main Content -->
     <main>
-        <h1 class="page-title">📊 Dashboard</h1>
+        <h1 class="page-title">&#127916; My Videos</h1>
 
         <div class="dashboard-grid">
-            <!-- Overview Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">📈 Overview</h2>
-                    <a href="index.html" style="background:var(--primary);color:#07070f;font-weight:800;font-size:1em;padding:9px 20px;border-radius:22px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(212,160,74,0.3);">🎨 Transform a Photo</a>
+
+            <!-- Video History Card - full width - my_videos_20260317 -->
+            <div class="card video-history-card">
+                <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                    <h2 class="card-title">&#127916; Video History</h2>
+                    <a href="index.html" style="background:var(--primary);color:#07070f;font-weight:800;font-size:1.05em;padding:10px 22px;border-radius:25px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(240,180,41,0.3);">&#10024; New Transformation</a>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="statCredits">0</div>
-                        <div class="stat-label">Credits</div>
+                <!-- Global Watermark Toggle (paid users only) - my_videos_20260317 -->
+                <div class="global-wm-bar" id="globalWmBar" style="display:none;">
+                    <p class="global-wm-note"><strong>As a credit purchaser</strong>, you can remove the ToonIt.ai watermark from all your videos and future creations.</p>
+                    <div class="global-wm-toggle-row">
+                        <span class="global-wm-toggle-text">&#127916; Remove watermark on all videos &amp; future creations</span>
+                        <label class="wm-toggle-switch">
+                            <input type="checkbox" id="globalWmToggleInput" onchange="toggleGlobalWatermark(this.checked)">
+                            <span class="wm-toggle-slider"></span>
+                        </label>
+                        <span class="wm-toggle-status" id="globalWmStatus">Off</span>
+                        <span class="wm-toggle-saving" id="globalWmSaving">Saving&#8230;</span>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statVideos">0</div>
-                        <div class="stat-label">Videos</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statPurchases">0</div>
-                        <div class="stat-label">Purchases</div>
-                    </div>
-
-        
-
                 </div>
-
-                <!-- Watermark Callout for Paid Users -->
-                <div class="dash-wm-callout" id="dashWmCallout">
-                    <strong>As a credit purchaser</strong>, you can remove the ToonIt.ai watermark from your videos — open any video below to manage it.
+                <!-- Video Grid -->
+                <div class="video-grid" id="videoList">
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <div class="empty-state-icon">&#127916;</div>
+                        <p>No videos yet</p>
+                        <p>Create your first storybook video!</p>
+                    </div>
                 </div>
-
             </div>
 
-            <!-- Referral Section -->
+        <!-- Referral Section -->
         <div class="card referral-card">
             <div class="card-header">
                 <h2 class="card-title">🎁 Refer Friends, Earn Credits</h2>
@@ -289,21 +308,6 @@
             </div>
         </div>
 
-        <!-- Video History Card -->
-            <div class="card">
-                <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                    <h2 class="card-title">🎬 Video History</h2>
-                    <a href="index.html" style="background:var(--primary);color:#07070f;font-weight:800;font-size:1.05em;padding:10px 22px;border-radius:25px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(240,180,41,0.3);">✨ New Transformation</a>
-                </div>
-                <div class="video-list video-list-scroll" id="videoList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🎬</div>
-                        <p>No videos yet</p>
-                        <p>Create your first storybook video!</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Transaction History Card -->
             <div class="card">
                 <div class="card-header">
@@ -317,8 +321,6 @@
                 </div>
             </div>
         </div>
-    
-        
 
         </main>
 
@@ -435,7 +437,7 @@
 
                 if (data) {
                     document.getElementById('headerCredits').textContent = data.credits;
-                    document.getElementById('statCredits').textContent = data.credits;
+                    var _sc=document.getElementById('statCredits');if(_sc)_sc.textContent=data.credits;
                     // Show free credit expiry warning if applicable
                     showFreeCreditsExpiry(data.free_credits, data.free_credits_expires_at);
                     // Load watermark state for paid user UI
@@ -463,29 +465,23 @@
                     .from('generations')
                     .select('id', { count: 'exact', head: true })
                     .eq('user_id', currentUser.id);
-                document.getElementById('statVideos').textContent = totalVideos || data.length;
+                var _sv=document.getElementById('statVideos');if(_sv)_sv.textContent=totalVideos||data.length;
 
                     videoList.innerHTML = data.map(video => `
-                        <div class="video-item" onclick="playVideo('${video.video_url || ''}')">
-                            <div class="video-thumbnail">
-                                ${video.video_url ? 
-                                    `<video src="${addWatermark(video.video_url)}" muted playsinline preload="metadata"></video>` : 
-                                    '<span>🎬</span>'
+                        <div class="video-card" onclick="playVideo('${video.video_url || ''}')">
+                            <div class="video-card-thumb">
+                                ${video.video_url
+                                    ? `<video src="${video.video_url}" muted playsinline preload="metadata"></video>`
+                                    : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2em;">&#127916;</div>`
                                 }
                             </div>
-                            <div class="video-info">
-                                <div class="video-title">My Transformation</div>
-                                <div class="video-date">${formatDate(video.created_at)}</div>
-                                <span class="video-status ${video.status === 'complete' ? 'status-complete' : 'status-processing'}">
-                                    ${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}
-                                </span>
+                            <div class="video-card-info">
+                                <div class="video-card-date">${formatDate(video.created_at)}</div>
+                                <div class="video-card-status">${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}</div>
                                 ${video.status === 'complete' ? `
-                                <label class="gallery-toggle-label" onclick="event.stopPropagation()">
-                                    <input type="checkbox" class="gallery-toggle" 
-                                        ${video.is_public ? 'checked' : ''}
-                                        onchange="toggleGalleryOptIn(event, '${video.id}')"
-                                        onclick="event.stopPropagation()">
-                                    <span>📢 Show in gallery</span>
+                                <label class="video-card-gallery" onclick="event.stopPropagation()">
+                                    <input type="checkbox" ${video.is_public ? 'checked' : ''} onchange="toggleGalleryOptIn(event, '${video.id}')" onclick="event.stopPropagation()" style="cursor:pointer;">
+                                    <span>&#128226; Gallery</span>
                                 </label>` : ''}
                             </div>
                         </div>
@@ -519,7 +515,7 @@
 
                 // Count purchases
                 const purchases = data ? data.filter(t => t.type === 'purchase').length : 0;
-                document.getElementById('statPurchases').textContent = purchases;
+                var _sp=document.getElementById('statPurchases');if(_sp)_sp.textContent=purchases;
 
                 if (data && data.length > 0) {
                     txList.innerHTML = data.map(tx => {
@@ -569,13 +565,13 @@
         }
 
         function toggleUserMenu() {
-            document.getElementById('userDropdown').classList.toggle('show');
+            document.getElementById('userDropdown').classList.toggle('open');
         }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.user-menu')) {
-                document.getElementById('userDropdown').classList.remove('show');
+                document.getElementById('userDropdown').classList.remove('open');
             }
         });
 
@@ -844,9 +840,17 @@
                 if (data) {
                     _dashWmState.hasPurchased = data.has_purchased || false;
                     _dashWmState.globalRemoved = data.watermark_removed_global || false;
-                    // Show callout for paid users
+                    var globalBar = document.getElementById('globalWmBar');
+                    if (globalBar) globalBar.style.display = _dashWmState.hasPurchased ? 'block' : 'none';
+                    var gInput = document.getElementById('globalWmToggleInput');
+                    var gStatus = document.getElementById('globalWmStatus');
+                    if (gInput) gInput.checked = _dashWmState.globalRemoved;
+                    if (gStatus) {
+                        gStatus.textContent = _dashWmState.globalRemoved ? 'On' : 'Off';
+                        gStatus.className = 'wm-toggle-status' + (_dashWmState.globalRemoved ? ' active' : '');
+                    }
                     var callout = document.getElementById('dashWmCallout');
-                    if (callout) callout.style.display = _dashWmState.hasPurchased && !_dashWmState.globalRemoved ? 'block' : 'none';
+                    if (callout) callout.style.display = 'none';
                 }
             } catch(e) { console.log('[DASH-WM] State load error:', e); }
         }
@@ -1148,7 +1152,39 @@
             }
         }
 
-        // Load watermark state alongside dashboard data
+        async function toggleGlobalWatermark(enabled) { // global_wm_toggle_20260317
+            if (!currentUser || !supabaseClient || !_dashWmState.hasPurchased) return;
+            var gInput = document.getElementById('globalWmToggleInput');
+            var gSaving = document.getElementById('globalWmSaving');
+            var gStatus = document.getElementById('globalWmStatus');
+            if (gInput) gInput.disabled = true;
+            if (gSaving) gSaving.classList.add('visible');
+            try {
+                await supabaseClient.from('profiles').update({ watermark_removed_global: enabled }).eq('id', currentUser.id);
+                await supabaseClient.from('generations').update({ watermark_removed: enabled }).eq('user_id', currentUser.id);
+                _dashWmState.globalRemoved = enabled;
+                if (gStatus) {
+                    gStatus.textContent = enabled ? 'On' : 'Off';
+                    gStatus.className = 'wm-toggle-status' + (enabled ? ' active' : '');
+                }
+                _dashWmUpdateToggleUI(enabled);
+                var modal = document.getElementById('videoModal');
+                if (modal && modal.classList.contains('open')) {
+                    var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+                    if (wmSpan) wmSpan.style.display = enabled ? 'none' : '';
+                    _dashWmState.currentVideoRemoved = enabled;
+                }
+            } catch(e) {
+                console.error('[GLOBAL-WM] Toggle error:', e);
+                if (gInput) gInput.checked = !enabled;
+                alert('Could not update watermark preference. Please try again.');
+            } finally {
+                if (gInput) gInput.disabled = false;
+                if (gSaving) gSaving.classList.remove('visible');
+            }
+        }
+
+                // Load watermark state alongside dashboard data
         // (called after checkAuth completes)
                 </script>
 </body>
