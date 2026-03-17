@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- SEO -->
+    <meta name="description" content="Toon It! My Videos - View your magical transformations and manage your credits.">
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://res.cloudinary.com/dzarqnick/image/upload/w_32,h_32,c_fill/toonit_favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://res.cloudinary.com/dzarqnick/image/upload/w_180,h_180,c_fill/toonit_favicon.png">
+    <meta name="theme-color" content="#d4a04a">
+
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toon It! - My Videos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+
+        :root {
+            --bg-dark: #07070f;
+            --bg-light: #07070f;
+            --bg-white: #111120;
+            --bg-surface: #111120;
+            --bg-card: #181830;
+            --bg-main: #07070f;
+            --primary: #f0b429;
+            --primary-hover: #d4950f;
+            --secondary: #7c6bfa;
+            --accent: #ffd166;
+            --text-main: #f0ece4;
+            --text-muted: #9090b0;
+            --text-dark: #c8c4bc;
+            --border: #262640;
+            --success: #4ade80;
+            --error: #f87171;
+            --glow: rgba(240,180,41,0.15);
+            --shadow: rgba(0,0,0,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+        /* LOADING */
+        .loading-screen { position: fixed; inset: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .loading-screen.hidden { display: none !important; }
+        .hidden { display: none !important; }
+        .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* HEADER */
+        header { background: rgba(7,7,15,0.97); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { color: var(--primary); font-family: 'Pacifico', cursive; font-size: 1.35em; font-weight: 700; text-decoration: none; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .credit-badge { display: flex; align-items: center; gap: 6px; background: rgba(240,180,41,0.1); border: 1px solid rgba(240,180,41,0.3); border-radius: 20px; padding: 5px 14px; font-size: 0.85em; font-weight: 700; color: var(--accent); }
+        .user-menu { position: relative; }
+        .user-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); padding: 7px 14px; border-radius: 10px; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .user-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .user-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; min-width: 160px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 200; }
+        .user-dropdown.open { display: block; }
+        .user-dropdown a, .user-dropdown button { display: block; width: 100%; text-align: left; padding: 11px 16px; color: var(--text-main); text-decoration: none; background: none; border: none; cursor: pointer; font-size: 0.88em; transition: background 0.15s; }
+        .user-dropdown a:hover, .user-dropdown button:hover { background: rgba(240,180,41,0.08); color: var(--primary); }
+
+        /* MAIN */
+        main { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+        .page-title { font-size: 1.5em; font-weight: 800; color: #fff; margin-bottom: 24px; }
+
+        /* DASHBOARD GRID */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+        @media (min-width: 640px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* CARDS */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .referral-card .card-header { margin-bottom: 26px; }
+        .card-header h2 { font-size: 1em; font-weight: 700; color: #fff; }
+        .card-header a { font-size: 0.8em; color: var(--primary); text-decoration: none; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-item { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+        .stat-value { font-size: 1.7em; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 4px; }
+        .stat-label { font-size: 0.72em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+        /* WATERMARK CALLOUT */
+        .dash-wm-callout { background: rgba(124,107,250,0.1); border: 1px solid rgba(124,107,250,0.3); border-radius: 12px; padding: 14px 16px; font-size: 0.88em; color: var(--text-muted); }
+        .dash-wm-callout strong { color: #fff; }
+        .dash-wm-callout a { color: var(--secondary); text-decoration: underline; cursor: pointer; }
+
+        /* REFERRAL */
+        .referral-code-section { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; }
+        .referral-link-box { display: flex; gap: 8px; margin-bottom: 12px; }
+        .referral-link-box input { flex: 1; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-muted); font-size: 0.82em; outline: none; }
+        .referral-link-box button { background: var(--primary); color: #07070f; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 700; font-size: 0.82em; white-space: nowrap; }
+        .referral-stats { display: flex; gap: 12px; }
+        .referral-stat { flex: 1; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+        .referral-stat-value { font-size: 1.4em; font-weight: 800; color: var(--primary); }
+        .referral-stat-label { font-size: 0.72em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .referral-history { margin-top: 12px; }
+        .referral-history-item { font-size: 0.82em; color: var(--text-muted); padding: 6px 0; border-bottom: 1px solid var(--border); }
+
+        /* VIDEO LIST */
+        .video-list-scroll, .transaction-list-scroll { max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+        .video-item { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+        .video-item:hover { background: rgba(240,180,41,0.06); }
+        .video-thumbnail { width: 64px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--bg-surface); border: 1px solid var(--border); }
+        .video-thumbnail video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .video-info { flex: 1; min-width: 0; }
+        .video-title { font-size: 0.88em; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-date { font-size: 0.75em; color: var(--text-muted); margin-top: 2px; }
+
+        /* TRANSACTIONS */
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-info { display: flex; gap: 10px; align-items: center; }
+        .transaction-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; }
+        .transaction-icon.purchase { background: rgba(74,222,128,0.1); }
+        .transaction-icon.usage { background: rgba(248,113,113,0.1); }
+        .transaction-icon.bonus, .transaction-icon.referral { background: rgba(240,180,41,0.1); }
+        .transaction-details { }
+        .transaction-desc { font-size: 0.85em; color: var(--text-main); }
+        .transaction-date { font-size: 0.75em; color: var(--text-muted); }
+        .transaction-amount { font-weight: 700; font-size: 0.92em; }
+        .transaction-amount.positive { color: var(--success); }
+        .transaction-amount.negative { color: var(--error); }
+
+        /* EMPTY STATES */
+        .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); }
+        .empty-state-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.88em; }
+        .empty-state a { color: var(--primary); text-decoration: none; }
+
+        /* VIDEO MODAL */
+        .video-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+        .video-modal.open { display: flex; }
+        .video-modal-close { position: absolute; top: 20px; right: 20px; background: rgba(18,18,32,0.9); border: 1px solid var(--border); color: var(--text-main); font-size: 1.5em; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: all 0.2s; }
+        .video-modal-close:hover { color: var(--primary); border-color: var(--primary); }
+        .video-modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .toonit-watermark-wrap { position: relative; display: inline-block; width: 100%; }
+        #modalVideo { width: 100%; border-radius: 12px; display: block; }
+        .toonit-watermark { position: absolute; bottom: 8px; left: 16px; /* wm_position_tweak_20260310b */ font-family: 'Pacifico', cursive; font-size: 18px; color: rgba(255,255,255,0.78); opacity: 0.72; pointer-events: none; z-index: 10; text-shadow: 0 1px 4px rgba(0,0,0,0.6); user-select: none; letter-spacing: 0.3px; }
+        .dash-wm-banner { background: rgba(124,107,250,0.1); border: 1px solid rgba(124,107,250,0.3); border-radius: 12px; padding: 14px; margin-top: 12px; }
+        .dash-wm-banner p { font-size: 0.88em; color: var(--text-muted); margin-bottom: 10px; }
+        .dash-wm-banner strong { color: #fff; }
+        .dash-wm-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .dash-wm-btn { flex: 1; padding: 9px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 0.82em; }
+        .dash-wm-btn-this { background: var(--secondary); color: #fff; }
+        .dash-wm-btn-all { background: var(--primary); color: #07070f; }
+        .dash-wm-removed { display: inline-block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 20px; padding: 5px 16px; font-size: 0.82em; color: var(--success); }
+        .wm-toggle-bar { display: none; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: rgba(124,107,250,0.10); border: 1px solid rgba(124,107,250,0.22); position: relative; z-index: 4; }
+        .wm-toggle-label { color: var(--text-main); font-weight: 700; margin-right: auto; }
+        .wm-toggle-switch { position: relative; display: inline-block; width: 52px; height: 30px; cursor: pointer; flex: 0 0 auto; }
+        .wm-toggle-switch input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .wm-toggle-slider { position: absolute; inset: 0; border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.14); transition: all 0.2s ease; }
+        .wm-toggle-slider::before { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.28); transition: transform 0.2s ease; }
+        .wm-toggle-switch input:checked + .wm-toggle-slider { background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); border-color: rgba(240,180,41,0.70); }
+        .wm-toggle-switch input:checked + .wm-toggle-slider::before { transform: translateX(22px); }
+        .wm-toggle-switch input:disabled + .wm-toggle-slider { opacity: 0.65; cursor: not-allowed; }
+        .wm-toggle-status { min-width: 48px; text-align: center; font-size: 0.82em; font-weight: 700; color: var(--text-muted); padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+        .wm-toggle-status.active { color: #07070f; background: rgba(240,180,41,0.95); border-color: rgba(240,180,41,0.95); }
+        .wm-toggle-saving { display: none; color: var(--text-muted); font-size: 0.8em; font-weight: 600; }
+        .wm-toggle-saving.visible { display: inline-flex; align-items: center; gap: 6px; }
+        .wm-toggle-saving.visible::before { content: '⏳'; }
+
+        /* EXPIRY BANNER */
+        #expiryBanner { position: sticky; top: 64px; z-index: 99; }
+
+        /* BUY CREDITS BTN */
+        .btn-buy-credits { display: inline-block; background: var(--primary); color: #07070f; border: none; padding: 9px 20px; border-radius: 20px; font-weight: 700; font-size: 0.85em; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+        .btn-buy-credits:hover { background: var(--accent); }
+
+        /* FOOTER */
+        footer { background: var(--bg-surface); border-top: 1px solid var(--border); padding: 28px 24px 40px; text-align: center; color: var(--text-muted); font-size: 0.82em; }
+        footer a { color: var(--primary); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .footer-brand { font-family: 'Pacifico', cursive; color: var(--primary); font-size: 1.05em; margin-bottom: 8px; display: block; }
+        .footer-links { margin: 10px 0; }
+        .footer-links a { margin: 0 10px; }
+        .footer-powered { margin-top: 12px; opacity: 0.6; }
+    </style>
+<!-- dashboard_new_cta_20260311 -->
+    <!-- dashboard_my_videos_20260317 -->
+    <style>
+        .video-grid{display:grid;grid-template-columns:1fr;gap:14px;padding:4px 0;}
+        @media(min-width:480px){.video-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(min-width:768px){.video-grid{grid-template-columns:repeat(3,1fr);}}
+        .video-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.2s;}
+        .video-card:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(240,180,41,.15);transform:translateY(-2px);}
+        .video-card-thumb{aspect-ratio:16/9;width:100%;background:#000;overflow:hidden;}
+        .video-card-thumb video{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block;}
+        .video-card-info{padding:8px 10px 10px;}
+        .video-card-date{font-size:.75em;color:var(--text-muted);margin-bottom:3px;}
+        .video-card-status{font-size:.78em;margin-bottom:4px;}
+        .video-card-gallery{font-size:.78em;display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--text-muted);margin-top:2px;}
+        .video-history-card{grid-column:1/-1;}
+        .global-wm-bar{background:rgba(124,107,250,.08);border:1px solid rgba(124,107,250,.25);border-radius:14px;padding:14px 16px;margin-bottom:18px;}
+        .global-wm-note{font-size:.85em;color:var(--text-muted);margin-bottom:10px;line-height:1.5;}
+        .global-wm-note strong{color:#fff;}
+        .global-wm-toggle-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+        .global-wm-toggle-text{flex:1;font-size:.88em;font-weight:600;color:var(--text-main);min-width:120px;}
+    </style>
+</head>
+
+    <!-- Free Credits Expiry Banner -->
+    <div id="expiryBanner" style="display:none; background:linear-gradient(90deg,#ff6b35,#f7c948); color:#1a1408; padding:12px 20px; text-align:center; font-weight:600; font-size:0.9em; position:sticky; top:0; z-index:9999;">
+      <span id="expiryBannerText"></span>
+      <button onclick="openCreditsModal()" style="margin-left:12px; background:#1a1408; color:#f7c948; border:none; border-radius:20px; padding:5px 14px; font-weight:700; cursor:pointer; font-size:0.85em;">Buy Credits →</button>
+      <button onclick="document.getElementById('expiryBanner').style.display='none'" style="margin-left:8px; background:transparent; border:none; color:#1a1408; cursor:pointer; font-size:1.1em;">✕</button>
+    </div>
+
+    <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <a href="gallery.html" style="color:var(--primary);text-decoration:none;font-size:0.85em;margin-right:12px;">🎨 Gallery</a>
+        <a href="index.html" class="logo">✨ Toon It!</a>
+        <div class="header-right">
+            <div class="credit-badge">
+                <span>💎</span>
+                <span id="headerCredits">0</span> Credits
+            </div>
+            <div class="user-menu">
+                <button class="user-btn" onclick="toggleUserMenu()">
+                    <span id="userEmail">User</span>
+                    <span>▼</span>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="index.html">🎨 Create Video</a>
+                    <button onclick="handleLogout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h1 class="page-title">&#127916; My Videos</h1>
+
+        <div class="dashboard-grid">
+
+            <!-- Video History Card - full width - my_videos_20260317 -->
+            <div class="card video-history-card">
+                <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                    <h2 class="card-title">&#127916; Video History</h2>
+                    <a href="index.html" style="background:var(--primary);color:#07070f;font-weight:800;font-size:1.05em;padding:10px 22px;border-radius:25px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(240,180,41,0.3);">&#10024; New Transformation</a>
+                </div>
+                <!-- Global Watermark Toggle (paid users only) - my_videos_20260317 -->
+                <div class="global-wm-bar" id="globalWmBar" style="display:none;">
+                    <p class="global-wm-note"><strong>As a credit purchaser</strong>, you can remove the ToonIt.ai watermark from all your videos and future creations.</p>
+                    <div class="global-wm-toggle-row">
+                        <span class="global-wm-toggle-text">&#127916; Remove watermark on all videos &amp; future creations</span>
+                        <label class="wm-toggle-switch">
+                            <input type="checkbox" id="globalWmToggleInput" onchange="toggleGlobalWatermark(this.checked)">
+                            <span class="wm-toggle-slider"></span>
+                        </label>
+                        <span class="wm-toggle-status" id="globalWmStatus">Off</span>
+                        <span class="wm-toggle-saving" id="globalWmSaving">Saving&#8230;</span>
+                    </div>
+                </div>
+                <!-- Video Grid -->
+                <div class="video-grid" id="videoList">
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <div class="empty-state-icon">&#127916;</div>
+                        <p>No videos yet</p>
+                        <p>Create your first storybook video!</p>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Referral Section -->
+        <div class="card referral-card">
+            <div class="card-header">
+                <h2 class="card-title">🎁 Refer Friends, Earn Credits</h2>
+            </div>
+            <div style="padding:0 15px 15px;">
+                <p style="color:var(--text-muted);font-size:0.9em;margin:0 0 15px;">Share your code or link — you both earn 5 credits when they sign up!</p>
+
+                <div style="background:var(--bg-surface);border:2px dashed var(--primary);border-radius:12px;padding:18px;text-align:center;margin-bottom:18px;">
+                    <div style="font-size:0.85em;color:var(--text-muted);margin-bottom:8px;">Share your referral code</div>
+                    <div id="dashReferralCodeDisplay" style="font-size:1.8em;font-weight:700;color:var(--primary);letter-spacing:2px;cursor:pointer;" onclick="copyDashCode()" title="Click to copy code">—</div>
+                    <div style="font-size:0.7em;color:var(--text-muted);margin-top:5px;">Click to copy • Share this code with friends</div>
+                </div>
+
+                <div style="margin-bottom:18px;">
+                    <div style="font-size:0.85em;color:var(--text-muted);margin-bottom:8px;">Or share your referral link</div>
+                    <div class="referral-link-box">
+                        <input type="text" class="referral-link-input" id="dashReferralLink" readonly>
+                        <button class="referral-copy-btn" onclick="copyDashReferralLink()">📋 Copy</button>
+                    </div>
+                </div>
+
+                <div class="referral-stats">
+                    <div class="referral-stat">
+                        <div class="referral-stat-value" id="statReferrals">0</div>
+                        <div class="referral-stat-label">Referrals</div>
+                    </div>
+                    <div class="referral-stat">
+                        <div class="referral-stat-value" id="statRefCredits">0</div>
+                        <div class="referral-stat-label">Credits Earned</div>
+                    </div>
+                </div>
+                <div class="referral-history" id="referralHistory">
+                    <p style="color:var(--text-muted);font-size:0.85em;text-align:center;">No referrals yet. Share your code to get started!</p>
+                </div>
+            </div>
+        </div>
+
+            <!-- Transaction History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💳 Credit History</h2>
+                </div>
+                <div class="transaction-list transaction-list-scroll" id="transactionList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💳</div>
+                        <p>No transactions yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </main>
+
+    <!-- Video Modal -->
+    <div class="video-modal" id="videoModal">
+        <button class="video-modal-close" onclick="closeVideoModal()">×</button>
+        <div class="video-modal-content">
+            <div class="toonit-watermark-wrap">
+            <video id="modalVideo" controls></video>
+            <span class="toonit-watermark">ToonIt.ai</span>
+        </div>
+            <div style="margin-top:12px;text-align:center;">
+                <button id="shareVideoBtn" onclick="shareCurrentVideo()" style="background:var(--primary);color:var(--bg-main);border:none;padding:10px 24px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;">Share Video</button>
+                &nbsp;
+                <button id="dashDownloadBtn" onclick="dashDownloadVideo()" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);padding:10px 24px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;">⬇️ Download</button>
+            </div>
+            <div class="wm-toggle-bar" id="dashWmToggleBar" style="display:none;">
+                <span class="wm-toggle-label">🎬 Watermark</span>
+                <label class="wm-toggle-switch">
+                    <input type="checkbox" id="dashWmToggleInput" onchange="toggleDashWatermark(this.checked)">
+                    <span class="wm-toggle-slider"></span>
+                </label>
+                <span class="wm-toggle-status" id="dashWmToggleStatus">On</span>
+                <span class="wm-toggle-saving" id="dashWmToggleSaving">Saving…</span>
+            </div>
+            <div id="dashWmRemovedBadge" style="text-align:center;margin-top:8px;display:none;">
+                <span class="dash-wm-removed">✅ Watermark removed — clean video ready!</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer>
+        <span class="footer-brand">Toon It!</span>
+        <p>© 2026 Toon It! — Transform your photos into magical storybook videos</p>
+        <p>Something not right? Video didn't turn out as expected? We're here to help! Reach out to us at <a href="mailto:support@toonit.ai">support@toonit.ai</a></p>
+        <div class="footer-links">
+            <a href="terms.html">Terms of Service</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="blog/">Blog &amp; How-To</a>
+        </div>
+        <p class="footer-powered">Powered by <a href="https://venice.ai" target="_blank" rel="noopener noreferrer">Venice.ai</a></p>
+    </footer>
+    <script>
+        // Supabase config
+        const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+        const _dk1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
+    const _dk2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
+    const _dk3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+    const SUPABASE_KEY = _dk1 + _dk2 + _dk3;
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+        // Failsafe: Hide loading screen after 5 seconds no matter what
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                console.warn('Loading timeout - redirecting to login');
+                loadingScreen.innerHTML = '<div style="text-align:center;padding:20px;"><p style="color:#ff6b6b;margin-bottom:15px;">Session expired or not logged in</p><a href="index.html" style="color:#feca57;text-decoration:underline;">Click here to login</a></div>';
+            }
+        }, 5000);
+
+            await checkAuth();
+        });
+
+        async function checkAuth() {
+            try {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+                if (error) {
+                    console.error('Auth error:', error);
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!session) {
+                    // Not logged in - redirect to landing page
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email.split('@')[0];
+
+            // Load dashboard data
+            await Promise.all([
+                loadCredits(),
+                loadVideos(),
+                loadTransactions(),
+                    loadReferralData()
+            ]);
+
+            // Hide loading screen
+            document.getElementById('loadingScreen').classList.add('hidden');
+            } catch (err) {
+                console.error('Dashboard error:', err);
+                // Show error or redirect
+                document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center;color:#ff6b6b;"><p>Error loading My Videos</p><a href="index.html" style="color:#feca57;">Return to Home</a></div>';
+            }
+        }
+
+        async function loadCredits() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select('credits, free_credits, free_credits_expires_at')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (data) {
+                    document.getElementById('headerCredits').textContent = data.credits;
+                    var _sc=document.getElementById('statCredits');if(_sc)_sc.textContent=data.credits;
+                    // Show free credit expiry warning if applicable
+                    showFreeCreditsExpiry(data.free_credits, data.free_credits_expires_at);
+                    // Load watermark state for paid user UI
+                    loadDashWatermarkState();
+                }
+            } catch (err) {
+                console.error('Error loading credits:', err);
+            }
+        }
+
+        async function loadVideos() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('generations')
+                    .select('id, user_id, job_id, status, video_url, cloudinary_url, created_at, is_public, like_count')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                const videoList = document.getElementById('videoList');
+
+                if (data && data.length > 0) {
+                    // Get actual total count
+                const { count: totalVideos } = await supabaseClient
+                    .from('generations')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', currentUser.id);
+                var _sv=document.getElementById('statVideos');if(_sv)_sv.textContent=totalVideos||data.length;
+
+                    videoList.innerHTML = data.map(video => `
+                        <div class="video-card" onclick="playVideo('${video.video_url || ''}')">
+                            <div class="video-card-thumb">
+                                ${video.video_url
+                                    ? `<video src="${video.video_url}" muted playsinline preload="metadata"></video>`
+                                    : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2em;">&#127916;</div>`
+                                }
+                            </div>
+                            <div class="video-card-info">
+                                <div class="video-card-date">${formatDate(video.created_at)}</div>
+                                <div class="video-card-status">${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}</div>
+                                ${video.status === 'complete' ? `
+                                <label class="video-card-gallery" onclick="event.stopPropagation()">
+                                    <input type="checkbox" ${video.is_public ? 'checked' : ''} onchange="toggleGalleryOptIn(event, '${video.id}')" onclick="event.stopPropagation()" style="cursor:pointer;">
+                                    <span>&#128226; Gallery</span>
+                                </label>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    videoList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎬</div>
+                            <p>No videos yet</p>
+                            <a href="index.html" class="card-action" style="margin-top:1rem;display:inline-block">
+                                Create Your First Video
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error loading videos:', err);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('credit_transactions')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                const txList = document.getElementById('transactionList');
+
+                // Count purchases
+                const purchases = data ? data.filter(t => t.type === 'purchase').length : 0;
+                var _sp=document.getElementById('statPurchases');if(_sp)_sp.textContent=purchases;
+
+                if (data && data.length > 0) {
+                    txList.innerHTML = data.map(tx => {
+                        const isPositive = tx.amount > 0 && tx.type !== 'use';
+                        return `
+                            <div class="transaction-item">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon ${tx.type}">
+                                        ${tx.type === 'purchase' ? '💳' : tx.type === 'use' ? '🎬' : '🎁'}
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-desc">${tx.description || tx.type}</div>
+                                        <div class="transaction-date">${formatDate(tx.created_at)}</div>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                                    ${isPositive ? '+' : ''}${tx.amount} credits
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    txList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💳</div>
+                            <p>No transactions yet</p>
+                            <p>Purchase credits to get started!</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error loading transactions:', err);
+            }
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + ' days ago';
+
+            return date.toLocaleDateString();
+        }
+
+        function toggleUserMenu() {
+            document.getElementById('userDropdown').classList.toggle('open');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userDropdown').classList.remove('open');
+            }
+        });
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        var currentVideoUrl = "";
+        
+        
+        
+        async function toggleGalleryOptIn(event, genId) {
+            event.stopPropagation();
+            const checkbox = event.target;
+            const isPublic = checkbox.checked;
+            try {
+                const { error } = await supabaseClient
+                    .from('generations')
+                    .update({ is_public: isPublic })
+                    .eq('id', genId);
+                if (error) throw error;
+                // Show feedback
+                const label = checkbox.closest('.gallery-toggle-label');
+                if (label) {
+                    const span = label.querySelector('span');
+                    const orig = span.textContent;
+                    span.textContent = isPublic ? '✅ Added to gallery!' : '✅ Removed from gallery';
+                    setTimeout(() => span.textContent = orig, 2000);
+                }
+            } catch (err) {
+                console.error('Gallery toggle error:', err);
+                checkbox.checked = !isPublic; // rollback
+            }
+        }
+
+        function showFreeCreditsExpiry(freeCredits, expiresAt) {
+            if (!freeCredits || freeCredits <= 0 || !expiresAt) return;
+            var now = new Date();
+            var expiry = new Date(expiresAt);
+            var msLeft = expiry - now;
+            var daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+            var banner = document.getElementById('expiryBanner');
+            var bannerText = document.getElementById('expiryBannerText');
+            if (!banner || !bannerText) return;
+            if (daysLeft <= 0) {
+                bannerText.textContent = '⏰ Your ' + freeCredits + ' free credit' + (freeCredits > 1 ? 's have' : ' has') + ' expired. Buy credits to keep creating!';
+                banner.style.display = 'block';
+            } else if (daysLeft <= 7) {
+                bannerText.textContent = '⏰ Your ' + freeCredits + ' free credit' + (freeCredits > 1 ? 's expire' : ' expires') + ' in ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + '!';
+                banner.style.display = 'block';
+            }
+        }
+
+        function openCreditsModal() {
+            // Redirect to main page with credits modal trigger
+            window.location.href = 'https://toonit.ai#buy-credits';
+        }
+
+        // === WATERMARK HELPER ===
+        function addWatermark(url) {
+            return url; // watermark is CSS overlay
+        }
+        // === END WATERMARK HELPER ===
+
+        function playVideo(url) {
+            if (!url) return;
+            currentVideoUrl = url;
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            video.src = addWatermark(url);
+            modal.classList.add('open');
+            video.play();
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            video.pause();
+            video.src = '';
+            modal.classList.remove('open');
+        }
+
+        function shareCurrentVideo() {
+            if (!currentVideoUrl) return;
+            if (navigator.share) {
+                navigator.share({
+                    title: "Check out my Toon It! video!",
+                    text: "I transformed my photo into a magical storybook video with Toon It!",
+                    url: "https://toonit.ai"
+                }).catch(function(){});
+            } else {
+                navigator.clipboard.writeText(currentVideoUrl).then(function() {
+                    var btn = document.getElementById("shareVideoBtn");
+                    btn.textContent = "Link Copied!";
+                    setTimeout(function() { btn.textContent = "Share Video"; }, 2000);
+                }).catch(function(){});
+            }
+        }
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeVideoModal();
+        });
+
+        // Close modal on background click
+        document.getElementById('videoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'videoModal') closeVideoModal();
+        });
+    
+        // Referral functions
+        function copyDashCode() {
+            var codeEl = document.getElementById('dashReferralCodeDisplay');
+            if (codeEl && codeEl.textContent !== '—') {
+                navigator.clipboard.writeText(codeEl.textContent).then(function() {
+                    var orig = codeEl.textContent;
+                    codeEl.textContent = '✅ Copied!';
+                    codeEl.style.fontSize = '1.2em';
+                    setTimeout(function() { codeEl.textContent = orig; codeEl.style.fontSize = '1.8em'; }, 1500);
+                });
+            }
+        }
+
+        function copyDashReferralLink() {
+            var input = document.getElementById('dashReferralLink');
+            if (input) {
+                navigator.clipboard.writeText(input.value).then(function() {
+                    var btn = document.querySelector('.referral-copy-btn');
+                    if (btn) {
+                        btn.textContent = '✅ Copied!';
+                        setTimeout(function() { btn.textContent = '📋 Copy'; }, 2000);
+                    }
+                });
+            }
+        }
+
+        async function loadReferralData() {
+            if (!currentUser || !supabaseClient) return;
+            try {
+                // Get user's referral code and stats
+                var { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('referral_code, total_referrals, total_referral_purchases')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (profile) {
+                    var linkInput = document.getElementById('dashReferralLink');
+                    if (linkInput) linkInput.value = 'https://toonit.ai?ref=' + profile.referral_code;
+                    var codeDisplay = document.getElementById('dashReferralCodeDisplay');
+                    if (codeDisplay) codeDisplay.textContent = profile.referral_code;
+
+                    var statRef = document.getElementById('statReferrals');
+                    if (statRef) statRef.textContent = profile.total_referrals || 0;
+
+                    var statPurch = document.getElementById('statRefPurchases');
+                    if (statPurch) statPurch.textContent = profile.total_referral_purchases || 0;
+                }
+
+                // Get referral history
+                var { data: referrals } = await supabaseClient
+                    .from('referrals')
+                    .select('status, created_at, signup_credit_awarded, purchase_credit_awarded')
+                    .eq('referrer_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                var historyDiv = document.getElementById('referralHistory');
+                if (referrals && referrals.length > 0) {
+                    var creditsEarned = 0;
+                    var historyHtml = '';
+                    referrals.forEach(function(ref) {
+                        if (ref.signup_credit_awarded) creditsEarned++;
+                        if (ref.purchase_credit_awarded) creditsEarned++;
+                        var statusClass = ref.status === 'purchased' ? 'purchased' : 'confirmed';
+                        var statusLabel = ref.status === 'purchased' ? '💰 Purchased' : '✅ Signed Up';
+                        var date = new Date(ref.created_at).toLocaleDateString();
+                        historyHtml += '<div class="referral-history-item">' +
+                            '<span>' + date + '</span>' +
+                            '<span class="referral-status-badge referral-status-' + statusClass + '">' + statusLabel + '</span>' +
+                            '</div>';
+                    });
+                    if (historyDiv) historyDiv.innerHTML = historyHtml;
+                    var statCredits = document.getElementById('statRefCredits');
+                    if (statCredits) statCredits.textContent = creditsEarned;
+                } else {
+                    if (historyDiv) historyDiv.innerHTML = '<p style="color:var(--text-muted);font-size:0.85em;text-align:center;">No referrals yet. Share your link to get started!</p>';
+                }
+            } catch(e) {
+                console.error('[REFERRAL] Load error:', e);
+            }
+        }
+
+
+        // ==========================================
+        // DASHBOARD WATERMARK SYSTEM
+        // ==========================================
+        var _dashWmState = {
+            hasPurchased: false,
+            globalRemoved: false,
+            currentVideoJobId: null,
+            currentCleanUrl: null,
+            currentWmUrl: null,
+            currentVideoRemoved: false,
+            wmReady: false
+        };
+
+        function _dashIsIOS() { // dashboard_ios_wm_toggle_fix_20260310
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        function _dashWmUpdateToggleUI(removed) {
+            var toggleInput = document.getElementById('dashWmToggleInput');
+            var statusEl = document.getElementById('dashWmToggleStatus');
+            if (toggleInput) toggleInput.checked = removed;
+            if (statusEl) {
+                statusEl.textContent = removed ? 'Off' : 'On';
+                statusEl.className = 'wm-toggle-status' + (removed ? ' active' : '');
+            }
+        }
+
+        async function toggleDashWatermark(enabled) { // dashboard_ios_toggle_restore_20260310
+            if (!currentUser || !supabaseClient || !_dashWmState.hasPurchased) return;
+            var toggleInput = document.getElementById('dashWmToggleInput');
+            var savingEl = document.getElementById('dashWmToggleSaving');
+            var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+            var video = document.getElementById('modalVideo');
+            if (toggleInput) toggleInput.disabled = true;
+            if (savingEl) savingEl.classList.add('visible');
+            try {
+                await supabaseClient.from('profiles').update({ watermark_removed_global: enabled }).eq('id', currentUser.id);
+                if (_dashWmState.currentVideoJobId) {
+                    await supabaseClient.from('generations').update({ watermark_removed: enabled }).eq('job_id', _dashWmState.currentVideoJobId);
+                }
+                _dashWmState.globalRemoved = enabled;
+                _dashWmState.currentVideoRemoved = enabled;
+                if (video) {
+                    var wasPlaying = !video.paused;
+                    var currentTime = video.currentTime || 0;
+                    video.src = enabled ? (_dashWmState.currentCleanUrl || video.src) : (_dashWmState.currentWmUrl || _dashWmState.currentCleanUrl || video.src);
+                    try { video.currentTime = currentTime; } catch(e) {}
+                    if (wasPlaying) video.play().catch(function(){});
+                }
+                if (wmSpan) wmSpan.style.display = enabled ? 'none' : '';
+                _dashWmUpdateToggleUI(enabled);
+                var callout = document.getElementById('dashWmCallout');
+                if (callout) callout.style.display = _dashWmState.hasPurchased && !_dashWmState.globalRemoved ? 'block' : 'none';
+            } catch(e) {
+                console.error('[DASH-WM] Toggle error:', e);
+                if (toggleInput) toggleInput.checked = !enabled;
+                alert('Could not update watermark preference. Please try again.');
+            } finally {
+                if (toggleInput) toggleInput.disabled = false;
+                if (savingEl) savingEl.classList.remove('visible');
+            }
+        }
+
+        async function loadDashWatermarkState() {
+            if (!currentUser || !supabaseClient) return;
+            try {
+                var { data } = await supabaseClient
+                    .from('profiles')
+                    .select('has_purchased, watermark_removed_global')
+                    .eq('id', currentUser.id)
+                    .single();
+                if (data) {
+                    _dashWmState.hasPurchased = data.has_purchased || false;
+                    _dashWmState.globalRemoved = data.watermark_removed_global || false;
+                    var globalBar = document.getElementById('globalWmBar');
+                    if (globalBar) globalBar.style.display = _dashWmState.hasPurchased ? 'block' : 'none';
+                    var gInput = document.getElementById('globalWmToggleInput');
+                    var gStatus = document.getElementById('globalWmStatus');
+                    if (gInput) gInput.checked = _dashWmState.globalRemoved;
+                    if (gStatus) {
+                        gStatus.textContent = _dashWmState.globalRemoved ? 'On' : 'Off';
+                        gStatus.className = 'wm-toggle-status' + (_dashWmState.globalRemoved ? ' active' : '');
+                    }
+                    var callout = document.getElementById('dashWmCallout');
+                    if (callout) callout.style.display = 'none';
+                }
+            } catch(e) { console.log('[DASH-WM] State load error:', e); }
+        }
+
+        // Override playVideo to load watermark state
+        var _origPlayVideo = playVideo;
+        function playVideo(url) {
+            if (!url) return;
+            currentVideoUrl = url;
+            _dashWmState.currentCleanUrl = url;
+            _dashWmState.currentWmUrl = null;
+            _dashWmState.currentVideoRemoved = false;
+            _dashWmState.wmReady = false;
+            _dashWmState.currentVideoJobId = null;
+
+            var modal = document.getElementById('videoModal');
+            var video = document.getElementById('modalVideo');
+            var toggleBar = document.getElementById('dashWmToggleBar');
+            var badge = document.getElementById('dashWmRemovedBadge');
+            var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+            var isIOS = _dashIsIOS(); // dashboard_ios_wm_toggle_fix_20260310
+
+            video.src = url;
+            modal.classList.add('open');
+            video.play();
+
+            // Reset UI
+            if (toggleBar) toggleBar.style.display = 'none';
+            if (badge) badge.style.display = 'none';
+            if (wmSpan) wmSpan.style.display = '';
+
+            // Background: find job_id from url, load wm state
+            (async () => {
+                await loadDashWatermarkState();
+                // Extract job_id from URL pattern
+                var jobIdMatch = url.match(/\/videos\/([^/?]+?)(?:_wm)?(?:\.[^/?]*)?(?:[?#]|$)/);
+                if (jobIdMatch) {
+                    var jid = jobIdMatch[1].replace('_wm','');
+                    _dashWmState.currentVideoJobId = jid;
+                    try {
+                        var { data: gen } = await supabaseClient
+                            .from('generations')
+                            .select('watermark_url, watermark_ready, watermark_removed, job_id')
+                            .eq('job_id', jid)
+                            .maybeSingle();
+                        if (gen) {
+                            _dashWmState.currentVideoJobId = gen.job_id;
+                            _dashWmState.currentVideoRemoved = gen.watermark_removed || false;
+                            if (gen.watermark_ready && gen.watermark_url) {
+                                _dashWmState.wmReady = true;
+                                _dashWmState.currentWmUrl = gen.watermark_url;
+                                // Switch to burned WM if not removed
+                                if (!_dashWmState.globalRemoved && !_dashWmState.currentVideoRemoved) {
+                                    video.src = gen.watermark_url;
+                                }
+                            } else if (!gen.watermark_ready && !_dashWmState.globalRemoved && !_dashWmState.currentVideoRemoved) {
+                                // PRE-BURN: trigger in background — edge fn is now sync, response contains watermark_url
+                                var _preBurnJobId = _dashWmState.currentVideoJobId;
+                                var _preBurnUrl = url;
+                                fetch('https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/burn-watermark', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+                                    body: JSON.stringify({ job_id: _preBurnJobId, video_url: _preBurnUrl, user_id: currentUser ? currentUser.id : null })
+                                }).then(function(r) { return r.json(); }).then(function(data) {
+                                    if (data && data.watermark_url) {
+                                        _dashWmState.wmReady = true;
+                                        _dashWmState.currentWmUrl = data.watermark_url;
+                                        console.log('[DASH-WM] Pre-burn complete:', data.watermark_url);
+                                    }
+                                }).catch(function(e) { console.log('[DASH-WM] Pre-burn error (non-blocking):', e); });
+                            }
+                        }
+                    } catch(e) { console.log('[DASH-WM] Gen check error:', e); }
+                }
+
+                // Update UI based on state
+                if (_dashWmState.globalRemoved || _dashWmState.currentVideoRemoved) {
+                    if (wmSpan) wmSpan.style.display = 'none';
+                    if (toggleBar) toggleBar.style.display = _dashWmState.hasPurchased ? 'flex' : 'none'; // dashboard_ios_toggle_restore_20260310
+                    if (badge) badge.style.display = 'none';
+                    _dashWmUpdateToggleUI(true);
+                    video.src = _dashWmState.currentCleanUrl;
+                } else {
+                    if (wmSpan) wmSpan.style.display = '';
+                    if (toggleBar) toggleBar.style.display = _dashWmState.hasPurchased ? 'flex' : 'none'; // dashboard_ios_toggle_restore_20260310
+                    if (badge) badge.style.display = 'none';
+                    _dashWmUpdateToggleUI(false);
+                }
+            })();
+        }
+
+        // ─── Client-side Canvas Watermark Burn ───────────────────────────────────────
+        // Burns 'ToonIt.ai' text onto each frame using Canvas + MediaRecorder.
+        // Tries MP4 first (Chrome 130+, Safari); falls back to WEBM on older browsers.
+        function burnWatermarkAndDownload(videoUrl, isRemoved, filename, onDone) {
+            filename = filename || 'toonit-video.mp4';
+
+            // ── iOS Safari ───────────────────────────────────────────────────────────
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                fetch(videoUrl)
+                    .then(function(r) { if (!r.ok) throw new Error('fetch ' + r.status); return r.blob(); })
+                    .then(function(blob) {
+                        var file = new File([blob], filename, { type: 'video/mp4' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            navigator.share({ files: [file], title: 'My ToonIt Video' })
+                                .then(function() { if (onDone) onDone(); })
+                                .catch(function(err) {
+                                    if (err && err.name !== 'AbortError') {
+                                        var blobUrl = URL.createObjectURL(blob);
+                                        window.open(blobUrl, '_blank');
+                                    }
+                                    if (onDone) onDone();
+                                });
+                        } else {
+                            var blobUrl = URL.createObjectURL(blob);
+                            var iosA = document.createElement('a');
+                            iosA.href = blobUrl; iosA.download = filename;
+                            document.body.appendChild(iosA); iosA.click(); document.body.removeChild(iosA);
+                            setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 10000);
+                            if (onDone) onDone();
+                        }
+                    })
+                    .catch(function(err) {
+                        window.open(videoUrl, '_blank');
+                        if (onDone) onDone();
+                    });
+                return;
+            }
+
+            // ── Non-iOS: watermark removed → fetch→blob clean MP4 ─────────────────────
+            if (isRemoved) {
+                fetch(videoUrl)
+                    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+                    .then(function(blob) {
+                        var blobUrl = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = blobUrl; a.download = filename;
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+                        if (onDone) onDone();
+                    })
+                    .catch(function(e) {
+                        window.open(videoUrl, '_blank');
+                        if (onDone) onDone();
+                    });
+                return;
+            }
+
+            // ── Non-iOS: Canvas + MediaRecorder watermark burn ───────────────────────
+            // Try MP4 first (Chrome 130+, Safari), fall back to WEBM
+            var mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' :
+                           MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+                           MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                           'video/webm';
+            var isWebm = mimeType.includes('webm');
+            var outFilename = isWebm ? filename.replace('.mp4', '.webm') : filename;
+
+            var burnVideo = document.createElement('video');
+            burnVideo.crossOrigin = 'anonymous';
+            burnVideo.muted = true;
+            burnVideo.playsInline = true;
+            burnVideo.style.display = 'none';
+            document.body.appendChild(burnVideo);
+
+            var canvas = document.createElement('canvas');
+            canvas.style.display = 'none';
+            document.body.appendChild(canvas);
+            var ctx2d = canvas.getContext('2d');
+
+            function _cleanup() {
+                try { document.body.removeChild(burnVideo); } catch(_) {}
+                try { document.body.removeChild(canvas); } catch(_) {}
+            }
+
+            burnVideo.onloadedmetadata = function() {
+                canvas.width  = burnVideo.videoWidth  || 720;
+                canvas.height = burnVideo.videoHeight || 480;
+
+                var stream = canvas.captureStream(30);
+                var recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 });
+                var chunks = [];
+
+                recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+                recorder.onstop = function() {
+                    _cleanup();
+                    var blob = new Blob(chunks, { type: mimeType });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = outFilename;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+                    if (onDone) onDone();
+                };
+
+                var drawFrame = function() {
+                    if (burnVideo.paused || burnVideo.ended) return;
+                    ctx2d.drawImage(burnVideo, 0, 0, canvas.width, canvas.height);
+                    var fSize = Math.max(18, Math.round(canvas.width * 0.038));
+                    ctx2d.save();
+                    ctx2d.font = fSize + 'px Pacifico, cursive';
+                    ctx2d.globalAlpha = 0.72;
+                    ctx2d.fillStyle = 'rgba(255,255,255,0.78)';
+                    ctx2d.shadowColor = 'rgba(0,0,0,0.6)';
+                    ctx2d.shadowBlur = 4;
+                    ctx2d.shadowOffsetX = 0;
+                    ctx2d.shadowOffsetY = 1;
+                    ctx2d.fillText('ToonIt.ai', 16, canvas.height - Math.round(fSize * 0.67));
+                    ctx2d.restore();
+                    requestAnimationFrame(drawFrame);
+                };
+
+                recorder.start(100);
+                burnVideo.play();
+                drawFrame();
+
+                burnVideo.onended = function() {
+                    setTimeout(function() { recorder.stop(); }, 200);
+                };
+            };
+
+            burnVideo.onerror = function() {
+                _cleanup();
+                // Fallback: download clean MP4 without canvas burn
+                fetch(videoUrl)
+                    .then(function(r) { return r.blob(); })
+                    .then(function(blob) {
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url; a.download = filename;
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+                        if (onDone) onDone();
+                    })
+                    .catch(function() { window.open(videoUrl, '_blank'); if (onDone) onDone(); });
+            };
+
+            burnVideo.src = videoUrl;
+            burnVideo.load();
+        }
+        // ─── END Canvas Watermark Burn ────────────────────────────────────────────────
+
+        async function dashDownloadVideo() {
+            var video = document.getElementById('modalVideo');
+            if (!video || !video.src) return;
+            var cleanUrl = _dashWmState.currentCleanUrl || video.src;
+            var isRemoved = _dashWmState.globalRemoved || _dashWmState.currentVideoRemoved;
+            var filename = 'toonit-video.mp4';
+
+            var btn = document.getElementById('dashDownloadBtn');
+            if (btn) {
+                btn.textContent = isRemoved ? '⬇️ Downloading...' : '✨ Preparing Download...';
+                btn.disabled = true;
+            }
+
+            burnWatermarkAndDownload(cleanUrl, isRemoved, filename, function() {
+                if (btn) { btn.textContent = '⬇️ Download'; btn.disabled = false; }
+            });
+        }
+
+
+                async function dashRemoveWatermark(scope) {
+            if (!currentUser || !supabaseClient) return;
+            var toggleBar = document.getElementById('dashWmToggleBar');
+            var badge = document.getElementById('dashWmRemovedBadge');
+            var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+            var video = document.getElementById('modalVideo');
+
+            try {
+                if (scope === 'all') {
+                    await supabaseClient.from('profiles').update({ watermark_removed_global: true }).eq('id', currentUser.id);
+                    _dashWmState.globalRemoved = true;
+                    _dashWmState.currentVideoRemoved = true;
+                    // Hide overview callout
+                    var callout = document.getElementById('dashWmCallout');
+                    if (callout) callout.style.display = 'none';
+                } else {
+                    var jid = _dashWmState.currentVideoJobId;
+                    if (jid) {
+                        await supabaseClient.from('generations').update({ watermark_removed: true }).eq('job_id', jid);
+                    }
+                    _dashWmState.currentVideoRemoved = true;
+                }
+                // Switch to clean URL
+                if (video && _dashWmState.currentCleanUrl) {
+                    var ct = video.currentTime;
+                    video.src = _dashWmState.currentCleanUrl;
+                    video.currentTime = ct;
+                    video.play();
+                }
+                if (wmSpan) wmSpan.style.display = 'none';
+                if (toggleBar) toggleBar.style.display = 'none';
+                if (badge) badge.style.display = 'block';
+            } catch(e) {
+                console.error('[DASH-WM] Remove error:', e);
+                alert('Could not remove watermark. Please try again.');
+            }
+        }
+
+        async function toggleGlobalWatermark(enabled) { // global_wm_toggle_20260317
+            if (!currentUser || !supabaseClient || !_dashWmState.hasPurchased) return;
+            var gInput = document.getElementById('globalWmToggleInput');
+            var gSaving = document.getElementById('globalWmSaving');
+            var gStatus = document.getElementById('globalWmStatus');
+            if (gInput) gInput.disabled = true;
+            if (gSaving) gSaving.classList.add('visible');
+            try {
+                await supabaseClient.from('profiles').update({ watermark_removed_global: enabled }).eq('id', currentUser.id);
+                await supabaseClient.from('generations').update({ watermark_removed: enabled }).eq('user_id', currentUser.id);
+                _dashWmState.globalRemoved = enabled;
+                if (gStatus) {
+                    gStatus.textContent = enabled ? 'On' : 'Off';
+                    gStatus.className = 'wm-toggle-status' + (enabled ? ' active' : '');
+                }
+                _dashWmUpdateToggleUI(enabled);
+                var modal = document.getElementById('videoModal');
+                if (modal && modal.classList.contains('open')) {
+                    var wmSpan = document.querySelector('#videoModal .toonit-watermark');
+                    if (wmSpan) wmSpan.style.display = enabled ? 'none' : '';
+                    _dashWmState.currentVideoRemoved = enabled;
+                }
+            } catch(e) {
+                console.error('[GLOBAL-WM] Toggle error:', e);
+                if (gInput) gInput.checked = !enabled;
+                alert('Could not update watermark preference. Please try again.');
+            } finally {
+                if (gInput) gInput.disabled = false;
+                if (gSaving) gSaving.classList.remove('visible');
+            }
+        }
+
+                // Load watermark state alongside dashboard data
+        // (called after checkAuth completes)
+                </script>
+</body>
+</html>
