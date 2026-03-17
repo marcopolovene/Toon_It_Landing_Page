@@ -644,6 +644,10 @@
                         <span class="style-icon">🍀</span>
                         <span class="style-name">Lucky Irish</span>
                     </div>
+                    <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
+                        <span class="style-icon">🎬</span>
+                        <span class="style-name">Cartoon</span>
+                    </div>
                     <div class="style-card" data-style="actionfigure" onclick="selectStyle(this)">
                         <span class="style-badge nb">NEW</span>
                         <span class="style-icon">🎁</span>
@@ -654,16 +658,12 @@
                         <span class="style-icon">🖼️</span>
                         <span class="style-name">Renaissance</span>
                     </div>
+                </div>
+                <div class="style-cards-expanded" id="styleExp">
                     <div class="style-card" data-style="cyberpunk" onclick="selectStyle(this)">
                         <span class="style-badge nb">NEW</span>
                         <span class="style-icon">🌆</span>
                         <span class="style-name">Cyberpunk</span>
-                    </div>
-                </div>
-                <div class="style-cards-expanded" id="styleExp">
-                    <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
-                        <span class="style-icon">🎬</span>
-                        <span class="style-name">3D Cartoon</span>
                     </div>
                     <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                         <span class="style-icon">💥</span>
@@ -687,9 +687,6 @@
                     <span class="arrow">▼</span>
                 </button>
             </div>
-        </div>
-
-        <button id="transformBtn" disabled>Toon It!</button>
 
         <!-- Status Section -->
         <div id="status" style="display:none;">
@@ -3026,6 +3023,31 @@
         anime: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'],
         watercolor: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'],
         st_patricks: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'],
+    ,
+        actionfigure: [
+            'Action figures were first created by Hasbro in 1964 with G.I. Joe!',
+            'The most expensive action figure ever sold went for over $200,000!',
+            'Over 400 million action figures are sold worldwide each year!',
+            'The average serious collector owns around 133 figures!',
+            'The term action figure was coined to market toys to boys!',
+            'Some rare Star Wars figures from the 1970s are worth thousands!'
+        ],
+        renaissance: [
+            'The Mona Lisa has no visible eyebrows - it was the fashion in Renaissance Florence!',
+            'Michelangelo painted the Sistine Chapel ceiling while standing up, not lying down!',
+            'Vermeer likely used a camera obscura to achieve his photographic accuracy!',
+            'Renaissance artists ground precious gems like lapis lazuli to make blue paint!',
+            'Leonardo da Vinci wrote all his notes in mirror script from right to left!',
+            'The Renaissance period lasted roughly from the 14th to the 17th century!'
+        ],
+        cyberpunk: [
+            'The word cyberpunk was coined by author Bruce Bethke in 1980!',
+            'Neon signs were invented in 1910 by French engineer Georges Claude!',
+            'The Akihabara district in Tokyo inspired most fictional cyberpunk cities!',
+            'William Gibson wrote Neuromancer, the first major cyberpunk novel, on a typewriter!',
+            'The cyberpunk genre combines high technology with low-life street culture!',
+            'Blade Runner (1982) is considered the most influential cyberpunk film ever made!'
+        ]
     };
 
     function _getTheme() {
