@@ -198,6 +198,33 @@
         .global-wm-toggle-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
         .global-wm-toggle-text{flex:1;font-size:.88em;font-weight:600;color:var(--text-main);min-width:120px;}
     </style>
+    <style>
+        /* fullscreen_wm_fix_optB_20260317 */
+        .toonit-watermark-wrap:fullscreen,
+        .toonit-watermark-wrap:-webkit-full-screen {
+            width: 100vw; height: 100vh; background: #000;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .toonit-watermark-wrap:fullscreen video,
+        .toonit-watermark-wrap:-webkit-full-screen video {
+            width: 100%; height: 100%; object-fit: contain; border-radius: 0;
+        }
+        .toonit-watermark-wrap:fullscreen .toonit-watermark,
+        .toonit-watermark-wrap:-webkit-full-screen .toonit-watermark {
+            font-size: 26px;
+        }
+        .wm-fs-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.18);
+            color: #fff; width: 32px; height: 32px; border-radius: 7px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            z-index: 20; transition: all 0.15s; opacity: 0.75; padding: 0;
+        }
+        .wm-fs-btn:hover { background: rgba(0,0,0,0.75); opacity: 1; }
+        .toonit-watermark-wrap:fullscreen .wm-fs-btn,
+        .toonit-watermark-wrap:-webkit-full-screen .wm-fs-btn { opacity: 0.65; }
+    </style>
 </head>
 
     <!-- Free Credits Expiry Banner -->
@@ -328,8 +355,9 @@
     <div class="video-modal" id="videoModal">
         <button class="video-modal-close" onclick="closeVideoModal()">×</button>
         <div class="video-modal-content">
-            <div class="toonit-watermark-wrap">
-            <video id="modalVideo" controls></video>
+            <div class="toonit-watermark-wrap" id="wmWrap">
+            <video id="modalVideo" controls controlsList="nofullscreen"></video>
+            <button class="wm-fs-btn" id="wmFsBtn" onclick="toggleModalFullscreen()" title="Fullscreen"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg></button>
             <span class="toonit-watermark">ToonIt.ai</span>
         </div>
             <div style="margin-top:12px;text-align:center;">
@@ -648,6 +676,10 @@
         }
 
         function closeVideoModal() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                var _exit = document.exitFullscreen || document.webkitExitFullscreen;
+                if (_exit) _exit.call(document).catch(function(){});
+            }
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('modalVideo');
             video.pause();
@@ -1186,6 +1218,49 @@
 
                 // Load watermark state alongside dashboard data
         // (called after checkAuth completes)
-                </script>
+                
+        // ── FULLSCREEN WATERMARK FIX optB fullscreen_wm_fix_optB_20260317 ──────────
+        var _svgEnter = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg>';
+        var _svgExit  = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 1v4H1M13 5H9V1M1 9h4v4M9 13V9h4"/></svg>';
+
+        function toggleModalFullscreen() {
+            var wrap = document.getElementById('wmWrap');
+            if (!wrap) return;
+            var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (!isFs) {
+                var req = wrap.requestFullscreen || wrap.webkitRequestFullscreen || wrap.mozRequestFullScreen;
+                if (req) req.call(wrap).catch(function(e){ console.log('[FS]', e); });
+            } else {
+                var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                if (ex) ex.call(document).catch(function(e){ console.log('[FS]', e); });
+            }
+        }
+
+        function _updateFsBtn() {
+            var btn = document.getElementById('wmFsBtn');
+            if (!btn) return;
+            var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            btn.innerHTML = isFs ? _svgExit : _svgEnter;
+            btn.title = isFs ? 'Exit fullscreen' : 'Fullscreen';
+        }
+
+        function _onFsChange() {
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            // Firefox intercept: if raw <video> got fullscreened, redirect to wrapper
+            if (fsEl && fsEl.id === 'modalVideo') {
+                var ex = document.exitFullscreen || document.webkitExitFullscreen;
+                if (ex) ex.call(document).then(function() {
+                    var wrap = document.getElementById('wmWrap');
+                    var req = wrap && (wrap.requestFullscreen || wrap.webkitRequestFullscreen);
+                    if (req) req.call(wrap).catch(function(){});
+                }).catch(function(){});
+                return;
+            }
+            _updateFsBtn();
+        }
+        document.addEventListener('fullscreenchange', _onFsChange);
+        document.addEventListener('webkitfullscreenchange', _onFsChange);
+        // ── END FULLSCREEN WATERMARK FIX ─────────────────────────────────────────────
+        </script>
 </body>
 </html>
