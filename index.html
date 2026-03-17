@@ -179,8 +179,8 @@
         .style-card.active .style-name { color: var(--primary); }
         .style-cards-wrapper { position: relative; }
         .style-cards-top { display: flex; gap: 8px; flex-wrap: wrap; }
-        .style-cards-expanded { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, opacity 0.3s ease; opacity: 0; }
-        .style-cards-expanded.open { max-height: 400px; opacity: 1; }
+        .style-cards-expanded { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, opacity 0.3s ease; opacity: 0; pointer-events: none; }
+        .style-cards-expanded.open { max-height: 400px; opacity: 1; pointer-events: auto; }
         .style-toggle { display: flex; align-items: center; justify-content: center; gap: 4px; background: none; border: 1px solid var(--border); border-radius: 10px; color: var(--text-muted); font-size: 0.72em; font-weight: 600; cursor: pointer; padding: 6px 14px; margin: 8px auto 0; transition: all 0.2s; width: auto; }
         .style-toggle:hover { color: var(--primary); border-color: var(--primary); }
         .style-toggle .arrow { transition: transform 0.3s ease; display: inline-block; }
@@ -3048,7 +3048,9 @@
                 video: ['🎬 Blade Runner vibes loading...', '🌆 Neon reflections rippling...', '⚡ Holographic ads flickering...', '💜 Cyberpunk world animating...'],
                 fun: ['The word cyberpunk was coined by Bruce Bethke in 1980! 🤖', 'Neon signs were invented in 1910 by Georges Claude! 💡', 'Tokyos Akihabara district inspired most cyberpunk cities! 🏙️', 'The first cyberpunk novel was Neuromancer by William Gibson! 📚']
             }
-        },
+        }
+        };
+
         return _magicThemes[style] || _magicThemes.storybook;
     }
 
