@@ -4897,6 +4897,20 @@
         var wasConfirmation = checkEmailConfirmation();
         setTimeout(checkExistingSession, wasConfirmation ? 1000 : 500);
     }
+  // Extend _getStyleLoaderMeta map (loader CSS classes for new styles)
+  var origGetStyleLoaderMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
+  if (origGetStyleLoaderMeta) {
+    _getStyleLoaderMeta = function() {
+      var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+      var newMap = {
+        actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
+        renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
+        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
+      };
+      if (newMap[style]) return newMap[style];
+      return origGetStyleLoaderMeta();
+    };
+  }
 })();
 </script>
 
@@ -4980,6 +4994,20 @@
       if(btn){btn.classList.add('open');var l=btn.querySelector('span:first-child');if(l)l.textContent='Less styles';}
     }
   }
+  // Extend _getStyleLoaderMeta map (loader CSS classes for new styles)
+  var origGetStyleLoaderMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
+  if (origGetStyleLoaderMeta) {
+    _getStyleLoaderMeta = function() {
+      var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+      var newMap = {
+        actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
+        renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
+        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
+      };
+      if (newMap[style]) return newMap[style];
+      return origGetStyleLoaderMeta();
+    };
+  }
 })();
 </script>
 </body>
@@ -4998,6 +5026,20 @@
             sc.scrollTo({left: i * sc.clientWidth, behavior:'smooth'});
         });
     });
+  // Extend _getStyleLoaderMeta map (loader CSS classes for new styles)
+  var origGetStyleLoaderMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
+  if (origGetStyleLoaderMeta) {
+    _getStyleLoaderMeta = function() {
+      var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+      var newMap = {
+        actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
+        renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
+        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
+      };
+      if (newMap[style]) return newMap[style];
+      return origGetStyleLoaderMeta();
+    };
+  }
 })();
 </script>
 
