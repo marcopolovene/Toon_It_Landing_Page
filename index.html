@@ -3004,7 +3004,8 @@
             anime: { cls: 'style-loader--anime', label: 'Anime' },
             watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor' },
             st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish' },
-            actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
+            chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
+        actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
             renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         };
@@ -4902,6 +4903,7 @@
     _getStyleLoaderMeta = function() {
       var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
       var newMap = {
+        chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
@@ -5028,13 +5030,7 @@ _magicFacts.chibi = [
     'Chibi art is one of the most popular styles on Venice.ai because it consistently produces joyful, heart-melting results.',
     'The pastel color palettes and soft shading in premium chibi art require advanced lighting techniques that AI has only recently mastered.'
 ];
-if (typeof _getStyleLoaderMeta === 'function') {
-    var _origLoaderMeta = _getStyleLoaderMeta;
-    _getStyleLoaderMeta = function() {
-        var m = _origLoaderMeta();
-        m.chibi = { cls: 'style-loader--chibi', label: 'Chibi' };
-        return m;
-    };
+;
 }
 </script>
 </body>
@@ -5059,6 +5055,7 @@ if (typeof _getStyleLoaderMeta === 'function') {
     _getStyleLoaderMeta = function() {
       var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
       var newMap = {
+        chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
