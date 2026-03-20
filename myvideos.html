@@ -495,25 +495,39 @@
                     .eq('user_id', currentUser.id);
                 var _sv=document.getElementById('statVideos');if(_sv)_sv.textContent=totalVideos||data.length;
 
-                    videoList.innerHTML = data.map(video => `
-                        <div class="video-card" onclick="playVideo('${video.video_url || ''}')">
-                            <div class="video-card-thumb">
-                                ${video.video_url
-                                    ? `<video src="${video.video_url}" muted playsinline preload="metadata"></video>`
-                                    : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2em;">&#127916;</div>`
-                                }
-                            </div>
-                            <div class="video-card-info">
-                                <div class="video-card-date">${formatDate(video.created_at)}</div>
-                                <div class="video-card-status">${video.status === 'complete' ? '✅ Complete' : '⏳ ' + (video.status || 'Processing')}</div>
-                                ${video.status === 'complete' ? `
-                                <label class="video-card-gallery" onclick="event.stopPropagation()">
-                                    <input type="checkbox" ${video.is_public ? 'checked' : ''} onchange="toggleGalleryOptIn(event, '${video.id}')" onclick="event.stopPropagation()" style="cursor:pointer;">
-                                    <span>&#128226; Gallery</span>
-                                </label>` : ''}
-                            </div>
-                        </div>
-                    `).join('');
+                                        // Pre-resolve signed URLs for all videos
+                    var _signedUrls = await Promise.all(data.map(function(v) { return getSignedVideoUrl(v.video_url || ''); }));
+                    var _cards = '';
+                    for (var _vi = 0; _vi < data.length; _vi++) {
+                        var video = data[_vi];
+                        var _su = _signedUrls[_vi] || '';
+                        var _thumbHtml = _su
+                            ? '<video src="' + _su + '" muted playsinline preload="metadata"></video>'
+                            : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2em;">&#127916;</div>';
+                        var _statusHtml = video.status === 'complete' ? '&#9989; Complete' : '&#9203; ' + (video.status || 'Processing');
+                        var _galleryHtml = '';
+                        if (video.status === 'complete') {
+                            _galleryHtml = '<label class="video-card-gallery" onclick="event.stopPropagation()">'
+                                + '<input type="checkbox" ' + (video.is_public ? 'checked' : '')
+                                + ' onchange="toggleGalleryOptIn(event, \'' + video.id + '\')"'
+                                + ' onclick="event.stopPropagation()" style="cursor:pointer;">'
+                                + '<span>&#128226; Gallery</span></label>';
+                        }
+                        _cards += '<div class="video-card" data-vidx="' + _vi + '">'
+                            + '<div class="video-card-thumb">' + _thumbHtml + '</div>'
+                            + '<div class="video-card-info">'
+                            + '<div class="video-card-date">' + formatDate(video.created_at) + '</div>'
+                            + '<div class="video-card-status">' + _statusHtml + '</div>'
+                            + _galleryHtml + '</div></div>';
+                    }
+                    videoList.innerHTML = _cards;
+                    // Bind click handlers with signed URLs
+                    var _cardEls = videoList.querySelectorAll('[data-vidx]');
+                    for (var _ci = 0; _ci < _cardEls.length; _ci++) {
+                        (function(url) {
+                            _cardEls[_ci].addEventListener('click', function() { playVideo(url); });
+                        })(_signedUrls[parseInt(_cardEls[_ci].dataset.vidx)] || '');
+                    }
                 } else {
                     videoList.innerHTML = `
                         <div class="empty-state">
@@ -664,6 +678,25 @@
             return url; // watermark is CSS overlay
         }
         // === END WATERMARK HELPER ===
+        // === Signed URL Cache (Fix #1 CDN caching + Fix #2 private bucket) ===
+        const _signedUrlCache = new Map();
+        const SIGNED_URL_TTL = 3600;
+
+        async function getSignedVideoUrl(publicUrl) {
+            if (!publicUrl) return publicUrl;
+            var match = publicUrl.match(/\/storage\/v1\/object\/public\/videos\/(.+)/);
+            if (!match) return publicUrl;
+            var filePath = decodeURIComponent(match[1].split('?')[0]);
+            var cached = _signedUrlCache.get(filePath);
+            if (cached && cached.expires > Date.now()) return cached.url;
+            try {
+                var result = await supabaseClient.storage.from('videos').createSignedUrl(filePath, SIGNED_URL_TTL);
+                if (result.error || !result.data || !result.data.signedUrl) return publicUrl;
+                _signedUrlCache.set(filePath, { url: result.data.signedUrl, expires: Date.now() + (SIGNED_URL_TTL - 600) * 1000 });
+                return result.data.signedUrl;
+            } catch (e) { return publicUrl; }
+        }
+
 
         function playVideo(url) {
             if (!url) return;
@@ -889,8 +922,10 @@
 
         // Override playVideo to load watermark state
         var _origPlayVideo = playVideo;
-        function playVideo(url) {
+        async function playVideo(url) {
             if (!url) return;
+            // Resolve signed URL if needed
+            url = await getSignedVideoUrl(url);
             currentVideoUrl = url;
             _dashWmState.currentCleanUrl = url;
             _dashWmState.currentWmUrl = null;
@@ -933,10 +968,10 @@
                             _dashWmState.currentVideoRemoved = gen.watermark_removed || false;
                             if (gen.watermark_ready && gen.watermark_url) {
                                 _dashWmState.wmReady = true;
-                                _dashWmState.currentWmUrl = gen.watermark_url;
+                                _dashWmState.currentWmUrl = await getSignedVideoUrl(gen.watermark_url);
                                 // Switch to burned WM if not removed
                                 if (!_dashWmState.globalRemoved && !_dashWmState.currentVideoRemoved) {
-                                    video.src = gen.watermark_url;
+                                    video.src = _dashWmState.currentWmUrl;
                                 }
                             } else if (!gen.watermark_ready && !_dashWmState.globalRemoved && !_dashWmState.currentVideoRemoved) {
                                 // PRE-BURN: trigger in background — edge fn is now sync, response contains watermark_url
@@ -949,7 +984,7 @@
                                 }).then(function(r) { return r.json(); }).then(function(data) {
                                     if (data && data.watermark_url) {
                                         _dashWmState.wmReady = true;
-                                        _dashWmState.currentWmUrl = data.watermark_url;
+                                        getSignedVideoUrl(data.watermark_url).then(function(su) { _dashWmState.currentWmUrl = su; });
                                         console.log('[DASH-WM] Pre-burn complete:', data.watermark_url);
                                     }
                                 }).catch(function(e) { console.log('[DASH-WM] Pre-burn error (non-blocking):', e); });

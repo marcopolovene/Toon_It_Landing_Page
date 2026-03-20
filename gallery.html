@@ -164,6 +164,35 @@
         return url.replace('/upload/', '/upload/' + transform + '/');
     }
 
+    // === Signed URL Cache (Fix #1 CDN caching + Fix #2 private bucket) ===
+    const _signedUrlCache = new Map();
+    const SIGNED_URL_TTL = 3600; // 1 hour
+
+    async function getSignedVideoUrl(publicUrl) {
+        if (!publicUrl) return publicUrl;
+        // Only convert Supabase public video URLs
+        var match = publicUrl.match(/\/storage\/v1\/object\/public\/videos\/(.+)/);
+        if (!match) return publicUrl;
+        var filePath = decodeURIComponent(match[1].split('?')[0]);
+        // Check cache
+        var cached = _signedUrlCache.get(filePath);
+        if (cached && cached.expires > Date.now()) return cached.url;
+        // Generate signed URL
+        try {
+            var result = await supabaseClient.storage.from('videos').createSignedUrl(filePath, SIGNED_URL_TTL);
+            if (result.error || !result.data || !result.data.signedUrl) {
+                console.warn('Signed URL error:', result.error);
+                return publicUrl;
+            }
+            _signedUrlCache.set(filePath, { url: result.data.signedUrl, expires: Date.now() + (SIGNED_URL_TTL - 600) * 1000 });
+            return result.data.signedUrl;
+        } catch (e) {
+            console.warn('Signed URL exception:', e);
+            return publicUrl;
+        }
+    }
+
+
     async function init() {
         // Get current user (for likes)
         const { data: { user } } = await supabaseClient.auth.getUser();
@@ -228,10 +257,16 @@
         document.getElementById('galleryEmpty').style.display = 'none';
         document.getElementById('galleryGrid').style.display = 'grid';
 
-        data.forEach(item => {
-            const videoUrl = addWatermark(item.video_url || item.cloudinary_url || '');
-            const liked = likedSet.has(item.id);
-            const card = document.createElement('div');
+        // Resolve signed URLs in parallel for all videos
+        var signedUrls = await Promise.all(data.map(function(item) {
+            var raw = addWatermark(item.video_url || item.cloudinary_url || '');
+            return getSignedVideoUrl(raw);
+        }));
+
+        data.forEach(function(item, idx) {
+            var videoUrl = signedUrls[idx];
+            var liked = likedSet.has(item.id);
+            var card = document.createElement('div');
             card.className = 'gallery-card';
             card.dataset.id = item.id;
             card.innerHTML = `
