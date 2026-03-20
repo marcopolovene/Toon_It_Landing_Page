@@ -2860,9 +2860,27 @@
                             clearInterval(pollInterval);
                             if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                             clearJob();
+
+                            // Detect content moderation block: failed with no error + no video
+                            var _isContentBlock = (data.status === "failed" || data.status === "blocked") && !data.error_message && !data.video_url;
+
+                            // Refund credit for content moderation blocks
+                            if (_isContentBlock && supabaseClient && (window.currentUser || typeof currentUser !== "undefined")) {
+                                var _refundUser = window.currentUser || currentUser;
+                                if (_refundUser && _refundUser.id) {
+                                    supabaseClient.rpc("increment_credits", {
+                                        user_id: _refundUser.id,
+                                        amount: 1
+                                    }).then(function() {
+                                        console.log("[REFUND] Credit refunded for content moderation block");
+                                        loadUserCredits();
+                                    }).catch(function(e) { console.log("[REFUND] Error:", e); });
+                                }
+                            }
                             if (statusText) {
-                                var _blockedMsg = 'The video provider blocked this request. Please try a different photo, crop, or style.';
-                                var _finalMsg = (data.status === 'blocked') ? (data.error_message || _blockedMsg) : (data.error_message || 'Video generation failed. Please try again.');
+                                var _blockedMsg = 'Our AI provider flagged this photo with the selected style. Your credit has been refunded automatically. Please try a different photo or style.';
+                                var _genericFail = data.error_message || 'Video generation failed. Please try again.';
+                                var _finalMsg = _isContentBlock ? _blockedMsg : _genericFail;
                                 statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _finalMsg + '</div>' +
                                     '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
             }
