@@ -384,7 +384,18 @@
     background-image: linear-gradient(90deg, #ff9a9e, #fad0c4, #fbc2eb);
     box-shadow: 0 0 16px rgba(255, 105, 180, 0.4);
 }
-</style>
+
+        /* Anonymous signup banner */
+        .anon-signup-banner { margin: 20px 0; padding: 0; }
+        .asb-inner { background: linear-gradient(135deg, rgba(212,160,74,0.15), rgba(212,160,74,0.05)); border: 2px solid rgba(212,160,74,0.4); border-radius: 16px; padding: 30px 24px; text-align: center; }
+        .asb-emoji { font-size: 36px; margin-bottom: 8px; }
+        .asb-title { color: #d4a04a; font-size: 1.3em; margin: 0 0 8px; }
+        .asb-text { color: #ccc; font-size: 1em; margin: 0 0 16px; }
+        .asb-cta { display: inline-block; background: linear-gradient(135deg, #d4a04a, #c49040); color: #1a1408; border: none; padding: 14px 32px; border-radius: 30px; font-size: 1.05em; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(212,160,74,0.3); }
+        .asb-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,74,0.4); }
+        .asb-note { color: #888; font-size: 0.85em; margin: 10px 0 0; }
+
+        </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
     {
@@ -528,7 +539,7 @@
         <a class="hero-cta" onclick="document.getElementById('uploadArea').scrollIntoView({behavior:'smooth'}); return false;" href="#">
             📸 Transform a Photo Free
         </a>
-        <p class="hero-free-note">🎁 2 free credits · No credit card needed</p>
+        <p class="hero-free-note">✨ Try it now — no signup needed! 🎁 Sign up for 2 free credits</p>
     </section>
 
 
@@ -1194,22 +1205,35 @@
 
         function updateUIForGuest() {
             var uploadArea = document.getElementById('uploadArea');
-            if (uploadArea) uploadArea.style.display = 'none';
-            const guestView = document.getElementById('guestView');
-            const userView = document.getElementById('userView');
-            const guestButtons = document.getElementById('guestButtons');
-            const userButtons = document.getElementById('userButtons');
+            var guestView = document.getElementById('guestView');
+            var userView = document.getElementById('userView');
+            var guestButtons = document.getElementById('guestButtons');
+            var userButtons = document.getElementById('userButtons');
+            var loginRequired = document.getElementById('loginRequired');
+            var noCredits = document.getElementById('noCredits');
+            var infoBox = document.getElementById('infoBox');
+            var transformBtn = document.getElementById('transformBtn');
+            var styleSelector = document.getElementById('styleSelector');
 
             if (guestView) guestView.style.display = '';
             if (userView) userView.style.display = 'none';
             var _ctn = document.querySelector('.container'); if (_ctn) _ctn.classList.remove('logged-in');
             if (guestButtons) guestButtons.style.display = '';
             if (userButtons) userButtons.style.display = 'none';
-            if (loginRequired) loginRequired.style.display = '';
             if (noCredits) noCredits.style.display = 'none';
             if (infoBox) infoBox.style.display = 'none';
-            // REMOVED: if (uploadArea) uploadArea.classList.add('disabled');
-            if (transformBtn) transformBtn.disabled = true;
+
+            // PHASE 2: Show upload area for anonymous free transform
+            if (typeof canDoFreeTransform === 'function' && canDoFreeTransform()) {
+                if (uploadArea) { uploadArea.style.display = 'block'; uploadArea.classList.remove('disabled'); }
+                if (styleSelector) styleSelector.style.display = 'block';
+                if (loginRequired) loginRequired.style.display = 'none';
+                if (transformBtn) { transformBtn.style.display = ''; transformBtn.disabled = true; }
+            } else {
+                if (uploadArea) uploadArea.style.display = 'none';
+                if (loginRequired) loginRequired.style.display = '';
+                if (transformBtn) transformBtn.disabled = true;
+            }
         }
 
     
@@ -1275,6 +1299,28 @@
       // Don't disable - let user try anyway, backend will check
     }
             updateTransformButton();
+
+            // PHASE 2: Unlock controls if user just signed up after anonymous transform
+            if (typeof unlockControlsAfterSignup === 'function') {
+                unlockControlsAfterSignup();
+            }
+            // Claim anonymous generation if exists
+            var anonJobId = sessionStorage.getItem('toonit_anon_job');
+            if (anonJobId && supabaseClient && currentUser && currentUser.id) {
+                var anonSessionId = sessionStorage.getItem('toonit_anon_id');
+                if (anonSessionId) {
+                    console.log('[ANON] Claiming anonymous generation:', anonJobId, 'for user:', currentUser.id);
+                    supabaseClient.from('generations')
+                        .update({ user_id: currentUser.id })
+                        .eq('job_id', anonJobId)
+                        .then(function(res) {
+                            console.log('[ANON] Claim result:', res);
+                            sessionStorage.removeItem('toonit_anon_job');
+                            sessionStorage.removeItem('toonit_anon_id');
+                        })
+                        .catch(function(err) { console.log('[ANON] Claim error:', err); });
+                }
+            }
 
             // Auto-resume pending purchase after login
             if (window.pendingBundle) {
@@ -2603,6 +2649,94 @@
             updateTransformButton();
         }
 
+                // ==========================================
+        // ANONYMOUS TRANSFORM SUPPORT
+        // ==========================================
+        function getAnonSessionId() {
+            var id = sessionStorage.getItem('toonit_anon_id');
+            if (!id) {
+                id = 'anon-' + ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function(c) {
+                    return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+                });
+                sessionStorage.setItem('toonit_anon_id', id);
+            }
+            return id;
+        }
+
+        function canDoFreeTransform() {
+            if (localStorage.getItem('toonit_free_used')) return false;
+            if (document.cookie.indexOf('toonit_free=1') !== -1) return false;
+            return true;
+        }
+
+        function markFreeTransformUsed() {
+            localStorage.setItem('toonit_free_used', String(Date.now()));
+            document.cookie = 'toonit_free=1; max-age=2592000; path=/; SameSite=Lax';
+        }
+
+        function isAnonymousUser() {
+            var user = currentUser || window.currentUser;
+            return !user || !user.id;
+        }
+
+        function showAnonSignupBanner() {
+            var existing = document.getElementById('anonSignupBanner');
+            if (existing) existing.remove();
+            var result = document.getElementById('result');
+            if (!result) return;
+            var banner = document.createElement('div');
+            banner.id = 'anonSignupBanner';
+            banner.className = 'anon-signup-banner';
+            banner.innerHTML = '<div class="asb-inner">' +
+                '<div class="asb-emoji">&#10024;</div>' +
+                '<h3 class="asb-title">Love your transformation?</h3>' +
+                '<p class="asb-text">Sign up FREE to download this + get <strong>2 more free credits!</strong></p>' +
+                '<button class="asb-cta" onclick="showModal(\x27signup\x27)">Sign Up Free &#8212; Get 2 Credits</button>' +
+                '<p class="asb-note">No credit card needed</p>' +
+                '</div>';
+            result.parentNode.insertBefore(banner, result);
+        }
+
+        function gateControlsForAnon() {
+            var downloadBtn = document.getElementById('downloadBtn');
+            var newBtn = document.getElementById('newBtn');
+            if (downloadBtn) {
+                downloadBtn.setAttribute('data-original-text', downloadBtn.textContent);
+                downloadBtn.textContent = '\uD83D\uDD12 Sign Up to Download';
+                downloadBtn.onclick = function(e) {
+                    e.preventDefault(); e.stopPropagation();
+                    showModal('signup');
+                    return false;
+                };
+            }
+            if (newBtn) {
+                newBtn.setAttribute('data-original-text', newBtn.textContent);
+                newBtn.textContent = '\uD83D\uDD12 Sign Up for 2 Free Credits';
+                newBtn.onclick = function(e) {
+                    e.preventDefault(); e.stopPropagation();
+                    showModal('signup');
+                    return false;
+                };
+            }
+        }
+
+        function unlockControlsAfterSignup() {
+            var downloadBtn = document.getElementById('downloadBtn');
+            var newBtn = document.getElementById('newBtn');
+            if (downloadBtn) {
+                downloadBtn.textContent = '\u2B07\uFE0F Download';
+                downloadBtn.onclick = function(e) { if (e) { e.preventDefault(); e.stopPropagation(); } downloadVideo(); return false; };
+            }
+            if (newBtn) {
+                newBtn.textContent = '\uD83D\uDD04 Create Another';
+                newBtn.onclick = function(e) { if (e) { e.preventDefault(); e.stopPropagation(); } resetForNew(); return false; };
+            }
+            var banner = document.getElementById('anonSignupBanner');
+            if (banner) banner.remove();
+        }
+
+
+
         // ==========================================
         // TRANSFORMATION
         // ==========================================
@@ -2663,28 +2797,43 @@
             if (!selectedFile) { showToast('Please select a photo first', 'warning'); return; }
             // Sync currentUser from all possible sources
             if (!currentUser && window.currentUser) currentUser = window.currentUser;
-            const hasUser = currentUser || window.currentUser;
-            if (!hasUser || !hasUser.id) { showModal('login'); return; }
-            currentUser = hasUser;  // Ensure currentUser is always set for the rest of the function
-            // Fresh credit check from database
-            var creditUser = currentUser || window.currentUser;
-            if (creditUser && creditUser.id && supabaseClient) {
-                try {
-                    var { data: creditData } = await supabaseClient
-                        .from('profiles')
-                        .select('credits')
-                        .eq('id', creditUser.id)
-                        .single();
-                    if (creditData) {
-                        currentCredits = creditData.credits;
-                        var creditEl = document.getElementById('creditCount');
-                        if (creditEl) creditEl.textContent = currentCredits;
-                    }
-                } catch(ce) { console.error('[CREDITS] Fresh check error:', ce); }
+            var hasUser = currentUser || window.currentUser;
+            var isAnonTransform = false;
+
+            if (!hasUser || !hasUser.id) {
+                // PHASE 2: Allow anonymous free transform
+                if (typeof canDoFreeTransform === 'function' && canDoFreeTransform()) {
+                    isAnonTransform = true;
+                    console.log('[ANON] Starting free anonymous transform');
+                } else {
+                    showModal('signup');
+                    return;
+                }
+            } else {
+                currentUser = hasUser;
             }
-            if (currentCredits < 1) {
-                showToast('No credits remaining. Please buy more!', 'error');
-                return;
+
+            // Credit check (skip for anonymous users)
+            if (!isAnonTransform) {
+                var creditUser = currentUser || window.currentUser;
+                if (creditUser && creditUser.id && supabaseClient) {
+                    try {
+                        var { data: creditData } = await supabaseClient
+                            .from('profiles')
+                            .select('credits')
+                            .eq('id', creditUser.id)
+                            .single();
+                        if (creditData) {
+                            currentCredits = creditData.credits;
+                            var creditEl = document.getElementById('creditCount');
+                            if (creditEl) creditEl.textContent = currentCredits;
+                        }
+                    } catch(ce) { console.error('[CREDITS] Fresh check error:', ce); }
+                }
+                if (currentCredits < 1) {
+                    showToast('No credits remaining. Please buy more!', 'error');
+                    return;
+                }
             }
 
             // Compress image before sending (reduces 10MB+ to ~300KB)
@@ -2700,7 +2849,7 @@
 
                 try {
                     let authToken = '';
-                    if (supabaseClient) {
+                    if (supabaseClient && !isAnonTransform) {
                         var transformUser = window.currentUser || currentUser;
                     if (!transformUser) { showModal('login'); return; }
                     try {
@@ -2719,10 +2868,11 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             image: base64,
-                            user_id: currentUser.id,
-                            auth_token: authToken,
+                            user_id: isAnonTransform ? getAnonSessionId() : currentUser.id,
+                            auth_token: isAnonTransform ? 'anon' : authToken,
                             style: getSelectedStyle(),
-                            duration: 5
+                            duration: 5,
+                            is_anonymous: isAnonTransform
                         })
                     });
 
@@ -2742,6 +2892,11 @@
                         lastTransformTime = Date.now(); // Set cooldown only after successful start
                         currentJobId = result.job_id;
                         saveJob(currentJobId);
+                        // PHASE 2: Mark free transform used and gate controls for anon
+                        if (isAnonTransform) {
+                            markFreeTransformUsed();
+                            sessionStorage.setItem('toonit_anon_job', result.job_id);
+                        }
                         startPolling();
                     } else {
                         throw new Error(result.error || 'Failed to start transformation');
@@ -3359,6 +3514,12 @@
             var styleSelector = document.getElementById('styleSelector'); if (styleSelector) styleSelector.style.display = 'none';
             if (status) status.style.display = 'none';
             if (result) result.style.display = 'block';
+
+            // PHASE 2: Gate controls for anonymous users
+            if (typeof isAnonymousUser === 'function' && isAnonymousUser()) {
+                showAnonSignupBanner();
+                gateControlsForAnon();
+            }
 
             // Store clean URL and job ID in watermark state
             _wmState.currentCleanUrl = url;
@@ -4007,15 +4168,26 @@
         var noCredits = document.getElementById('noCredits');
         var infoBox = document.getElementById('infoBox');
         var transformBtn = document.getElementById('transformBtn');
-        if (uploadArea) uploadArea.style.display = 'none';
+        var styleSelector = document.getElementById('styleSelector');
+
         if (guestView) guestView.style.display = '';
         if (userView) userView.style.display = 'none';
         if (guestButtons) guestButtons.style.display = '';
         if (userButtons) userButtons.style.display = 'none';
-        if (loginRequired) loginRequired.style.display = '';
         if (noCredits) noCredits.style.display = 'none';
         if (infoBox) infoBox.style.display = 'none';
-        if (transformBtn) transformBtn.disabled = true;
+
+        // PHASE 2: Show upload area for anonymous free transform
+        if (typeof canDoFreeTransform === 'function' && canDoFreeTransform()) {
+            if (uploadArea) { uploadArea.style.display = 'block'; uploadArea.classList.remove('disabled'); }
+            if (styleSelector) styleSelector.style.display = 'block';
+            if (loginRequired) loginRequired.style.display = 'none';
+            if (transformBtn) { transformBtn.style.display = 'block'; transformBtn.disabled = true; }
+        } else {
+            if (uploadArea) uploadArea.style.display = 'none';
+            if (loginRequired) loginRequired.style.display = '';
+            if (transformBtn) transformBtn.disabled = true;
+        }
         var container = document.querySelector('.container');
         if (container) container.classList.remove('logged-in');
     }
@@ -4201,6 +4373,13 @@
             resultVideo.load();
         }
         if (result) result.style.display = 'block';
+
+        // PHASE 2: Gate controls for anonymous users
+        if (typeof isAnonymousUser === 'function' && isAnonymousUser()) {
+            showAnonSignupBanner();
+            gateControlsForAnon();
+        }
+
         var downloadBtn = document.getElementById('downloadBtn');
         if (downloadBtn) {
             downloadBtn.onclick = function(e) {
