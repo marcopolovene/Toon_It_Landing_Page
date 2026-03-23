@@ -35,6 +35,13 @@
     .featured-badge { display: inline-block; background: linear-gradient(135deg,#7c3aed,#db2777); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.6rem; border-radius: 20px; margin-left: 0.5rem; vertical-align: middle; }
     footer { text-align: center; padding: 2rem; color: #444460; font-size: 0.85rem; border-top: 1px solid rgba(139,92,246,0.1); }
     footer a { color: #6655aa; text-decoration: none; }
+  
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 700px; margin: 0 auto 0.5rem; }
+    .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(139,92,246,0.2); color: #9d9db8; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .filter-btn:hover { border-color: rgba(139,92,246,0.5); color: #c4b5fd; }
+    .filter-btn.active { background: rgba(124,58,237,0.2); border-color: #7c3aed; color: #c4b5fd; font-weight: 600; }
+    .card[data-category] { transition: opacity 0.3s, transform 0.3s; }
+    .card.hidden-filter { display: none; }
   </style>
 </head>
 <body>
@@ -51,39 +58,49 @@
 <div class="hero">
   <span class="hero-tag">✍️ The Toon It Blog</span>
   <h1>AI Art &amp; Cartoon Guides</h1>
-  <p>Tips, tutorials, and inspiration for transforming your photos into stunning cartoon art and animated videos.</p>
+  <p>Tips, tutorials, and inspiration for transforming your photos into stunning cartoon art and animated videos. Use the filters below to find exactly what you need.</p>
 </div>
 
-<div class="grid">  <a class="card featured" href="how-to-use-toon-it-for-the-first-time.html">
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All Posts</button>
+    <button class="filter-btn" data-filter="howto">🎬 How-To Guides</button>
+    <button class="filter-btn" data-filter="family">👪 Kids & Family</button>
+    <button class="filter-btn" data-filter="pets">🐾 Pets</button>
+    <button class="filter-btn" data-filter="styles">🎨 Styles & Art</button>
+    <button class="filter-btn" data-filter="seasonal">🐣 Seasonal</button>
+  </div>
+
+<div class="grid">  <a class="card featured" data-category="howto" href="how-to-use-toon-it-for-the-first-time.html">
     <span class="card-tag">🪄 Beginner Guide <span class="featured-badge">Start Here</span></span>
     <h2>How to Use Toon It for the First Time</h2>
     <p>A simple, cheerful guide for older folks, parents, and first-time users: sign up, upload a photo, make your first transformation, and review your dashboard.</p>
     <div class="card-meta"><span>Mar 9, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="chibi-ai-art-kawaii-photo-maker.html">
+  <a class="card" data-category="styles" href="chibi-ai-art-kawaii-photo-maker.html">
     <span class="card-tag">🐼 New Style <span class="featured-badge">NEW</span></span>
     <h2>Chibi AI Art: Turn Any Photo into Adorable Kawaii Characters</h2>
     <p>Discover the cutest AI art trend of 2026! Transform photos into irresistible chibi characters with massive sparkling eyes and kawaii proportions.</p>
   </a>
-  <a class="card" href="dog-photo-to-cartoon-ai.html">
+  <a class="card" data-category="pets" href="dog-photo-to-cartoon-ai.html">
     <span class="card-tag">🐶 Dogs & Pets</span>
     <h2>Dog Photo to Cartoon AI — Turn Your Pup Into a Storybook Hero</h2>
     <p>Transform your dog’s photo into an adorable AI storybook cartoon. Works for every breed — golden retrievers, bulldogs, rescue mutts.</p>
   </a>
-  <a class="card" href="best-ai-cartoon-app-2026.html">
+  <a class="card" data-category="styles" href="best-ai-cartoon-app-2026.html">
     <span class="card-tag">🏆 Comparison</span>
     <h2>Best AI Cartoon App 2026: 7 Tools Compared</h2>
     <p>We tested Lensa, ToonMe, Fotor, and more. Honest comparison of the 7 best AI cartoon apps — with a clear winner.</p>
   </a>
 
-  <a class="card" href="baby-photo-to-cartoon-ai.html">
+  <a class="card" data-category="family" href="baby-photo-to-cartoon-ai.html">
     <span class="card-tag">👶 Parents</span>
     <h2>Baby Photo to Cartoon — Preserve Every Milestone</h2>
     <p>Turn your baby’s first smile, first steps, or cake smash into a magical storybook cartoon that lasts forever.</p>
   </a>
 
-  <a class="card" href="easter-ai-gift-ideas-personalized.html">
+  <a class="card" data-category="seasonal" href="easter-ai-gift-ideas-personalized.html">
     <span class="card-tag">🐰 Seasonal</span>
     <h2>Easter Gift Ideas 2026: Personalized AI Cartoons</h2>
     <p>Skip the chocolate bunny. Turn a family photo into a magical storybook cartoon — the perfect personalized Easter gift.</p>
@@ -93,7 +110,7 @@
 
 
 
-  <a class="card" href="animated-video-from-photo-ai.html">
+  <a class="card" data-category="howto" href="animated-video-from-photo-ai.html">
     <span class="card-tag">🎬 How-To Guide</span>
     <h2>How to Turn Any Photo Into an Animated Video Using AI (2026 Guide)</h2>
     <p>Upload a photo, get back a magical 5-second animated storybook video. Here&#39;s how AI photo animation works — and why Toon It does it best.</p>
@@ -101,7 +118,7 @@
   </a>
 
 
-  <a class="card" href="how-to-animate-a-photo-ai.html">
+  <a class="card" data-category="howto" href="how-to-animate-a-photo-ai.html">
     <span class="card-tag">🎬 How-To Guide</span>
     <h2>How to Animate a Photo with AI — 3 Easy Methods Anyone Can Use</h2>
     <p>Want your photos to come alive? Here are 3 ways to animate any photo using AI — baby pics, pets, family moments. No design skills required.</p>
@@ -109,7 +126,7 @@
   </a>
 
 
-  <a class="card" href="blog_ai_storybook_generator_20260225_1100AM.html">
+  <a class="card" data-category="styles" href="blog_ai_storybook_generator_20260225_1100AM.html">
     <span class="card-tag">📖 Storybook</span>
     <h2>AI Storybook Generator: Revolutionise Your Storytelling</h2>
     <p>The definitive guide to AI storybook generators — how they work, use cases from kids' books to D&amp;D, and why animated output changes everything.</p>
@@ -117,83 +134,83 @@
   </a>
 
 
-  <a class="card" href="blog_cartoon_family_portrait_20260309_1100PM.html">
+  <a class="card" data-category="family" href="blog_cartoon_family_portrait_20260309_1100PM.html">
     <span class="card-tag">👨‍👩‍👧‍👦 Family Portraits</span>
     <h2>Cartoon Family Portrait: Turn Your Favorite Family Photo into Storybook Art</h2>
     <p>Learn how a cartoon family portrait can become a joyful keepsake for holiday cards, grandparents gifts, wall art, and fun family sharing with Toon It.</p>
     <div class="card-meta"><span>Mar 9, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_ai_art_for_kids_20260309_1101AM.html">
+  <a class="card" data-category="family" href="blog_ai_art_for_kids_20260309_1101AM.html">
     <span class="card-tag">🎨 Kids AI Art</span>
     <h2>AI Art for Kids: Safe, Magical Ways to Turn Photos into Storybook Creations</h2>
     <p>Explore how AI art for kids can inspire school projects, birthday fun, family portraits, and imaginative characters with Toon It.</p>
     <div class="card-meta"><span>Mar 9, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_storybook_character_generator_20260308_1100PM.html">
+  <a class="card" data-category="styles" href="blog_storybook_character_generator_20260308_1100PM.html">
     <span class="card-tag">📚 Storybook Magic</span>
     <h2>Storybook Character Generator: Turn Any Photo into a Magical Hero</h2>
     <p>See how a storybook character generator can transform selfies, family photos, pets, and fantasy heroes into charming illustrated portraits with Toon It.</p>
     <div class="card-meta"><span>Mar 8, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_fun_ai_tools_for_kids_20260302_1100AM.html">
+  <a class="card" data-category="family" href="blog_fun_ai_tools_for_kids_20260302_1100AM.html">
     <span class="card-tag">🧒 Kids &amp; Family</span>
     <h2>Fun AI Tools for Kids: Spark Creativity with Magical Cartoon Art</h2>
     <p>Discover the best child-safe AI art tools for families. Toon It transforms any photo into a charming storybook character — perfect for kids, parents, and teachers.</p>
     <div class="card-meta"><span>Mar 2, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_dnd_character_creator_20260227_1100AM.html">
+  <a class="card" data-category="styles" href="blog_dnd_character_creator_20260227_1100AM.html">
     <span class="card-tag">🎲 D&amp;D / RPG</span>
     <h2>D&amp;D Character Creator: Bring Your Hero to Life with AI Art</h2>
     <p>Transform your real photo into a stunning fantasy storybook portrait — perfect for D&amp;D campaigns, RPG profiles, and gifts for dungeon masters.</p>
     <div class="card-meta"><span>Feb 27, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_pet_cartoon_maker_20260226_1100AM.html">
+  <a class="card" data-category="pets" href="blog_pet_cartoon_maker_20260226_1100AM.html">
     <span class="card-tag">🐾 Pets</span>
     <h2>Pet Cartoon Maker: Turn Your Furry Friend into Storybook Art</h2>
     <p>Discover how AI pet cartoon makers work and why Toon It creates the most charming storybook-style pet portraits from any photo.</p>
     <div class="card-meta"><span>Feb 26, 2026</span><span class="card-read">Read →</span></div>
   </a>
-  <a class="card" href="blog_cartoon_avatar_maker_20260224_1100AM.html">
+  <a class="card" data-category="styles" href="blog_cartoon_avatar_maker_20260224_1100AM.html">
     <span class="card-tag">🎭 Avatars</span>
     <h2>Cartoon Avatar Maker: Creating Unique Digital Identities</h2>
     <p>Learn how cartoon avatar makers help you stand out online with a distinctive, personalised digital identity.</p>
     <div class="card-meta"><span>Feb 24, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_photo_to_cartoon_app_20260224_1100PM.html">
+  <a class="card" data-category="styles" href="blog_photo_to_cartoon_app_20260224_1100PM.html">
     <span class="card-tag">📸 Photo to Cartoon</span>
     <h2>Transform Your Photos with the Best Photo to Cartoon App</h2>
     <p>A guide to the best photo-to-cartoon apps in 2026 — what to look for and why animated AI output leads the pack.</p>
     <div class="card-meta"><span>Feb 24, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="fairytale-ai-art-style.html">
+  <a class="card" data-category="styles" href="fairytale-ai-art-style.html">
     <span class="card-tag">🏰 Fairytale Style</span>
     <h2>Fairytale AI Art: Create Magical Animated Cartoon Portraits</h2>
     <p>How fairytale-style AI art transforms your photos into enchanting animated portraits — tips, techniques, and best practices.</p>
     <div class="card-meta"><span>Feb 23, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="blog_turn_photo_into_cartoon_20260223_0817PM.html">
+  <a class="card" data-category="howto" href="blog_turn_photo_into_cartoon_20260223_0817PM.html">
     <span class="card-tag">🎨 Tutorial</span>
     <h2>Turn Photo into Cartoon: The Complete 2026 Guide</h2>
     <p>A complete walkthrough covering all cartoon styles, tips for best results, and how AI photo-to-cartoon tools work in 2026.</p>
     <div class="card-meta"><span>Feb 23, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="pet-cartoon-maker-2026-02-22.html">
+  <a class="card" data-category="pets" href="pet-cartoon-maker-2026-02-22.html">
     <span class="card-tag">🐾 Pets</span>
     <h2>Pet Cartoon Maker: Turn Your Furry Friend into Art</h2>
     <p>Your pet deserves their own cartoon portrait. See how AI pet cartoon makers create magical animated results instantly.</p>
     <div class="card-meta"><span>Feb 22, 2026</span><span class="card-read">Read →</span></div>
   </a>
 
-  <a class="card" href="turn-pet-photo-into-cartoon-2026-02-20.html">
+  <a class="card" data-category="pets" href="turn-pet-photo-into-cartoon-2026-02-20.html">
     <span class="card-tag">🐾 Pets</span>
     <h2>Turn Your Pet's Photo into a Stunning 3D Cartoon</h2>
     <p>Step-by-step guide to turning any pet photo into beautiful 3D cartoon art and an animated video — dogs, cats, and all pets.</p>
@@ -206,5 +223,22 @@
   <p>&copy; 2026 <a href="https://toonit.ai">Toon It!</a> · <a href="https://toonit.ai/privacy.html">Privacy</a> · <a href="https://toonit.ai/terms.html">Terms</a></p>
 </footer>
 
+
+<script>
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var filter = this.getAttribute('data-filter');
+      document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      document.querySelectorAll('.grid .card').forEach(function(card) {
+        if (filter === 'all' || card.getAttribute('data-category') === filter) {
+          card.classList.remove('hidden-filter');
+        } else {
+          card.classList.add('hidden-filter');
+        }
+      });
+    });
+  });
+</script>
 </body>
 </html>
