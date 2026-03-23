@@ -381,8 +381,6 @@
                 .fbw{background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;padding:18px 16px;margin:14px 0;text-align:center;transition:all .3s ease}.fbw.done{border-color:var(--success);background:rgba(74,222,128,.06)}.fbw .ttl{font-size:1em;font-weight:700;color:var(--text-main);margin-bottom:12px}.fbw .stars{display:flex;justify-content:center;gap:6px;margin-bottom:14px}.fbw .st{font-size:2em;cursor:pointer;transition:transform .15s,filter .15s;filter:grayscale(1) opacity(.35);user-select:none}.fbw .st:hover,.fbw .st.on{filter:grayscale(0) opacity(1);transform:scale(1.15)}.fbw .st.on{animation:fbPop .3s ease}@keyframes fbPop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1.15)}}@keyframes fbShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}.fbw .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:14px}.fbw .tg{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;font-size:.82em;font-weight:600;transition:all .2s}.fbw .tg:hover{border-color:var(--primary);color:var(--primary)}.fbw .tg.sel{background:rgba(102,126,234,.12);border-color:var(--primary);color:var(--primary)}.fbw .cw{margin-bottom:14px;position:relative}.fbw .ct{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-main);font-size:.88em;resize:none;min-height:48px;max-height:80px;font-family:inherit;box-sizing:border-box}.fbw .ct:focus{border-color:var(--primary);outline:none}.fbw .cc{position:absolute;bottom:8px;right:10px;font-size:.7em;color:var(--text-muted)}.fbw .go{background:var(--primary);color:#07070f;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.9em;transition:all .2s}.fbw .go:hover{opacity:.9;transform:translateY(-1px)}.fbw .go:disabled{opacity:.5;cursor:not-allowed;transform:none}.fbw .skip{display:block;margin:8px auto 0;font-size:.78em;color:var(--text-muted);cursor:pointer;background:none;border:none;text-decoration:underline;opacity:.7}.fbw .skip:hover{opacity:1}.fbw .ok{text-align:center;padding:12px}.fbw .coins{font-size:1.4em;font-weight:800;color:var(--accent);animation:fbCoin .6s ease}@keyframes fbCoin{0%{transform:scale(.5);opacity:0}50%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}.fbw .okmsg{font-size:.9em;color:var(--success);font-weight:600;margin-top:4px}
 .style-loader--chibi .style-loader-fill {
 
-        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #B8A7FF, #FFC8DD, #A8E6CF); box-shadow: 0 0 16px rgba(184,167,255,0.24); }
-        .style-loader--easter_egghunt .style-loader-fill { background-image: linear-gradient(90deg, #FF6FB1, #FFD166, #2FD8C3); box-shadow: 0 0 16px rgba(255,111,177,0.24); }
     background-image: linear-gradient(90deg, #ff9a9e, #fad0c4, #fbc2eb);
     box-shadow: 0 0 16px rgba(255, 105, 180, 0.4);
 }
@@ -642,16 +640,6 @@
         <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card" data-style="easter_enchanted" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-today">🐣 EASTER</span>
-                    <span class="style-icon">🌱</span>
-                    <span class="style-name">Enchanted Easter</span>
-                </div>
-                <div class="style-card" data-style="easter_egghunt" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-today">🐣 EASTER</span>
-                    <span class="style-icon">🥚</span>
-                    <span class="style-name">Easter Egg Hunt</span>
-                </div>
                 <div class="style-card active" data-style="chibi" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-new">NEW</span>
                     <span class="style-icon">🐼</span>
@@ -3049,8 +3037,6 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
             renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
-            easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter' },
-            easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt' },
         };
         return map[style] || map.storybook;
     }
@@ -5111,87 +5097,6 @@
 })();
 </script>
 
-<script>
-/* === Easter 2026 Seasonal Styles === */
-(function() {
-  if (typeof _magicThemes !== 'undefined') {
-    _magicThemes.easter_enchanted = {
-      spell: 'Easter Enchantment Rising!',
-      wand: '🌱',
-      particles: ['✨','🌱','🌸','🐇','🦋','🌟','✦','˚'],
-      msgs: {
-        1: [
-          'Following the rainbow to your photo... 🌈',
-          'Spring blossoms unfolding around you... 🌸',
-          'The enchanted garden awaits... 🌱',
-          'Baby bunnies hopping into position... 🐇',
-          'Gathering morning dew and fairy dust... ✨'
-        ],
-        2: [
-          'Painting pastel watercolors across the scene... 🎨',
-          'Cherry blossoms blooming in every corner... 🌸',
-          'Golden light weaving through the meadow... ✨',
-          'Easter eggs appearing with floral patterns... 🥚',
-          'Butterflies carrying spring magic... 🦋'
-        ],
-        3: [
-          'Your enchanted Easter garden is blooming... 🌱',
-          'The fairy-tale spring magic is nearly complete... ✨',
-          'Golden sparkles settling like morning dew... 🌟',
-          'The Easter enchantment is almost ready... 🐇',
-          'Your magical spring moment awaits... 🌸'
-        ]
-      }
-    };
-    _magicThemes.easter_egghunt = {
-      spell: 'Let the Egg Hunt Begin!',
-      wand: '🥚',
-      particles: ['🥚','🎉','🐣','🌈','🍬','🌟','✦','✨'],
-      msgs: {
-        1: [
-          'Hiding colorful eggs everywhere... 🥚',
-          'The Easter Bunny is setting up the hunt... 🐇',
-          'Filling baskets with treats and surprises... 🍬',
-          'Scattering confetti across the lawn... 🎉',
-          'Cartoon chicks hatching with excitement... 🐣'
-        ],
-        2: [
-          'Painting every egg in rainbow colors... 🌈',
-          'Stringing bunting flags between the trees... 🎉',
-          'Bright sunshine pouring over the party... ☀️',
-          'Easter baskets overflowing with goodies... 🍫',
-          'The celebration is getting colorful... 🎨'
-        ],
-        3: [
-          'Your Easter party is almost ready... 🎉',
-          'The most colorful hunt is about to begin... 🥚',
-          'Confetti cannons on standby... 🎊',
-          'Every egg is hidden and waiting... 🐣',
-          'Let the Easter fun begin... 🌟'
-        ]
-      }
-    };
-  }
-  if (typeof _magicFacts !== 'undefined') {
-    _magicFacts.easter_enchanted = [
-      'The tradition of decorating Easter eggs dates back over 2,500 years — ancient Sumerians and Egyptians placed decorated eggs in graves as symbols of rebirth.',
-      'In Germany, entire trees are hung with thousands of decorated eggs — the most famous Ostereierbaum in Saalfeld once held over 10,000 eggs.',
-      'The art of Ukrainian pysanky (wax-resist egg decorating) is so intricate that master artists spend up to 40 hours on a single egg.',
-      'Cherry blossoms bloom for only about two weeks each spring — in Japan this fleeting beauty is called mono no aware (the pathos of things).',
-      'Watercolor painting dates back to cave paintings 40,000 years ago — making it one of humanity\u2019s oldest art forms.',
-      'Baby rabbits are called kittens (or kits) — a mother rabbit can have up to 14 kits in a single litter, each born with closed eyes that open after 10 days.'
-    ];
-    _magicFacts.easter_egghunt = [
-      'The White House Easter Egg Roll has been a tradition since 1878 — President Rutherford B. Hayes started it after Congress banned kids from playing on Capitol grounds.',
-      'The world\u2019s largest Easter egg hunt used 501,000 eggs — it was held in Winter Haven, Florida in 2007 and required over 100 volunteers to hide them all.',
-      'Americans spend over $3 billion on Easter candy each year — that\u2019s enough Peeps marshmallows to circle the Earth twice.',
-      'The tradition of the Easter Bunny came to America with German immigrants in the 1700s — children would make nests for the Osterhase to fill with colored eggs.',
-      'Jelly beans became an Easter candy in the 1930s because their egg-like shape was perfect for the holiday — over 16 billion are made each Easter.',
-      'In some parts of England, an ancient Easter tradition called egg rolling races decorated eggs down hillsides — the egg that travels farthest without breaking wins.'
-    ];
-  }
-})();
-</script>
 </body>
 <script>
 (function(){
