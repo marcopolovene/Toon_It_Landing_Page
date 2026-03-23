@@ -4548,7 +4548,7 @@
 
     async function handleSignupSubmit(e) {
         e.preventDefault();
-        console.log('[FAILSAFE] Signup form submitted');
+        console.log('[SIGNUP] Form submitted');
 
         var sb = getSupabase();
         if (!sb) {
@@ -4577,82 +4577,79 @@
         }
 
         try {
-            // Sign up
-            var signupResult = await sb.auth.signUp({ email: email, password: password, options: { data: { referred_by_code: (function() { var el = document.getElementById('signupReferralCode'); return (el && el.value.trim()) ? el.value.trim().toUpperCase() : (pendingReferralCode || localStorage.getItem('toonit_referral') || null); })() } } });
-            console.log('[FAILSAFE] Signup result:', signupResult);
+            var referralCode = (function() {
+                var el = document.getElementById('signupReferralCode');
+                return (el && el.value.trim()) ? el.value.trim().toUpperCase() : (pendingReferralCode || localStorage.getItem('toonit_referral') || null);
+            })();
+
+            var signupResult = await sb.auth.signUp({
+                email: email,
+                password: password,
+                options: { data: { referred_by_code: referralCode } }
+            });
+            console.log('[SIGNUP] Result:', signupResult);
 
             if (signupResult.error) {
                 if (errorEl) errorEl.textContent = signupResult.error.message;
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Account';
-                }
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Account'; }
                 return;
             }
 
-            // If we got a session immediately, we're done
+            /* Path A: Immediate session (autoconfirm enabled) */
             if (signupResult.data && signupResult.data.session) {
-                console.log('[FAILSAFE] Signup with immediate session!');
+                console.log('[SIGNUP] Immediate session - success!');
+                window.currentUser = signupResult.data.session.user;
                 closeAllModals();
                 updateUIForUser(email, 2);
+                showToast('✨ Welcome to Toon It! You have 2 free credits to start!', 'success');
                 return;
             }
 
-            // Try auto-login
+            /* Path B: No immediate session - try auto-login */
             if (successEl) successEl.textContent = 'Account created! Logging you in...';
-            try { if (typeof hideSignupForm === 'function') hideSignupForm(); } catch (hideErr) { console.log('[FAILSAFE] hideSignupForm skipped:', hideErr); }
-                    // Hide form fields, show only success message
-                    var sf = document.getElementById('signupForm');
-                    if (sf) {
-                        var fgs = sf.querySelectorAll('.form-group');
-                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
-                        var btn = sf.querySelector('.modal-submit');
-                        if (btn) btn.style.display = 'none';
-                        var errEl = document.getElementById('signupError');
-                        if (errEl) errEl.style.display = 'none';
-                        var switchEl = sf.parentElement.querySelector('.modal-switch');
-                        if (switchEl) switchEl.style.display = 'none';
-                    }
 
             var loginResult = await sb.auth.signInWithPassword({ email: email, password: password });
-            console.log('[FAILSAFE] Auto-login result:', loginResult);
+            console.log('[SIGNUP] Auto-login result:', loginResult);
 
             if (loginResult.data && loginResult.data.session) {
-                window.currentUser = loginResult.data.session.user; // Set global currentUser
-            }
-
-            if (loginResult.error) {
-                if (successEl) successEl.textContent = 'Account created! Please check your email to confirm and log in.';
-                try { if (typeof hideSignupForm === 'function') hideSignupForm(); } catch (hideErr) { console.log('[FAILSAFE] hideSignupForm skipped:', hideErr); }
-                    // Hide form fields, show only success message
-                    var sf = document.getElementById('signupForm');
-                    if (sf) {
-                        var fgs = sf.querySelectorAll('.form-group');
-                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
-                        var btn = sf.querySelector('.modal-submit');
-                        if (btn) btn.style.display = 'none';
-                        var errEl = document.getElementById('signupError');
-                        if (errEl) errEl.style.display = 'none';
-                        var switchEl = sf.parentElement.querySelector('.modal-switch');
-                        if (switchEl) switchEl.style.display = 'none';
-                    }
-                    // Hide form fields after success
-                    var sf = document.getElementById('signupForm');
-                    if (sf) {
-                        var fgs = sf.querySelectorAll('.form-group');
-                        fgs.forEach(function(fg) { fg.style.display = 'none'; });
-                        var btn = sf.querySelector('.modal-submit');
-                        if (btn) btn.style.display = 'none';
-                        var err = document.getElementById('signupError');
-                        if (err) err.style.display = 'none';
-                    }
-            } else if (loginResult.data && loginResult.data.session) {
-                console.log('[FAILSAFE] Auto-login successful!');
+                console.log('[SIGNUP] Auto-login successful!');
+                window.currentUser = loginResult.data.session.user;
                 closeAllModals();
                 updateUIForUser(email, 2);
+                showToast('✨ Welcome to Toon It! You have 2 free credits to start!', 'success');
+                return;
             }
+
+            /* Path C: Auto-login failed (email confirmation required) */
+            /* Keep modal open and show clear instructions */
+            console.log('[SIGNUP] Auto-login failed, showing confirmation message');
+            var sf = document.getElementById('signupForm');
+            if (sf) {
+                var fgs = sf.querySelectorAll('.form-group');
+                fgs.forEach(function(fg) { fg.style.display = 'none'; });
+                var btn = sf.querySelector('.modal-submit');
+                if (btn) btn.style.display = 'none';
+                var errEl = document.getElementById('signupError');
+                if (errEl) errEl.style.display = 'none';
+                var switchEl = sf.parentElement.querySelector('.modal-switch');
+                if (switchEl) switchEl.style.display = 'none';
+                var googleContainer = document.getElementById('googleSignupContainer');
+                if (googleContainer) googleContainer.style.display = 'none';
+                var dividers = sf.parentElement.querySelectorAll('.auth-divider');
+                dividers.forEach(function(d) { d.style.display = 'none'; });
+            }
+            if (successEl) {
+                successEl.innerHTML = '<div style="text-align:center;padding:20px 0;">'
+                    + '<div style="font-size:48px;margin-bottom:16px;">✉️</div>'
+                    + '<h3 style="color:#d4a04a;margin:0 0 12px;">Check Your Email!</h3>'
+                    + '<p style="color:#ccc;font-size:14px;line-height:1.6;">We sent a confirmation link to <strong style="color:#fff;">' + email + '</strong></p>'
+                    + '<p style="color:#999;font-size:13px;margin-top:12px;">Click the link in the email, then come back and log in.</p>'
+                    + '</div>';
+            }
+            showToast('✉️ Check your email to confirm your account!', 'info');
+
         } catch (err) {
-            console.error('[FAILSAFE] Signup error:', err);
+            console.error('[SIGNUP] Error:', err);
             if (errorEl) errorEl.textContent = 'Signup failed. Please try again.';
         }
 
