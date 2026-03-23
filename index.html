@@ -591,7 +591,37 @@
         </div>
     </section>
 
-        <!-- Login Required Message -->
+        <!-- How It Works -->
+    <div class="how-it-works">
+        <h2>⚡ 3 Steps. Pure Magic.</h2>
+        <div class="steps-row">
+            <div class="hiw-step">
+                <div class="hiw-icon">📸</div>
+                <div class="hiw-num">1</div>
+                <div class="hiw-title">Upload Your Photo</div>
+                <div class="hiw-desc">Choose a favorite image to transform</div>
+            </div>
+            <div class="steps-arrow">→</div>
+            <div class="hiw-step">
+                <div class="hiw-icon">✨</div>
+                <div class="hiw-num">2</div>
+                <div class="hiw-title">Pick Your Style</div>
+                <div class="hiw-desc">Choose a magical look for your transformation</div>
+            </div>
+            <div class="steps-arrow">→</div>
+            <div class="hiw-step">
+                <div class="hiw-icon">🎬</div>
+                <div class="hiw-num">3</div>
+                <div class="hiw-title">Get Your Video</div>
+                <div class="hiw-desc">Download and share your magical animated video</div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Style Selector -->
+        
+
+<!-- Login Required Message -->
         <div class="info-box login-required" id="loginRequired" style="display:none">
             <div class="signup-sparkles" id="signupSparkles"></div>
             <div class="signup-headline">✨ Be the Magic! ✨</div>
@@ -620,35 +650,9 @@
             ✨ Processing typically takes 2-3 minutes. Your video will appear below when ready!
         </div>
 
-    <!-- How It Works -->
-    <div class="how-it-works">
-        <h2>⚡ 3 Steps. Pure Magic.</h2>
-        <div class="steps-row">
-            <div class="hiw-step">
-                <div class="hiw-icon">📸</div>
-                <div class="hiw-num">1</div>
-                <div class="hiw-title">Upload Your Photo</div>
-                <div class="hiw-desc">Choose a favorite image to transform</div>
-            </div>
-            <div class="steps-arrow">→</div>
-            <div class="hiw-step">
-                <div class="hiw-icon">✨</div>
-                <div class="hiw-num">2</div>
-                <div class="hiw-title">Pick Your Style</div>
-                <div class="hiw-desc">Choose a magical look for your transformation</div>
-            </div>
-            <div class="steps-arrow">→</div>
-            <div class="hiw-step">
-                <div class="hiw-icon">🎬</div>
-                <div class="hiw-num">3</div>
-                <div class="hiw-title">Get Your Video</div>
-                <div class="hiw-desc">Download and share your magical animated video</div>
-            </div>
-        </div>
-    </div>
+    
 
-        <!-- Style Selector -->
-        <div class="style-selector" id="styleSelector">
+    <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
                 <div class="style-card active" data-style="chibi" onclick="selectStyle(this)">
@@ -2563,8 +2567,9 @@
                 console.log('[UPLOAD] Click detected');
 
                 var activeUser = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
-                if (!activeUser) {
-                    showModal('login');
+                // PHASE 2: Allow anonymous users to upload for free transform
+                if (!activeUser && typeof canDoFreeTransform === 'function' && !canDoFreeTransform()) {
+                    showModal('signup');
                     return;
                 }
 
@@ -2582,9 +2587,8 @@
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                if (window.currentUser || currentUser) { // Check global or local
-                    uploadArea.classList.add('dragover');
-                }
+                // PHASE 2: Allow drag for anonymous users too
+                uploadArea.classList.add('dragover');
             });
 
             uploadArea.addEventListener('dragleave', () => {
