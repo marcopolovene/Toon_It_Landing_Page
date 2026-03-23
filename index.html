@@ -1346,10 +1346,10 @@
 
         function updateTransformButton() {
             if (transformBtn && selectedFile) {
-                // Enable if file selected and user logged in
-                // Credits check happens at transformation time
+                // Enable if file selected and (user logged in OR anonymous free transform available)
                 const hasUser = window.currentUser || currentUser;
-                transformBtn.disabled = !hasUser;
+                const canAnon = typeof canDoFreeTransform === 'function' && canDoFreeTransform();
+                transformBtn.disabled = !(hasUser || canAnon);
                 transformBtn.style.display = 'inline-block';
             }
         }
