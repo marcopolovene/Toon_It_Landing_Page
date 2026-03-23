@@ -4160,6 +4160,31 @@
         enforceLoggedInCreateLayout();
         window.enforceLoggedInCreateLayout = enforceLoggedInCreateLayout;
         window.updateUIForUser = updateUIForUser;
+
+        // PHASE 2: Unlock controls if user just signed up after anonymous transform
+        if (typeof unlockControlsAfterSignup === 'function') {
+            unlockControlsAfterSignup();
+        }
+        // Claim anonymous generation if exists
+        var anonJobId = sessionStorage.getItem('toonit_anon_job');
+        if (anonJobId && typeof supabaseClient !== 'undefined' && supabaseClient) {
+            var realUser = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+            if (realUser && realUser.id) {
+                var anonSessionId = sessionStorage.getItem('toonit_anon_id');
+                if (anonSessionId) {
+                    console.log('[ANON] Claiming anonymous generation:', anonJobId);
+                    supabaseClient.from('generations')
+                        .update({ user_id: realUser.id })
+                        .eq('job_id', anonJobId)
+                        .then(function(res) {
+                            console.log('[ANON] Claim result:', res);
+                            sessionStorage.removeItem('toonit_anon_job');
+                            sessionStorage.removeItem('toonit_anon_id');
+                        })
+                        .catch(function(err) { console.log('[ANON] Claim error:', err); });
+                }
+            }
+        }
     }
 
     function updateUIForGuestFallback() {
