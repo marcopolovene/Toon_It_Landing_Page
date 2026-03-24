@@ -3992,6 +3992,9 @@
         if (currentUser) {
             loadUserCredits().then(function() { updateUIForUser(currentUser.email, currentCredits); });
         }
+        // Auto-scroll to upload area after reset
+        var scrollTarget = document.getElementById('uploadArea');
+        if (scrollTarget) setTimeout(function() { scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
         }
 
         // ==========================================
@@ -4379,6 +4382,9 @@
                 if (e.target.files && e.target.files[0]) handleFileFallback(e.target.files[0]);
             };
         }
+        // Auto-scroll to upload area after reset
+        var scrollTarget = document.getElementById('uploadArea');
+        if (scrollTarget) setTimeout(function() { scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
     }
 
     async function showResultFallback(videoUrl, jobId) {
