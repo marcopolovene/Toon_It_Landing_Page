@@ -1312,5 +1312,20 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
+<!-- ── Capacitor Native Bridge ── -->
+<script>
+(function() {
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/capacitor-native.css';
+        document.head.appendChild(css);
+        var js = document.createElement('script');
+        js.src = '/capacitor-bridge.js';
+        document.body.appendChild(js);
+    }
+})();
+</script>
+
 </body>
 </html>

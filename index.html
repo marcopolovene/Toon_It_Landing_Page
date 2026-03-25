@@ -5315,6 +5315,24 @@
 })();
 </script>
 
+<!-- ── Capacitor Native Bridge (auto-detects native vs web) ── -->
+<script>
+(function() {
+    // Only load native bridge + CSS inside Capacitor native app
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/capacitor-native.css';
+        document.head.appendChild(css);
+
+        var js = document.createElement('script');
+        js.src = '/capacitor-bridge.js';
+        document.body.appendChild(js);
+        console.log('[ToonIt] Native bridge loading...');
+    }
+})();
+</script>
+
 <!-- ── PWA Install Banner ── -->
 <div class="pwa-install-banner" id="pwaInstallBanner">
     <img src="https://res.cloudinary.com/dzarqnick/image/upload/w_96,h_96,c_fill,r_12/toonit_favicon.png" alt="Toon It!" class="pwa-install-icon">

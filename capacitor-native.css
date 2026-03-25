@@ -1,0 +1,54 @@
+/* Toon It! — Native App CSS Overrides */
+/* Applied when running inside Capacitor shell */
+
+/* Safe area handling for notch/dynamic island */
+.capacitor-app body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* Auth bar needs extra top padding on iOS */
+.capacitor-app.platform-ios .auth-bar {
+    padding-top: calc(env(safe-area-inset-top) + 10px);
+}
+
+/* Hide PWA install banner in native */
+.capacitor-app #pwaInstallBanner {
+    display: none !important;
+}
+
+/* Hide "Add to Home Screen" type prompts */
+.capacitor-app .pwa-install-banner {
+    display: none !important;
+}
+
+/* Native camera button styling */
+.capacitor-app #nativeCameraBtn {
+    display: block;
+}
+
+/* Disable pull-to-refresh on iOS (can conflict with scroll) */
+.capacitor-app.platform-ios body {
+    overscroll-behavior-y: contain;
+}
+
+/* Bottom safe area for fixed elements */
+.capacitor-app .pwa-install-banner,
+.capacitor-app [style*="position: fixed"][style*="bottom"] {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Smoother scrolling on native */
+.capacitor-app {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on UI elements (feels more native) */
+.capacitor-app button,
+.capacitor-app .style-card,
+.capacitor-app .auth-bar {
+    -webkit-user-select: none;
+    user-select: none;
+}
