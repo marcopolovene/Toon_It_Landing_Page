@@ -33,6 +33,8 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#d4a04a">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Toon It!">
 
 
     <meta charset="UTF-8">
@@ -395,7 +397,19 @@
         .asb-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,74,0.4); }
         .asb-note { color: #888; font-size: 0.85em; margin: 10px 0 0; }
 
-        </style>
+        
+        /* ── PWA Install Banner ── */
+        .pwa-install-banner { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: linear-gradient(135deg, #181830 0%, #07070f 100%); border-top: 2px solid var(--primary); padding: 16px 20px; animation: slideUp 0.4s ease-out; }
+        .pwa-install-banner.show { display: flex; align-items: center; gap: 14px; }
+        .pwa-install-icon { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; }
+        .pwa-install-text { flex: 1; }
+        .pwa-install-text strong { color: var(--primary); font-size: 0.95em; display: block; margin-bottom: 2px; }
+        .pwa-install-text span { color: var(--text-muted); font-size: 0.8em; }
+        .pwa-install-btn { background: var(--primary); color: #07070f; border: none; padding: 10px 22px; border-radius: 25px; font-weight: 700; font-size: 0.85em; cursor: pointer; white-space: nowrap; }
+        .pwa-install-btn:hover { background: var(--accent); }
+        .pwa-install-close { background: none; border: none; color: var(--text-muted); font-size: 1.4em; cursor: pointer; padding: 4px 8px; line-height: 1; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
     {
@@ -5298,6 +5312,82 @@
       'The 2025 viral chibi trend of characters inside transparent toy capsules comes directly from Japanese gashapon vending machine culture.'
     ];
   }
+})();
+</script>
+
+<!-- ── PWA Install Banner ── -->
+<div class="pwa-install-banner" id="pwaInstallBanner">
+    <img src="https://res.cloudinary.com/dzarqnick/image/upload/w_96,h_96,c_fill,r_12/toonit_favicon.png" alt="Toon It!" class="pwa-install-icon">
+    <div class="pwa-install-text">
+        <strong>Add Toon It! to Home Screen</strong>
+        <span>Transform photos anytime — instant access, no app store needed</span>
+    </div>
+    <button class="pwa-install-btn" id="pwaInstallBtn">Install</button>
+    <button class="pwa-install-close" id="pwaInstallClose">&times;</button>
+</div>
+
+<!-- ── Service Worker Registration + Install Prompt ── -->
+<script>
+(function() {
+    /* ── Register Service Worker ── */
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js')
+                .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
+                .catch(function(err) { console.warn('[SW] Registration failed:', err); });
+        });
+    }
+
+    /* ── Smart Install Prompt ── */
+    var deferredPrompt = null;
+    var banner = document.getElementById('pwaInstallBanner');
+    var installBtn = document.getElementById('pwaInstallBtn');
+    var closeBtn = document.getElementById('pwaInstallClose');
+
+    // Check if user dismissed recently (7-day cooldown)
+    var dismissed = localStorage.getItem('toonit_pwa_dismissed');
+    var installed = localStorage.getItem('toonit_pwa_installed');
+    var cooldown = dismissed ? (Date.now() - parseInt(dismissed)) < 7 * 24 * 60 * 60 * 1000 : false;
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Show banner after 30s if not dismissed/installed
+        if (!cooldown && !installed && banner) {
+            setTimeout(function() {
+                if (deferredPrompt) banner.classList.add('show');
+            }, 30000);
+        }
+    });
+
+    if (installBtn) {
+        installBtn.addEventListener('click', function() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(result) {
+                if (result.outcome === 'accepted') {
+                    localStorage.setItem('toonit_pwa_installed', '1');
+                    console.log('[PWA] User accepted install');
+                }
+                deferredPrompt = null;
+                if (banner) banner.classList.remove('show');
+            });
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            localStorage.setItem('toonit_pwa_dismissed', Date.now().toString());
+            if (banner) banner.classList.remove('show');
+        });
+    }
+
+    // Track when app is actually installed
+    window.addEventListener('appinstalled', function() {
+        localStorage.setItem('toonit_pwa_installed', '1');
+        if (banner) banner.classList.remove('show');
+        console.log('[PWA] App installed successfully');
+    });
 })();
 </script>
 

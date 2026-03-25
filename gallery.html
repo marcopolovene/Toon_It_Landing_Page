@@ -96,6 +96,11 @@
             .hero { padding: 36px 16px 24px; }
         }
     </style>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Toon It!">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d4a04a">
 </head>
 <body>
 
@@ -345,6 +350,16 @@
     }
 
     init();
+</script>
+<!-- ── Service Worker Registration ── -->
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
+            .catch(function(err) { console.warn('[SW] Registration failed:', err); });
+    });
+}
 </script>
 </body>
 </html>

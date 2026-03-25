@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toon It! — Offline</title>
+  <style>
+    :root { --bg-dark: #07070f; --primary: #f0b429; --text-main: #f0ece4; --text-muted: #9090b0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+    .offline-wrap { max-width: 400px; }
+    .offline-emoji { font-size: 4em; margin-bottom: 16px; }
+    h1 { color: var(--primary); font-size: 1.8em; margin: 0 0 12px; }
+    p { color: var(--text-muted); font-size: 1.05em; line-height: 1.6; }
+    .retry-btn { display: inline-block; margin-top: 24px; padding: 12px 32px; background: var(--primary); color: #07070f; border: none; border-radius: 30px; font-size: 1em; font-weight: 700; cursor: pointer; text-decoration: none; }
+    .retry-btn:hover { background: #ffd166; }
+  </style>
+</head>
+<body>
+  <div class="offline-wrap">
+    <div class="offline-emoji">🎨</div>
+    <h1>You're Offline</h1>
+    <p>Toon It! needs an internet connection to create magical transformations. Check your connection and try again!</p>
+    <button class="retry-btn" onclick="location.reload()">Try Again ✨</button>
+  </div>
+</body>
+</html>
