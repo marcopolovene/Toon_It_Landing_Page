@@ -481,25 +481,42 @@
     var url = video ? (video.currentSrc || video.src) : '';
     if (!url) return;
     var btn = btnId ? document.getElementById(btnId) : null;
-    if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+    if (btn) { btn.textContent = 'Downloading...'; btn.disabled = true; }
     try {
+      // Fetch the video as a blob
       var resp = await fetch(url);
       if (!resp.ok) throw new Error('fetch ' + resp.status);
       var blob = await resp.blob();
-      var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My ToonIt Video' });
-        try { if (Haptics) Haptics.impact({ style: 'MEDIUM' }); } catch(e) {}
-      } else if (Browser) {
-        Browser.open({ url: url });
-      } else {
-        window.open(url, '_blank');
-      }
+      var blobUrl = URL.createObjectURL(blob);
+
+      // Method 1: Try <a download> with blob URL (works in some WebViews)
+      var a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = 'toonit-video.mp4';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Method 2: Also try navigator.share with file as fallback
+      setTimeout(async function() {
+        try {
+          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'My ToonIt Video' });
+          }
+        } catch(e) {
+          // If share also fails, the <a download> was our best shot
+          if (e.name !== 'AbortError') console.log('[ToonIt Bridge] share fallback:', e.message);
+        }
+        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+      }, 300);
+
+      try { if (Haptics) Haptics.impact({ style: 'MEDIUM' }); } catch(e) {}
     } catch (e) {
-      if (e.name !== 'AbortError') {
-        console.error('[ToonIt Bridge] Save error:', e);
-        try { if (Browser) Browser.open({ url: url }); else window.open(url, '_blank'); } catch(e2) {}
-      }
+      console.error('[ToonIt Bridge] Download error:', e);
+      // Last resort: open the URL directly
+      window.open(url, '_blank');
     } finally {
       if (btn) { btn.textContent = 'Download'; btn.disabled = false; }
     }
@@ -528,13 +545,20 @@
         if (!url) return;
         shareBtn.textContent = 'Sharing...';
         try {
-          var resp = await fetch(url);
-          var blob = await resp.blob();
-          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
-          } else if (Share) {
-            await Share.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation!', url: 'https://toonit.ai', dialogTitle: 'Share your magic' });
+          var shared = false;
+          try {
+            var resp = await fetch(url);
+            var blob = await resp.blob();
+            var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
+              shared = true;
+            }
+          } catch(fe) {
+            console.log('[ToonIt Bridge] File share failed:', fe.message);
+          }
+          if (!shared && navigator.share) {
+            await navigator.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai', url: 'https://toonit.ai' });
           }
         } catch (e) {
           if (e.name !== 'AbortError') console.error('[ToonIt Bridge] Modal share error:', e);
@@ -568,13 +592,30 @@
       btn.textContent = 'Sharing...';
       btn.disabled = true;
       try {
-        var resp = await fetch(url);
-        var blob = await resp.blob();
-        var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
-        } else if (Share) {
-          await Share.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation!', url: 'https://toonit.ai', dialogTitle: 'Share your magic' });
+        // Try sharing the video file
+        var shared = false;
+        try {
+          var resp = await fetch(url);
+          var blob = await resp.blob();
+          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
+            shared = true;
+          }
+        } catch(fe) {
+          console.log('[ToonIt Bridge] File share failed, trying URL share:', fe.message);
+        }
+        // Fallback: share URL only
+        if (!shared) {
+          if (navigator.share) {
+            await navigator.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai', url: 'https://toonit.ai' });
+          } else {
+            // Copy link fallback
+            await navigator.clipboard.writeText('https://toonit.ai');
+            btn.textContent = 'Link Copied!';
+            setTimeout(function() { btn.textContent = 'Share'; }, 2000);
+            return;
+          }
         }
         try { if (Haptics) Haptics.impact({ style: 'LIGHT' }); } catch(e) {}
       } catch (e) {
