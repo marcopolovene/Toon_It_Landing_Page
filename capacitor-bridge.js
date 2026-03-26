@@ -16,17 +16,104 @@
 
   console.log('[ToonIt Bridge] Initializing native bridge...');
 
-  // Visible debug indicator (remove after confirming bridge loads)
-  (function() {
-    var d = document.createElement('div');
-    d.id = 'bridgeDebug';
-    var _plugins = Object.keys(window.Capacitor.Plugins || {}).join(', ') || 'NONE';
-    d.textContent = 'Bridge v3 | Plugins: ' + _plugins;
-    d.style.cssText = 'position:fixed;bottom:60px;left:10px;right:10px;background:#22c55e;color:#fff;padding:8px 16px;border-radius:12px;font-size:11px;font-weight:600;z-index:99999;opacity:0.95;text-align:center;';
-    d.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;z-index:99999;opacity:0.9;';
-    document.body ? document.body.appendChild(d) : document.addEventListener('DOMContentLoaded', function() { document.body.appendChild(d); });
-    setTimeout(function() { d.style.transition = 'opacity 0.5s'; d.style.opacity = '0'; setTimeout(function() { d.remove(); }, 500); }, 4000);
-  })();
+  // Debug overlay
+  var _dbg = [];
+  function dbg(msg) {
+    _dbg.push(new Date().toLocaleTimeString() + ' ' + msg);
+    console.log('[Bridge] ' + msg);
+    var el = document.getElementById('_bdg');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = '_bdg';
+      el.style.cssText = 'position:fixed;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.92);color:#0f0;padding:8px 10px;border-radius:10px;font:11px/1.4 monospace;z-index:999999;max-height:180px;overflow-y:auto;white-space:pre-wrap;pointer-events:none;';
+      (document.body || document.documentElement).appendChild(el);
+    }
+    el.textContent = _dbg.slice(-12).join('
+');
+  }
+  dbg('Bridge v8 init');
+
+  // Intercept window.open - catches the fallback when <a download> fails
+  var _origOpen = window.open;
+  window.open = function(url, target, features) {
+    var u = (url || '') + '';
+    dbg('window.open: ' + u.substring(0, 70));
+    // Intercept Supabase video URLs
+    if (u.indexOf('supabase') > -1 || u.indexOf('blob:') === 0) {
+      dbg('INTERCEPTED - fetching blob...');
+      var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
+      fetch(u)
+        .then(function(r) { dbg('fetch ok: ' + r.status); return r.blob(); })
+        .then(function(blob) {
+          dbg('blob: ' + blob.size + ' bytes, converting...');
+          return new Promise(function(res) {
+            var rd = new FileReader();
+            rd.onloadend = function() { res(rd.result); };
+            rd.readAsDataURL(blob);
+          });
+        })
+        .then(function(dataUrl) {
+          dbg('dataURI ready: ' + dataUrl.substring(0, 40) + '...');
+          if (CapShare) {
+            dbg('Calling Capacitor Share...');
+            return CapShare.share({ title: 'ToonIt Video', url: dataUrl, dialogTitle: 'Save Video' });
+          } else {
+            dbg('No Share plugin, opening URL');  
+            return _origOpen.call(window, u, target, features);
+          }
+        })
+        .then(function() { dbg('Share completed'); })
+        .catch(function(e) {
+          dbg('ERROR: ' + (e && e.message || e));
+          _origOpen.call(window, u, target, features);
+        });
+      return null;
+    }
+    return _origOpen.call(window, u, target, features);
+  };
+  dbg('window.open interceptor active');
+
+  // Also intercept anchor clicks with download attr
+  var _origAClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function() {
+    var href = this.href || '';
+    var dl = this.download || '';
+    if (href.indexOf('blob:') === 0 && dl) {
+      dbg('ANCHOR INTERCEPT: ' + dl + ' blob:...');
+      var self = this;
+      var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
+      fetch(href)
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          dbg('anchor blob: ' + blob.size + ' bytes');
+          return new Promise(function(res) {
+            var rd = new FileReader();
+            rd.onloadend = function() { res(rd.result); };
+            rd.readAsDataURL(blob);
+          });
+        })
+        .then(function(dataUrl) {
+          if (CapShare) {
+            dbg('anchor -> Capacitor Share');
+            return CapShare.share({ title: dl, url: dataUrl, dialogTitle: 'Save Video' });
+          }
+          dbg('anchor -> original click');
+          return _origAClick.call(self);
+        })
+        .catch(function(e) {
+          dbg('anchor error: ' + (e && e.message || e));
+          _origAClick.call(self);
+        });
+      return;
+    }
+    return _origAClick.call(this);
+  };
+  dbg('anchor intercept active');
+
+
+
+
+
 
   const platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
 
