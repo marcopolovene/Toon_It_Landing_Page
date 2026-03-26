@@ -621,41 +621,133 @@
    *  (downloadVideo → _resolveLandingDownloadUrl → here)
    *  We only replace the final save-to-device step
    * ══════════════════════════════════════════ */
-  window.burnWatermarkAndDownload = function(videoUrl, isRemoved, filename, onDone) {
-    filename = filename || 'toonit-video.mp4';
-    console.log('[ToonIt Bridge] Download intercepted, fetching video...');
-    fetch(videoUrl)
+
+
+  /* ══════════════════════════════════════════
+   *  DOWNLOAD + SHARE — Direct button override
+   *  The page's local functions take precedence
+   *  over window overrides (JS closure rules).
+   *  So we directly replace button onclick handlers.
+   * ══════════════════════════════════════════ */
+  function webviewDownload(videoEl, btnEl) {
+    var url = videoEl ? (videoEl.currentSrc || videoEl.src) : '';
+    if (!url) return;
+    var origText = btnEl ? btnEl.textContent : '';
+    if (btnEl) { btnEl.textContent = 'Downloading...'; btnEl.disabled = true; }
+
+    fetch(url)
       .then(function(r) {
         if (!r.ok) throw new Error('fetch ' + r.status);
         return r.blob();
       })
       .then(function(blob) {
-        var file = new File([blob], filename, { type: 'video/mp4' });
+        var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          return navigator.share({ files: [file], title: 'My ToonIt Video' })
-            .catch(function(e) {
-              if (e.name !== 'AbortError') throw e;
-            });
-        } else {
-          var blobUrl = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = blobUrl; a.download = filename;
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+          return navigator.share({ files: [file], title: 'My ToonIt Video' });
         }
+        // Fallback: blob anchor download
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = blobUrl; a.download = 'toonit-video.mp4';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
       })
       .catch(function(err) {
         console.error('[ToonIt Bridge] Download error:', err);
-        window.open(videoUrl, '_blank');
+        window.open(url, '_blank');
       })
-      .finally(function() { if (onDone) onDone(); });
-  };
+      .finally(function() {
+        if (btnEl) { btnEl.textContent = origText || 'Download'; btnEl.disabled = false; }
+      });
+  }
 
-  window.downloadVideoFallbackLocal = function() {
-    var v = document.getElementById('resultVideo');
-    var url = v ? (v.currentSrc || v.src) : '';
-    if (url) window.burnWatermarkAndDownload(url, true, 'toonit-video.mp4', function() {});
-  };
+  function webviewShare(videoEl, btnEl) {
+    var url = videoEl ? (videoEl.currentSrc || videoEl.src) : '';
+    if (!url) return;
+    var origText = btnEl ? btnEl.textContent : 'Share';
+    if (btnEl) { btnEl.textContent = 'Sharing...'; btnEl.disabled = true; }
+
+    fetch(url)
+      .then(function(r) {
+        if (!r.ok) throw new Error('fetch ' + r.status);
+        return r.blob();
+      })
+      .then(function(blob) {
+        var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          return navigator.share({
+            files: [file],
+            title: 'My ToonIt Video',
+            text: 'Check out my magical transformation! Made with ToonIt.ai'
+          });
+        }
+        // Fallback: URL share
+        if (navigator.share) {
+          return navigator.share({
+            title: 'My ToonIt Video',
+            text: 'Check out my magical transformation! Made with ToonIt.ai',
+            url: 'https://toonit.ai'
+          });
+        }
+        throw new Error('Share not supported');
+      })
+      .catch(function(err) {
+        if (err.name !== 'AbortError') {
+          console.error('[ToonIt Bridge] Share error:', err);
+        }
+      })
+      .finally(function() {
+        if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
+      });
+  }
+
+  // Override buttons after page scripts have run
+  function overrideAllButtons() {
+    // Main page download button
+    var dlBtn = document.getElementById('downloadBtn');
+    if (dlBtn && !dlBtn.dataset.bridgeOverride) {
+      dlBtn.dataset.bridgeOverride = '1';
+      dlBtn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        webviewDownload(document.getElementById('resultVideo'), dlBtn);
+        return false;
+      };
+      console.log('[ToonIt Bridge] Download button overridden');
+    }
+
+    // Dashboard download button
+    var dashDl = document.getElementById('dashDownloadBtn');
+    if (dashDl && !dashDl.dataset.bridgeOverride) {
+      dashDl.dataset.bridgeOverride = '1';
+      dashDl.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        webviewDownload(document.getElementById('modalVideo'), dashDl);
+        return false;
+      };
+      console.log('[ToonIt Bridge] Dashboard download overridden');
+    }
+
+    // Dashboard share button
+    var shareBtn = document.getElementById('shareVideoBtn');
+    if (shareBtn && !shareBtn.dataset.bridgeOverride) {
+      shareBtn.dataset.bridgeOverride = '1';
+      shareBtn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        webviewShare(document.getElementById('modalVideo'), shareBtn);
+        return false;
+      };
+      console.log('[ToonIt Bridge] Dashboard share overridden');
+    }
+  }
+
+  // Run overrides after page JS has initialized
+  setTimeout(overrideAllButtons, 3000);
+  // Also re-run when DOM changes (new buttons appear)
+  var _btnObs = new MutationObserver(function() { setTimeout(overrideAllButtons, 300); });
+  setTimeout(function() {
+    if (document.body) _btnObs.observe(document.body, { childList: true, subtree: true });
+  }, 2000);
+
 
 
   console.log('[ToonIt Bridge] ✅ Native bridge initialized for ' + platform);
