@@ -120,8 +120,8 @@
           var file = new File([blob], 'camera_photo.jpg', { type: 'image/jpeg' });
 
           // Trigger existing file handler
-          if (typeof window.handleFileSelect === 'function') {
-            window.handleFileSelect({ target: { files: [file] } });
+          if (typeof window.handleFileFallback === 'function') {
+            window.handleFileFallback(file);
           } else {
             // Fallback: create a DataTransfer and set on file input
             var input = document.querySelector('#uploadArea input[type="file"]');
@@ -292,10 +292,13 @@
   // Observe result display to track completed transforms
   var resultObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(m) {
-      if (m.target.id === 'resultArea' && m.target.style.display === 'block') {
+      if (m.target.id === 'result' && m.target.style.display === 'block') {
         var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
         localStorage.setItem('toonit_transform_count', count.toString());
         console.log('[ToonIt Bridge] Transform completed, count:', count);
+
+        // Inject native share button after transform
+        setTimeout(injectNativeShareButton, 500);
 
         // Haptic celebration!
         try { if (Haptics) Haptics.impact({ style: 'HEAVY' }); }
@@ -310,7 +313,7 @@
   });
 
   function observeResults() {
-    var resultArea = document.getElementById('resultArea');
+    var resultArea = document.getElementById('result');
     if (resultArea) {
       resultObserver.observe(resultArea, { attributes: true, attributeFilter: ['style'] });
       console.log('[ToonIt Bridge] Observing result area');
@@ -422,6 +425,152 @@
   document.documentElement.classList.add('platform-' + platform);
   window.toonItIsNative = true;
   window.toonItPlatform = platform;
+
+
+  /* ══════════════════════════════════════════
+   *  DOWNLOAD — Capacitor native save
+   *  <a download> doesn't work in WebView;
+   *  use navigator.share({files}) instead
+   * ══════════════════════════════════════════ */
+  async function capacitorSaveVideo(btnId) {
+    var video = document.getElementById('resultVideo') || document.getElementById('modalVideo');
+    var url = video ? (video.currentSrc || video.src) : '';
+    if (!url) return;
+    var btn = btnId ? document.getElementById(btnId) : null;
+    if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+    try {
+      var resp = await fetch(url);
+      if (!resp.ok) throw new Error('fetch ' + resp.status);
+      var blob = await resp.blob();
+      var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'My ToonIt Video' });
+        try { if (Haptics) Haptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+      } else if (Browser) {
+        Browser.open({ url: url });
+      } else {
+        window.open(url, '_blank');
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        console.error('[ToonIt Bridge] Save error:', e);
+        try { if (Browser) Browser.open({ url: url }); else window.open(url, '_blank'); } catch(e2) {}
+      }
+    } finally {
+      if (btn) { btn.textContent = 'Download'; btn.disabled = false; }
+    }
+  }
+
+  // Override global download functions
+  window.downloadVideo = function() { return capacitorSaveVideo('downloadBtn'); };
+  window.downloadVideoFallbackLocal = function() { return capacitorSaveVideo('downloadBtn'); };
+
+  // Override dashboard download + share (myvideos.html modal)
+  function overrideDashButtons() {
+    var dashDl = document.getElementById('dashDownloadBtn');
+    if (dashDl) {
+      dashDl.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        capacitorSaveVideo('dashDownloadBtn');
+        return false;
+      };
+    }
+    var shareBtn = document.getElementById('shareVideoBtn');
+    if (shareBtn) {
+      shareBtn.onclick = async function(e) {
+        if (e) e.preventDefault();
+        var mv = document.getElementById('modalVideo');
+        var url = mv ? (mv.currentSrc || mv.src) : '';
+        if (!url) return;
+        shareBtn.textContent = 'Sharing...';
+        try {
+          var resp = await fetch(url);
+          var blob = await resp.blob();
+          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
+          } else if (Share) {
+            await Share.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation!', url: 'https://toonit.ai', dialogTitle: 'Share your magic' });
+          }
+        } catch (e) {
+          if (e.name !== 'AbortError') console.error('[ToonIt Bridge] Modal share error:', e);
+        } finally { shareBtn.textContent = 'Share Video'; }
+      };
+    }
+  }
+  setTimeout(overrideDashButtons, 2000);
+  var _dashObs = new MutationObserver(function() { setTimeout(overrideDashButtons, 300); });
+  setTimeout(function() {
+    var modal = document.getElementById('videoModal');
+    if (modal) _dashObs.observe(modal, { attributes: true, attributeFilter: ['class'] });
+  }, 2000);
+
+  /* ══════════════════════════════════════════
+   *  SHARE BUTTON — Inject in result area
+   * ══════════════════════════════════════════ */
+  function injectNativeShareButton() {
+    var resultBtns = document.querySelector('#result .result-buttons');
+    if (!resultBtns || document.getElementById('nativeShareBtn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'nativeShareBtn';
+    btn.type = 'button';
+    btn.textContent = 'Share';
+    btn.style.cssText = 'background:transparent;color:#f0b429;border:1.5px solid #f0b429;padding:10px 20px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;';
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      var video = document.getElementById('resultVideo');
+      var url = video ? (video.currentSrc || video.src) : '';
+      if (!url) return;
+      btn.textContent = 'Sharing...';
+      btn.disabled = true;
+      try {
+        var resp = await fetch(url);
+        var blob = await resp.blob();
+        var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
+        } else if (Share) {
+          await Share.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation!', url: 'https://toonit.ai', dialogTitle: 'Share your magic' });
+        }
+        try { if (Haptics) Haptics.impact({ style: 'LIGHT' }); } catch(e) {}
+      } catch (e) {
+        if (e.name !== 'AbortError') console.error('[ToonIt Bridge] Share error:', e);
+      } finally {
+        btn.textContent = 'Share';
+        btn.disabled = false;
+      }
+    });
+    var newBtn = document.getElementById('newBtn');
+    if (newBtn) resultBtns.insertBefore(btn, newBtn);
+    else resultBtns.appendChild(btn);
+    console.log('[ToonIt Bridge] Native share button injected');
+  }
+
+  /* ══════════════════════════════════════════
+   *  THUMBNAILS — Fix video poster in WebView
+   *  Android WebView doesn't auto-show frames
+   * ══════════════════════════════════════════ */
+  function fixVideoThumbnails() {
+    var thumbs = document.querySelectorAll('.video-card-thumb video, .video-thumbnail video');
+    for (var i = 0; i < thumbs.length; i++) {
+      var v = thumbs[i];
+      if (v.dataset.thumbFixed) continue;
+      v.dataset.thumbFixed = '1';
+      v.preload = 'auto';
+      v.addEventListener('loadeddata', function() {
+        try { this.currentTime = 0.5; } catch(e) {}
+      }, { once: true });
+      if (v.src && v.src.indexOf('#t=') === -1) {
+        v.src = v.src + '#t=0.5';
+      }
+    }
+  }
+  var _thumbObs = new MutationObserver(function() { setTimeout(fixVideoThumbnails, 200); });
+  setTimeout(function() {
+    if (document.body) _thumbObs.observe(document.body, { childList: true, subtree: true });
+    fixVideoThumbnails();
+  }, 1500);
+
 
   console.log('[ToonIt Bridge] ✅ Native bridge initialized for ' + platform);
 })();

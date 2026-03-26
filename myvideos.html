@@ -507,7 +507,7 @@
                         var video = data[_vi];
                         var _su = _signedUrls[_vi] || '';
                         var _thumbHtml = _su
-                            ? '<video src="' + _su + '" muted playsinline preload="metadata"></video>'
+                            ? '<video src="' + _su + '#t=0.5" muted playsinline preload="auto"></video>'
                             : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2em;">&#127916;</div>';
                         var _statusHtml = video.status === 'complete' ? '&#9989; Complete' : '&#9203; ' + (video.status || 'Processing');
                         var _galleryHtml = '';
