@@ -619,14 +619,78 @@
    *  over window overrides (JS closure rules).
    *  So we directly replace button onclick handlers.
    * ══════════════════════════════════════════ */
-  function webviewDownload(videoEl, btnEl) {
+
+
+
+
+  /* ══════════════════════════════════════════
+   *  DOWNLOAD INTERCEPT — Capture blob: anchor downloads
+   *  The existing page code does: fetch→blob→createObjectURL→<a download>→click()
+   *  In WebView, <a download> silently fails.
+   *  We monkey-patch HTMLAnchorElement.prototype.click to intercept
+   *  blob: URL downloads and use Capacitor Share plugin instead.
+   * ══════════════════════════════════════════ */
+  (function() {
+    var origClick = HTMLAnchorElement.prototype.click;
+    var CapShare = window.Capacitor.Plugins.Share;
+
+    HTMLAnchorElement.prototype.click = function() {
+      var href = this.href || '';
+      var dl = this.download || this.getAttribute('download') || '';
+
+      // Only intercept blob: URLs with a download attribute (video downloads)
+      if (href.indexOf('blob:') === 0 && dl) {
+        console.log('[ToonIt Bridge] Intercepted blob download:', dl);
+
+        var self = this;
+        fetch(href)
+          .then(function(r) { return r.blob(); })
+          .then(function(blob) {
+            return new Promise(function(resolve) {
+              var reader = new FileReader();
+              reader.onloadend = function() { resolve(reader.result); };
+              reader.readAsDataURL(blob);
+            });
+          })
+          .then(function(dataUrl) {
+            if (CapShare) {
+              return CapShare.share({
+                title: dl || 'ToonIt Video',
+                url: dataUrl,
+                dialogTitle: 'Save Video'
+              });
+            }
+            // If no Share plugin, call original
+            return origClick.call(self);
+          })
+          .catch(function(err) {
+            if (err && err.name !== 'AbortError') {
+              console.error('[ToonIt Bridge] Blob download intercept error:', err);
+              origClick.call(self);
+            }
+          });
+        return; // Don't call original click
+      }
+
+      // For non-blob or non-download links, use original
+      return origClick.call(this);
+    };
+
+    console.log('[ToonIt Bridge] Blob download intercept installed');
+  })();
+
+  /* ══════════════════════════════════════════
+   *  SHARE — Native Capacitor Share for buttons
+   * ══════════════════════════════════════════ */
+  function nativeShareVideo(videoEl, btnEl) {
     var url = videoEl ? (videoEl.currentSrc || videoEl.src) : '';
     if (!url) return;
-    var origText = btnEl ? btnEl.textContent : '';
-    if (btnEl) { btnEl.textContent = 'Downloading...'; btnEl.disabled = true; }
+    var origText = btnEl ? btnEl.textContent : 'Share';
+    if (btnEl) { btnEl.textContent = 'Sharing...'; btnEl.disabled = true; }
 
-    var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
+    var CapShare = window.Capacitor.Plugins.Share;
 
+    // Fetch video and share as data URI (so the actual video gets shared)
     fetch(url)
       .then(function(r) {
         if (!r.ok) throw new Error('fetch ' + r.status);
@@ -640,122 +704,43 @@
         });
       })
       .then(function(dataUrl) {
-        // Use Capacitor Share plugin with data URI
         if (CapShare) {
           return CapShare.share({
             title: 'My ToonIt Video',
-            text: 'Save your ToonIt video',
+            text: 'Check out my magical transformation! Made with ToonIt.ai',
             url: dataUrl,
-            dialogTitle: 'Save Video'
+            dialogTitle: 'Share your magic'
           });
         }
-        // Fallback: try navigator.share with file
-        return fetch(url).then(function(r) { return r.blob(); }).then(function(blob) {
-          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            return navigator.share({ files: [file], title: 'My ToonIt Video' });
-          }
-          throw new Error('No share method available');
-        });
       })
       .catch(function(err) {
-        if (err && err.name === 'AbortError') return;
-        console.error('[ToonIt Bridge] Download error:', err);
-        // Last resort
-        window.open(url, '_blank');
-      })
-      .finally(function() {
-        if (btnEl) { btnEl.textContent = origText || 'Download'; btnEl.disabled = false; }
-      });
-  }
-
-  function webviewShare(videoEl, btnEl) {
-    var url = videoEl ? (videoEl.currentSrc || videoEl.src) : '';
-    if (!url) return;
-    var origText = btnEl ? btnEl.textContent : 'Share';
-    if (btnEl) { btnEl.textContent = 'Sharing...'; btnEl.disabled = true; }
-
-    var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
-
-    if (CapShare) {
-      // Use Capacitor Share plugin directly
-      CapShare.share({
-        title: 'My ToonIt Video',
-        text: 'Check out my magical transformation! Made with ToonIt.ai',
-        url: 'https://toonit.ai',
-        dialogTitle: 'Share your magic'
-      })
-      .then(function() {
-        try { if (window.Capacitor.Plugins.Haptics) window.Capacitor.Plugins.Haptics.impact({ style: 'LIGHT' }); } catch(e) {}
-      })
-      .catch(function(err) {
-        if (err && err.message && !err.message.includes('cancel')) {
+        if (err && err.name !== 'AbortError') {
           console.error('[ToonIt Bridge] Share error:', err);
         }
       })
       .finally(function() {
         if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
       });
-    } else if (navigator.share) {
-      navigator.share({
-        title: 'My ToonIt Video',
-        text: 'Check out my magical transformation! Made with ToonIt.ai',
-        url: 'https://toonit.ai'
-      })
-      .catch(function(e) { console.log('[ToonIt Bridge] share error:', e); })
-      .finally(function() {
-        if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
-      });
-    } else {
-      if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
-    }
   }
 
-  // Override buttons after page scripts have run
-  function overrideAllButtons() {
-    // Main page download button
-    var dlBtn = document.getElementById('downloadBtn');
-    if (dlBtn && !dlBtn.dataset.bridgeOverride) {
-      dlBtn.dataset.bridgeOverride = '1';
-      dlBtn.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        webviewDownload(document.getElementById('resultVideo'), dlBtn);
-        return false;
-      };
-      console.log('[ToonIt Bridge] Download button overridden');
-    }
-
-    // Dashboard download button
-    var dashDl = document.getElementById('dashDownloadBtn');
-    if (dashDl && !dashDl.dataset.bridgeOverride) {
-      dashDl.dataset.bridgeOverride = '1';
-      dashDl.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        webviewDownload(document.getElementById('modalVideo'), dashDl);
-        return false;
-      };
-      console.log('[ToonIt Bridge] Dashboard download overridden');
-    }
-
+  // Override share buttons (not download - download uses blob intercept above)
+  function overrideShareButtons() {
     // Dashboard share button
     var shareBtn = document.getElementById('shareVideoBtn');
-    if (shareBtn && !shareBtn.dataset.bridgeOverride) {
-      shareBtn.dataset.bridgeOverride = '1';
+    if (shareBtn && !shareBtn.dataset.bridgeShare) {
+      shareBtn.dataset.bridgeShare = '1';
       shareBtn.onclick = function(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
-        webviewShare(document.getElementById('modalVideo'), shareBtn);
+        nativeShareVideo(document.getElementById('modalVideo'), shareBtn);
         return false;
       };
-      console.log('[ToonIt Bridge] Dashboard share overridden');
     }
   }
-
-  // Run overrides after page JS has initialized
-  setTimeout(overrideAllButtons, 3000);
-  // Also re-run when DOM changes (new buttons appear)
-  var _btnObs = new MutationObserver(function() { setTimeout(overrideAllButtons, 300); });
+  setTimeout(overrideShareButtons, 3000);
+  var _shareObs = new MutationObserver(function() { setTimeout(overrideShareButtons, 300); });
   setTimeout(function() {
-    if (document.body) _btnObs.observe(document.body, { childList: true, subtree: true });
+    var modal = document.getElementById('videoModal');
+    if (modal) _shareObs.observe(modal, { attributes: true, attributeFilter: ['class'] });
   }, 2000);
 
 
