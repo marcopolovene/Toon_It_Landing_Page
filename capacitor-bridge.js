@@ -20,7 +20,9 @@
   (function() {
     var d = document.createElement('div');
     d.id = 'bridgeDebug';
-    d.textContent = 'Bridge v2 loaded';
+    var _plugins = Object.keys(window.Capacitor.Plugins || {}).join(', ') || 'NONE';
+    d.textContent = 'Bridge v3 | Plugins: ' + _plugins;
+    d.style.cssText = 'position:fixed;bottom:60px;left:10px;right:10px;background:#22c55e;color:#fff;padding:8px 16px;border-radius:12px;font-size:11px;font-weight:600;z-index:99999;opacity:0.95;text-align:center;';
     d.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;z-index:99999;opacity:0.9;';
     document.body ? document.body.appendChild(d) : document.addEventListener('DOMContentLoaded', function() { document.body.appendChild(d); });
     setTimeout(function() { d.style.transition = 'opacity 0.5s'; d.style.opacity = '0'; setTimeout(function() { d.remove(); }, 500); }, 4000);
@@ -119,33 +121,57 @@
     cameraBtn.addEventListener('mousedown', function() { cameraBtn.style.transform = 'scale(0.95)'; });
     cameraBtn.addEventListener('mouseup', function() { cameraBtn.style.transform = 'scale(1)'; });
 
+    // Hidden file input with capture for native camera
+    var camInput = document.createElement('input');
+    camInput.type = 'file';
+    camInput.accept = 'image/*';
+    camInput.capture = 'environment';
+    camInput.style.display = 'none';
+    camInput.id = 'nativeCamInput';
+    document.body.appendChild(camInput);
+
+    camInput.addEventListener('change', function(e) {
+      if (e.target.files && e.target.files[0]) {
+        var file = e.target.files[0];
+        if (typeof window.handleFileFallback === 'function') {
+          window.handleFileFallback(file);
+        } else {
+          var input = document.querySelector('#uploadArea input[type="file"]');
+          if (input) {
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      }
+    });
+
     cameraBtn.addEventListener('click', async function(e) {
       e.preventDefault();
       e.stopPropagation();
       try {
-        var photo = await window.toonItNativeCamera();
-        if (photo && photo.webPath) {
-          // Convert to file and trigger the existing upload flow
-          var response = await fetch(photo.webPath);
-          var blob = await response.blob();
-          var file = new File([blob], 'camera_photo.jpg', { type: 'image/jpeg' });
-
-          // Trigger existing file handler
-          if (typeof window.handleFileFallback === 'function') {
-            window.handleFileFallback(file);
-          } else {
-            // Fallback: create a DataTransfer and set on file input
-            var input = document.querySelector('#uploadArea input[type="file"]');
-            if (input) {
-              var dt = new DataTransfer();
-              dt.items.add(file);
-              input.files = dt.files;
-              input.dispatchEvent(new Event('change', { bubbles: true }));
+        // Try Capacitor Camera plugin first
+        if (Camera) {
+          var photo = await window.toonItNativeCamera();
+          if (photo && photo.webPath) {
+            var response = await fetch(photo.webPath);
+            var blob = await response.blob();
+            var file = new File([blob], 'camera_photo.jpg', { type: 'image/jpeg' });
+            if (typeof window.handleFileFallback === 'function') {
+              window.handleFileFallback(file);
             }
           }
+        } else {
+          // Fallback: use HTML file input with capture
+          camInput.value = '';
+          camInput.click();
         }
       } catch (err) {
         console.error('[ToonIt Bridge] Camera flow error:', err);
+        // On any error, fall back to HTML capture
+        camInput.value = '';
+        camInput.click();
         // Visible error for debugging
         var _errDiv = document.createElement('div');
         _errDiv.textContent = 'Camera error: ' + (err && err.message ? err.message : String(err));
