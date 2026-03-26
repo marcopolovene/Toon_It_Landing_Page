@@ -15,6 +15,17 @@
   }
 
   console.log('[ToonIt Bridge] Initializing native bridge...');
+
+  // Visible debug indicator (remove after confirming bridge loads)
+  (function() {
+    var d = document.createElement('div');
+    d.id = 'bridgeDebug';
+    d.textContent = 'Bridge v2 loaded';
+    d.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;z-index:99999;opacity:0.9;';
+    document.body ? document.body.appendChild(d) : document.addEventListener('DOMContentLoaded', function() { document.body.appendChild(d); });
+    setTimeout(function() { d.style.transition = 'opacity 0.5s'; d.style.opacity = '0'; setTimeout(function() { d.remove(); }, 500); }, 4000);
+  })();
+
   const platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
 
   /* ══════════════════════════════════════════
@@ -135,6 +146,13 @@
         }
       } catch (err) {
         console.error('[ToonIt Bridge] Camera flow error:', err);
+        // Visible error for debugging
+        var _errDiv = document.createElement('div');
+        _errDiv.textContent = 'Camera error: ' + (err && err.message ? err.message : String(err));
+        _errDiv.style.cssText = 'position:fixed;bottom:100px;left:10px;right:10px;background:#ef4444;color:#fff;padding:10px;border-radius:10px;font-size:12px;z-index:99999;';
+        document.body.appendChild(_errDiv);
+        setTimeout(function() { _errDiv.remove(); }, 5000);
+
       }
     });
 
