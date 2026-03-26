@@ -476,55 +476,9 @@
    *  <a download> doesn't work in WebView;
    *  use navigator.share({files}) instead
    * ══════════════════════════════════════════ */
-  async function capacitorSaveVideo(btnId) {
-    var video = document.getElementById('resultVideo') || document.getElementById('modalVideo');
-    var url = video ? (video.currentSrc || video.src) : '';
-    if (!url) return;
-    var btn = btnId ? document.getElementById(btnId) : null;
-    if (btn) { btn.textContent = 'Downloading...'; btn.disabled = true; }
-    try {
-      // Fetch the video as a blob
-      var resp = await fetch(url);
-      if (!resp.ok) throw new Error('fetch ' + resp.status);
-      var blob = await resp.blob();
-      var blobUrl = URL.createObjectURL(blob);
 
-      // Method 1: Try <a download> with blob URL (works in some WebViews)
-      var a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = 'toonit-video.mp4';
-      a.rel = 'noopener';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      // Method 2: Also try navigator.share with file as fallback
-      setTimeout(async function() {
-        try {
-          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'My ToonIt Video' });
-          }
-        } catch(e) {
-          // If share also fails, the <a download> was our best shot
-          if (e.name !== 'AbortError') console.log('[ToonIt Bridge] share fallback:', e.message);
-        }
-        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
-      }, 300);
-
-      try { if (Haptics) Haptics.impact({ style: 'MEDIUM' }); } catch(e) {}
-    } catch (e) {
-      console.error('[ToonIt Bridge] Download error:', e);
-      // Last resort: open the URL directly
-      window.open(url, '_blank');
-    } finally {
-      if (btn) { btn.textContent = 'Download'; btn.disabled = false; }
-    }
-  }
 
   // Override global download functions
-  window.downloadVideo = function() { return capacitorSaveVideo('downloadBtn'); };
-  window.downloadVideoFallbackLocal = function() { return capacitorSaveVideo('downloadBtn'); };
 
   // Override dashboard download + share (myvideos.html modal)
   function overrideDashButtons() {
@@ -532,7 +486,11 @@
     if (dashDl) {
       dashDl.onclick = function(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
-        capacitorSaveVideo('dashDownloadBtn');
+        var mv = document.getElementById('modalVideo');
+        var url = mv ? (mv.currentSrc || mv.src) : '';
+        if (url) window.burnWatermarkAndDownload(url, true, 'toonit-video.mp4', function() {
+          dashDl.textContent = 'Download'; dashDl.disabled = false;
+        });
         return false;
       };
     }
@@ -655,6 +613,49 @@
     if (document.body) _thumbObs.observe(document.body, { childList: true, subtree: true });
     fixVideoThumbnails();
   }, 1500);
+
+
+  /* ══════════════════════════════════════════
+   *  DOWNLOAD — Override burnWatermarkAndDownload only
+   *  This preserves the existing watermark pipeline
+   *  (downloadVideo → _resolveLandingDownloadUrl → here)
+   *  We only replace the final save-to-device step
+   * ══════════════════════════════════════════ */
+  window.burnWatermarkAndDownload = function(videoUrl, isRemoved, filename, onDone) {
+    filename = filename || 'toonit-video.mp4';
+    console.log('[ToonIt Bridge] Download intercepted, fetching video...');
+    fetch(videoUrl)
+      .then(function(r) {
+        if (!r.ok) throw new Error('fetch ' + r.status);
+        return r.blob();
+      })
+      .then(function(blob) {
+        var file = new File([blob], filename, { type: 'video/mp4' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          return navigator.share({ files: [file], title: 'My ToonIt Video' })
+            .catch(function(e) {
+              if (e.name !== 'AbortError') throw e;
+            });
+        } else {
+          var blobUrl = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = blobUrl; a.download = filename;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+        }
+      })
+      .catch(function(err) {
+        console.error('[ToonIt Bridge] Download error:', err);
+        window.open(videoUrl, '_blank');
+      })
+      .finally(function() { if (onDone) onDone(); });
+  };
+
+  window.downloadVideoFallbackLocal = function() {
+    var v = document.getElementById('resultVideo');
+    var url = v ? (v.currentSrc || v.src) : '';
+    if (url) window.burnWatermarkAndDownload(url, true, 'toonit-video.mp4', function() {});
+  };
 
 
   console.log('[ToonIt Bridge] ✅ Native bridge initialized for ' + platform);
