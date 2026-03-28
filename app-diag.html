@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toon It! App Diagnostics</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #07070f; color: #e0e0e0; font-family: -apple-system, system-ui, sans-serif; padding: 16px; padding-top: env(safe-area-inset-top, 16px); }
+h1 { color: #f0b429; font-size: 1.3em; margin-bottom: 12px; }
+h2 { color: #9d8bff; font-size: 1.1em; margin: 16px 0 8px; }
+.test { background: #12121f; border-radius: 10px; padding: 12px; margin: 8px 0; border-left: 4px solid #333; }
+.test.pass { border-left-color: #22c55e; }
+.test.fail { border-left-color: #ef4444; }
+.test.warn { border-left-color: #f59e0b; }
+.test .name { font-weight: 700; font-size: 0.95em; }
+.test .detail { font-size: 0.8em; color: #888; margin-top: 4px; word-break: break-all; }
+.test .status { font-size: 0.85em; margin-top: 4px; }
+.pass .status { color: #22c55e; }
+.fail .status { color: #ef4444; }
+.warn .status { color: #f59e0b; }
+button { background: linear-gradient(135deg, #7c6bfa, #9d8bff); color: white; border: none; border-radius: 25px; padding: 12px 24px; font-size: 1em; font-weight: 700; cursor: pointer; margin: 8px 4px; }
+button:disabled { opacity: 0.5; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+#report { background: #0a0a15; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-top: 16px; font: 11px/1.4 monospace; color: #0f0; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+.copy-btn { background: #333; font-size: 0.8em; padding: 6px 12px; }
+</style>
+</head>
+<body>
+
+<h1>App Diagnostics v1</h1>
+<p style="color:#888;font-size:0.85em;margin-bottom:12px;">Open this page INSIDE the Toon It app to test native features.</p>
+
+<div id="results"></div>
+
+<h2>Action Tests</h2>
+<div class="btn-row">
+  <button onclick="testDownloadBlob()">Test Download</button>
+  <button onclick="testShareFile()">Test Share File</button>
+  <button onclick="testShareCapacitor()">Test Cap Share</button>
+</div>
+
+<h2>Report</h2>
+<button class="copy-btn" onclick="copyReport()">Copy Report</button>
+<div id="report">Running diagnostics...</div>
+
+<script>
+var R = [];
+var results = document.getElementById('results');
+var reportEl = document.getElementById('report');
+
+function log(msg) {
+  R.push(new Date().toLocaleTimeString() + ' ' + msg);
+  reportEl.textContent = R.join('\n');
+  reportEl.scrollTop = reportEl.scrollHeight;
+}
+
+function addTest(name, status, detail) {
+  var div = document.createElement('div');
+  div.className = 'test ' + status;
+  div.innerHTML = '<div class="name">' + name + '</div>'
+    + '<div class="status">' + status.toUpperCase() + '</div>'
+    + (detail ? '<div class="detail">' + detail + '</div>' : '');
+  results.appendChild(div);
+  log(status.toUpperCase() + ': ' + name + (detail ? ' | ' + detail : ''));
+}
+
+// AUTO-RUN DIAGNOSTICS
+(function runDiagnostics() {
+  log('=== DIAGNOSTICS START ===');
+  log('UA: ' + navigator.userAgent);
+  log('URL: ' + window.location.href);
+
+  // 1. Capacitor
+  var hasCap = !!(window.Capacitor);
+  var isNative = hasCap && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+  var platform = hasCap && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : 'N/A';
+  addTest('Capacitor Detected', hasCap ? 'pass' : 'fail', 'window.Capacitor=' + hasCap);
+  addTest('Is Native Platform', isNative ? 'pass' : 'fail', 'isNativePlatform()=' + isNative + ' platform=' + platform);
+
+  // 2. Plugins
+  if (hasCap && window.Capacitor.Plugins) {
+    var plugins = Object.keys(window.Capacitor.Plugins);
+    addTest('Plugins Available', plugins.length > 0 ? 'pass' : 'fail', plugins.join(', '));
+    ['Share', 'Camera', 'Browser', 'App', 'Haptics'].forEach(function(p) {
+      var has = !!window.Capacitor.Plugins[p];
+      addTest('Plugin: ' + p, has ? 'pass' : 'fail', has ? 'Available' : 'MISSING');
+    });
+  } else {
+    addTest('Plugins Available', 'fail', 'No Capacitor.Plugins object');
+  }
+
+  // 3. Bridge Detection
+  var bridgeLoaded = !!window.toonItIsNative;
+  var bridgeVersion = 'not loaded';
+  if (window.toonItSaveOrShare) bridgeVersion = 'v2.0';
+  else if (window.toonItNativeCamera) bridgeVersion = 'v1.x (OLD!)';
+  addTest('Bridge Loaded', bridgeLoaded ? 'pass' : 'fail', 'toonItIsNative=' + bridgeLoaded);
+  addTest('Bridge Version', bridgeVersion === 'v2.0' ? 'pass' : 'fail', bridgeVersion);
+
+  // Check if saveOrShareVideo exists (v2.0 marker)
+  addTest('saveOrShareVideo fn', typeof window.toonItSaveOrShare === 'function' ? 'pass' : 'fail',
+    typeof window.toonItSaveOrShare);
+
+  // 4. Web APIs
+  addTest('navigator.share', !!navigator.share ? 'pass' : 'fail', typeof navigator.share);
+  addTest('navigator.canShare', !!navigator.canShare ? 'pass' : 'warn', typeof navigator.canShare);
+
+  if (navigator.canShare) {
+    try {
+      var testFile = new File([new Uint8Array(100)], 'test.mp4', {type:'video/mp4'});
+      var canShareFiles = navigator.canShare({files:[testFile]});
+      addTest('canShare({files})', canShareFiles ? 'pass' : 'fail', 'Result=' + canShareFiles);
+    } catch(e) {
+      addTest('canShare({files})', 'fail', 'Error: ' + e.message);
+    }
+  }
+
+  // 5. Anchor click override check
+  var clickStr = HTMLAnchorElement.prototype.click.toString();
+  var isOverridden = clickStr.indexOf('blob:') > -1 || clickStr.length > 200;
+  addTest('Anchor click override', isOverridden ? 'pass' : 'fail',
+    isOverridden ? 'Bridge interceptor ACTIVE (len=' + clickStr.length + ')' : 'NOT overridden (len=' + clickStr.length + ')');
+
+  // 6. window.open override check
+  var openStr = window.open.toString();
+  var openOverridden = openStr.indexOf('blob:') > -1 || openStr.indexOf('supabase') > -1 || openStr.length > 200;
+  addTest('window.open override', openOverridden ? 'pass' : 'fail',
+    openOverridden ? 'Bridge interceptor ACTIVE' : 'NOT overridden');
+
+  // 7. Debug overlay check
+  setTimeout(function() {
+    var dbgEl = document.getElementById('_bdg');
+    addTest('Debug overlay', dbgEl ? 'pass' : 'warn',
+      dbgEl ? 'Found (bridge debug active)' : 'Not found (bridge may not have loaded)');
+    log('=== DIAGNOSTICS COMPLETE ===');
+  }, 2000);
+})();
+
+// MANUAL TESTS
+async function testDownloadBlob() {
+  log('--- TEST: Download via blob ---');
+  try {
+    var testData = new Uint8Array(1024);
+    for (var i = 0; i < testData.length; i++) testData[i] = i % 256;
+    var blob = new Blob([testData], {type: 'video/mp4'});
+    log('Created test blob: ' + blob.size + ' bytes');
+
+    var blobUrl = URL.createObjectURL(blob);
+    log('Blob URL: ' + blobUrl.substring(0, 50));
+
+    var a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'test-download.mp4';
+    document.body.appendChild(a);
+    log('Calling a.click()...');
+    a.click();
+    document.body.removeChild(a);
+    log('a.click() returned. If share sheet appeared = bridge works. If nothing = broken.');
+    addTest('Blob Download Test', 'warn', 'Check if share sheet appeared');
+  } catch(e) {
+    log('ERROR: ' + e.message);
+    addTest('Blob Download Test', 'fail', e.message);
+  }
+}
+
+async function testShareFile() {
+  log('--- TEST: navigator.share({files}) ---');
+  try {
+    var testData = new Uint8Array(1024);
+    var blob = new Blob([testData], {type: 'video/mp4'});
+    var file = new File([blob], 'test-share.mp4', {type: 'video/mp4'});
+    log('Created test file: ' + file.size + ' bytes');
+
+    if (!navigator.canShare) {
+      log('navigator.canShare not available');
+      addTest('Share File Test', 'fail', 'canShare not available');
+      return;
+    }
+
+    var canShare = navigator.canShare({files: [file]});
+    log('canShare({files}): ' + canShare);
+
+    if (!canShare) {
+      addTest('Share File Test', 'fail', 'canShare returned false');
+      return;
+    }
+
+    log('Calling navigator.share({files})...');
+    await navigator.share({files: [file], title: 'Test Share'});
+    log('Share completed!');
+    addTest('Share File Test', 'pass', 'navigator.share({files}) worked!');
+  } catch(e) {
+    if (e.name === 'AbortError') {
+      log('User cancelled (share sheet DID appear = WORKING)');
+      addTest('Share File Test', 'pass', 'Share sheet appeared (cancelled)');
+    } else {
+      log('ERROR: ' + e.name + ': ' + e.message);
+      addTest('Share File Test', 'fail', e.name + ': ' + e.message);
+    }
+  }
+}
+
+async function testShareCapacitor() {
+  log('--- TEST: Capacitor Share plugin ---');
+  try {
+    var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
+    if (!CapShare) {
+      log('Capacitor Share plugin not available');
+      addTest('Capacitor Share Test', 'fail', 'Plugin not found');
+      return;
+    }
+    log('CapShare available, calling share()...');
+    await CapShare.share({
+      title: 'Diagnostic Test',
+      text: 'Testing Capacitor Share plugin',
+      url: 'https://toonit.ai',
+      dialogTitle: 'Test Share'
+    });
+    log('Capacitor Share completed!');
+    addTest('Capacitor Share Test', 'pass', 'Share dialog appeared');
+  } catch(e) {
+    if (e.message && (e.message.includes('cancel') || e.message.includes('Cancel'))) {
+      log('Cancelled (share sheet appeared = WORKING)');
+      addTest('Capacitor Share Test', 'pass', 'Share sheet appeared (cancelled)');
+    } else {
+      log('ERROR: ' + e.message);
+      addTest('Capacitor Share Test', 'fail', e.message);
+    }
+  }
+}
+
+function copyReport() {
+  var text = R.join('\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      alert('Report copied!');
+    }).catch(function() {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  ta.remove();
+  alert('Report copied!');
+}
+</script>
+</body>
+</html>
