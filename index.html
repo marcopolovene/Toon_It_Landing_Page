@@ -220,6 +220,8 @@
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
+        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #B8A7FF, #FFC8DD, #A8E6CF); box-shadow: 0 0 16px rgba(184,167,255,0.24); }
+        .style-loader--easter_egghunt .style-loader-fill { background-image: linear-gradient(90deg, #FF6FB1, #FFD166, #2FD8C3); box-shadow: 0 0 16px rgba(255,111,177,0.24); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -601,21 +603,26 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card active" data-style="chibi" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-new">NEW</span>
-                    <span class="style-icon">🐼</span>
-                    <span class="style-name">Chibi</span>
+                <div class="style-card active" data-style="easter_enchanted" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-today">🐣 EASTER</span>
+                    <span class="style-icon">🌱</span>
+                    <span class="style-name">Enchanted Easter</span>
+                </div>
+                <div class="style-card" data-style="easter_egghunt" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-today">🐣 EASTER</span>
+                    <span class="style-icon">🥚</span>
+                    <span class="style-name">Easter Egg Hunt</span>
                 </div>
                 <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                     <span class="style-icon">💥</span>
                     <span class="style-name">Superhero</span>
                 </div>
+            </div>
+            <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
                 </div>
-            </div>
-            <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
                     <span class="style-icon">🏰</span>
                     <span class="style-name">Storybook</span>
@@ -636,9 +643,9 @@
                     <span class="style-icon">🎨</span>
                     <span class="style-name">Watercolor</span>
                 </div>
-                <div class="style-card" data-style="renaissance" onclick="selectStyle(this)">
-                    <span class="style-icon">🖼️</span>
-                    <span class="style-name">Renaissance</span>
+                <div class="style-card" data-style="chibi" onclick="selectStyle(this)">
+                    <span class="style-icon">🐼</span>
+                    <span class="style-name">Chibi</span>
                 </div>
             </div>
             <button id="moreStylesBtn" class="style-toggle-btn"><span>All styles</span> <span class="tarrow">▼</span></button>
@@ -4563,13 +4570,25 @@
             var active = document.querySelector('.style-card.active');
             var style = active ? (active.getAttribute('data-style') || 'storybook') : 'storybook';
             var themes = {
-                storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook', facts: ['Researchers used ancestral DNA tracing to prove that Beauty and the Beast is at least 4,000 years old. Some stories truly never get old.','The golden ratio (1.618) appears in nearly every classic storybook illustration — great artists used it instinctively before math confirmed it.','The hero journey structure behind every fairy tale has been found in stories from every known human culture on Earth.','Children raised with illustrated storybooks develop stronger spatial reasoning and empathy well into adulthood. Pictures shape minds.','The word magic comes from magus — the ancient Persian term for someone who could see what others could not. Art still does this.'] },
+                storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook', facts: ['Researchers used ancestral DNA tracing to prove that Beauty and the Beast is at least 4,000 years old. Some stories truly never get old.','The golden ratio (1.618) appears in nearly every classic storybook illustration — great artists used it instinctively before math confirmed it.','The hero journey structure behind every fairy tale has been found in stories from every known human culture on Earth.','Children raised with illustrated storybooks develop stronger spatial reasoning and empathy well into adulthood. Pictures shape minds.','The word magic comes from magus — the ancient Persian term for someone who could see what others could not. Art still does this.'],
+            easter_enchanted: [
+                'Your enchanted Easter portrait is almost ready... 🌱',
+                'Adding the final sparkle of Easter magic... ✨',
+                'Your fairy-tale Easter masterpiece is being revealed... 🐇'
+            ],
+            easter_egghunt: [
+                'Animation complete — hiding the last Easter eggs... 🥚',
+                'Adding the final burst of Easter confetti... 🎉',
+                'Your Easter egg hunt adventure is almost ready... 🐣'
+            ] },
                 cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon', facts: ['Pixar animators spent 3 years studying ocean light just to animate one scene in Finding Nemo — your photo gets that same obsession, in seconds.','A single 3D animated character can have 500 individual facial controls — more expressive range than most humans use in a day.','The 12 Principles of Animation were invented by Disney artists in 1937 — every Pixar, DreamWorks, and AI model still follows them today.','Claymation-style 3D is having a massive revival in 2025 across social media, brand ads, and music videos. You are riding the wave.','Inside Out 2 used real neuroscience consultants to design the new emotions — proof that animation is now part psychology, part art.'] },
                 comic: { cls: 'style-loader--comic', label: 'Superhero', facts: ['Spider-Man: Into the Spider-Verse was animated at two different frame rates at once to replicate a real comic book — a first in cinema history.','The halftone dot pattern in classic comics was originally a printing limitation — now it is one of the most iconic aesthetics in modern fashion and fine art.','The first Superman comic sold for $6 million at auction in 2022 — the most expensive comic ever sold.','The bold blue and orange combo in superhero films is scientifically linked to urgency, excitement, and heroic energy. Color does the heavy lifting.','Stan Lee created most of the Avengers while commuting on the NYC subway in the 1960s. Great ideas do not wait for perfect conditions.'] },
                 anime: { cls: 'style-loader--anime', label: 'Anime', facts: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'] },
                 watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
                 st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] },
-                chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] }
+                chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] },
+                easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter', facts: ['The tradition of decorating Easter eggs dates back over 2,500 years to ancient Persia.','In medieval Europe, eggs were forbidden during Lent so people decorated them on Easter Sunday.','The White House Easter Egg Roll has been an annual tradition since 1878.','Cherry blossoms bloom for only about two weeks each spring in Japan.','The word Easter may come from Eostre, the Anglo-Saxon goddess of spring and dawn.'] },
+                easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt', facts: ['The concept of an Easter egg hunt was brought to America by German immigrants in the 1700s.','Cadbury produces over 500 million cream eggs per year.','The Faberge Imperial Easter Eggs are worth over $30 million each.','In Switzerland, Easter eggs are delivered by a cuckoo bird, not a bunny.','The largest chocolate Easter egg ever made weighed over 15,000 pounds.'] }
             };
             var theme = themes[style] || themes.storybook;
             if (host) {
@@ -5113,7 +5132,9 @@
         chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
-        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
+        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+        easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter' },
+        easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt' }
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5247,6 +5268,53 @@
 })();
 </script>
 
+<script>
+// === EASTER STYLES EXTENSION ===
+(function(){
+  if(typeof _magicThemes !== 'undefined'){
+    _magicThemes.easter_enchanted = {
+      spell: 'Easter Enchantment Rising! 🌱',
+      wand: '🌱',
+      particles: ['🌱','✨','🌸','🐇','🦋','🌟','🌼','🐣'],
+      msgs: {
+        1: ['Awakening the enchanted garden... 🌱','Soft cherry blossoms beginning to fall... 🌸','A little bunny hops into your scene... 🐇','Painting your world in dreamy pastels... 🎨','Golden sparkles drifting through the air... ✨'],
+        2: ['Weaving fairy-tale magic into every detail... 🦋','Easter eggs appearing among the flowers... 🥚','Soft watercolor washes spreading beautifully... 💧','Baby chicks hatching in the background... 🐣','The enchanted meadow is coming to life... 🌼'],
+        3: ['Sprinkling the final Easter fairy dust... ✨','Your enchanted portrait is almost complete... 🌟','The bunnies approve — masterpiece incoming! 🐇','Adding the last golden glow... ✨','Happy Easter — your fairy-tale awaits! 🌱']
+      }
+    };
+    _magicThemes.easter_egghunt = {
+      spell: 'Let the Egg Hunt Begin! 🥚',
+      wand: '🥚',
+      particles: ['🥚','🎉','🐣','🌈','🍬','🌟','🪨','🌻'],
+      msgs: {
+        1: ['Setting up the ultimate Easter egg hunt... 🥚','Hiding colorful eggs in every corner... 🌈','Stringing up the bunting flags... 🎉','Filling Easter baskets with goodies... 🍬','The countdown to the egg hunt begins... 🐣'],
+        2: ['Painting eggs in brilliant rainbow colors... 🎨','Scattering confetti across your scene... 🎉','The Easter bunny is hiding the golden egg... 🥇','Adding jelly beans and chocolate treats... 🍬','Your egg hunt world is taking shape... 🌟'],
+        3: ['The final eggs are hidden — ready to hunt! 🥚','Confetti cannon loaded for the big reveal... 🎉','Your Easter adventure is almost ready... 🐣','Adding the last splash of celebration... ✨','Happy hunting — your egg-cellent portrait awaits! 🥚']
+      }
+    };
+  }
+  if(typeof _magicFacts !== 'undefined'){
+    _magicFacts.easter_enchanted = [
+      'The tradition of decorating Easter eggs dates back over 2,500 years to ancient Persia where painted eggs celebrated the spring equinox.',
+      'In medieval Europe, eggs were forbidden during Lent so people decorated and gifted them on Easter Sunday — the original Easter basket tradition.',
+      'The White House Easter Egg Roll has been an annual tradition since 1878, making it one of the oldest presidential events still held today.',
+      'Cherry blossoms bloom for only about two weeks each spring — in Japan this fleeting beauty is called mono no aware, the bittersweet awareness of impermanence.',
+      'Easter lilies were brought to the US from Bermuda in the 1880s and became the unofficial flower of Easter because they bloom naturally around the spring equinox.',
+      'The word Easter may come from Eostre, the Anglo-Saxon goddess of spring and dawn — her festival celebrated renewal and new life.'
+    ];
+    _magicFacts.easter_egghunt = [
+      'The concept of an Easter egg hunt was brought to America by German immigrants in the 1700s — children made nests for the Easter Hare to fill.',
+      'Cadbury produces over 500 million cream eggs per year — stacked on top of each other they would be taller than Mount Everest ten times over.',
+      'The Faberge Imperial Easter Eggs are worth over $30 million each — originally crafted for Russian royalty, only 50 were ever made.',
+      'In Switzerland, Easter eggs are delivered by a cuckoo bird, not a bunny — every country has its own magical Easter messenger.',
+      'The largest chocolate Easter egg ever made weighed over 15,000 pounds and stood 34 feet tall — created in Italy in 2011.',
+      'The world\'s largest Easter egg hunt used over 500,000 eggs — organized in Florida in 2007, it took 9,753 children to find them all.'
+    ];
+  }
+})();
+</script>
+
+
 <!-- ── Capacitor Native Bridge (auto-detects native vs web) ── -->
 <script>
 (function() {
@@ -5366,7 +5434,9 @@
         chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
-        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' }
+        cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+        easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter' },
+        easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt' }
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
