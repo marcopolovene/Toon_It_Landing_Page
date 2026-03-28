@@ -1,22 +1,35 @@
 /**
- * Toon It! — Capacitor Native Bridge v1.0
- * Injected into the web app when running inside the native shell.
- * Provides: Camera capture, Native Share, Push Notifications,
- *           Haptic feedback, App Review prompts, Deep Links,
- *           Status Bar control.
+ * Toon It! — Capacitor Native Bridge v2.0
+ * Rewritten with clean download/share handling.
+ *
+ * THE CORE PROBLEM:
+ *   <a download> SILENTLY FAILS in Android WebView.
+ *   blob: URLs don't trigger native downloads.
+ *
+ * THE FIX (3 layers):
+ *   Layer 1: HTMLAnchorElement.prototype.click override — catches blob: anchor clicks
+ *   Layer 2: window.open override — catches fallback window.open(blob:) calls
+ *   Layer 3: Direct button onclick override — bypasses closures entirely
+ *
+ * DOWNLOAD METHOD: fetch → blob → File → navigator.share({files})
+ *   Falls back to: Capacitor Share plugin with data URI
  */
 (function() {
   'use strict';
 
-  // Only run inside Capacitor
+  // Only run inside Capacitor native app
   if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
     console.log('[ToonIt Bridge] Not in native — skipping');
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.0...');
 
-  // Debug overlay
+  var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
+
+  // ══════════════════════════════════════════════════════════════
+  //  DEBUG OVERLAY — Live logging visible on device
+  // ══════════════════════════════════════════════════════════════
   var _dbg = [];
   function dbg(msg) {
     _dbg.push(new Date().toLocaleTimeString() + ' ' + msg);
@@ -28,187 +41,474 @@
       el.style.cssText = 'position:fixed;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.92);color:#0f0;padding:8px 10px;border-radius:10px;font:11px/1.4 monospace;z-index:999999;max-height:180px;overflow-y:auto;white-space:pre-wrap;pointer-events:none;';
       (document.body || document.documentElement).appendChild(el);
     }
-    el.textContent = _dbg.slice(-12).join('
-');
+    el.textContent = _dbg.slice(-15).join('\n');
   }
-  dbg('Bridge v8 init');
+  dbg('Bridge v2.0 init | platform=' + platform);
 
-  // Intercept window.open - catches the fallback when <a download> fails
+  // ══════════════════════════════════════════════════════════════
+  //  PLUGIN REFERENCES
+  // ══════════════════════════════════════════════════════════════
+  var Plugins = window.Capacitor.Plugins || {};
+  var CapShare     = Plugins.Share;
+  var CapCamera    = Plugins.Camera;
+  var CapHaptics   = Plugins.Haptics;
+  var CapStatusBar = Plugins.StatusBar;
+  var CapBrowser   = Plugins.Browser;
+  var CapApp       = Plugins.App;
+  var CapSplash    = Plugins.SplashScreen;
+  var CapKeyboard  = Plugins.Keyboard;
+  var CapPush      = Plugins.PushNotifications;
+
+  dbg('Plugins: Share=' + !!CapShare + ' Camera=' + !!CapCamera);
+
+  // ══════════════════════════════════════════════════════════════
+  //  CORE HELPER: Save/share a video from URL
+  //  This is THE function that replaces broken <a download>
+  // ══════════════════════════════════════════════════════════════
+  async function saveOrShareVideo(videoUrl, filename, btnEl) {
+    filename = filename || 'toonit-video.mp4';
+    var origText = btnEl ? btnEl.textContent : '';
+    if (btnEl) { btnEl.textContent = '\u2B07\uFE0F Saving...'; btnEl.disabled = true; }
+    dbg('saveOrShare: ' + videoUrl.substring(0, 60));
+
+    try {
+      // Step 1: Fetch the video blob
+      var resp = await fetch(videoUrl);
+      if (!resp.ok) throw new Error('fetch failed: ' + resp.status);
+      var blob = await resp.blob();
+      dbg('blob: ' + blob.size + ' bytes, type=' + blob.type);
+
+      if (blob.size < 1000) {
+        dbg('WARNING: blob too small, likely error');
+        throw new Error('Video blob too small: ' + blob.size);
+      }
+
+      // Step 2: Create a File object
+      var file = new File([blob], filename, { type: blob.type || 'video/mp4' });
+
+      // Step 3: Try navigator.share with actual file (PREFERRED)
+      // This opens the Android share sheet where user can "Save to device", send via WhatsApp, etc.
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        dbg('Using navigator.share({files}) — PREFERRED');
+        await navigator.share({
+          files: [file],
+          title: 'My ToonIt Video',
+          text: '\u2728 Made with ToonIt.ai'
+        });
+        dbg('navigator.share completed OK');
+        // Haptic feedback
+        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+        return true;
+      }
+
+      // Step 4: Fallback — Capacitor Share plugin with data URI
+      if (CapShare) {
+        dbg('Fallback: CapShare with data URI...');
+        var dataUrl = await new Promise(function(resolve) {
+          var reader = new FileReader();
+          reader.onloadend = function() { resolve(reader.result); };
+          reader.readAsDataURL(blob);
+        });
+        dbg('dataURI ready: ' + dataUrl.substring(0, 40) + '...');
+        await CapShare.share({
+          title: filename,
+          url: dataUrl,
+          dialogTitle: 'Save Video'
+        });
+        dbg('CapShare completed OK');
+        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+        return true;
+      }
+
+      // Step 5: Last resort — try opening URL directly
+      dbg('Last resort: window.open');
+      window._origOpen.call(window, videoUrl, '_blank');
+      return false;
+
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        dbg('User cancelled share');
+        return false;
+      }
+      dbg('ERROR: ' + (err && err.message || err));
+      console.error('[Bridge] saveOrShare error:', err);
+      // Try opening URL as absolute last resort
+      try { window._origOpen.call(window, videoUrl, '_blank'); } catch(e) {}
+      return false;
+    } finally {
+      if (btnEl) { btnEl.textContent = origText || '\u2B07\uFE0F Download'; btnEl.disabled = false; }
+    }
+  }
+
+  // Expose globally so page code can call it too
+  window.toonItSaveOrShare = saveOrShareVideo;
+
+  // ══════════════════════════════════════════════════════════════
+  //  LAYER 1: HTMLAnchorElement.prototype.click Override
+  //  Catches: fetch→blob→createObjectURL→<a download>→click()
+  // ══════════════════════════════════════════════════════════════
+  var _origAnchorClick = HTMLAnchorElement.prototype.click;
+
+  HTMLAnchorElement.prototype.click = function() {
+    var href = this.href || '';
+    var dl = this.download || this.getAttribute('download') || '';
+
+    // Only intercept blob: URLs with a download attribute
+    if (href.indexOf('blob:') === 0 && dl) {
+      dbg('LAYER1: anchor intercept: ' + dl);
+      var self = this;
+
+      fetch(href)
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          dbg('L1 blob: ' + blob.size + ' bytes');
+          var file = new File([blob], dl, { type: blob.type || 'video/mp4' });
+
+          // Preferred: share with actual file
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            dbg('L1 → navigator.share({files})');
+            return navigator.share({ files: [file], title: dl });
+          }
+
+          // Fallback: Capacitor Share with data URI
+          if (CapShare) {
+            dbg('L1 → CapShare data URI fallback');
+            return new Promise(function(resolve) {
+              var reader = new FileReader();
+              reader.onloadend = function() { resolve(reader.result); };
+              reader.readAsDataURL(blob);
+            }).then(function(dataUrl) {
+              return CapShare.share({ title: dl, url: dataUrl, dialogTitle: 'Save Video' });
+            });
+          }
+
+          // Last resort: original click
+          dbg('L1 → original click (no share available)');
+          return _origAnchorClick.call(self);
+        })
+        .catch(function(err) {
+          if (err && err.name !== 'AbortError') {
+            dbg('L1 error: ' + (err.message || err));
+            _origAnchorClick.call(self);
+          }
+        });
+      return; // Don't call original
+    }
+
+    // Non-blob or non-download: pass through
+    return _origAnchorClick.call(this);
+  };
+  dbg('Layer 1 (anchor intercept) active');
+
+  // ══════════════════════════════════════════════════════════════
+  //  LAYER 2: window.open Override
+  //  Catches: window.open(blobUrl) and window.open(supabaseUrl)
+  // ══════════════════════════════════════════════════════════════
   var _origOpen = window.open;
+  window._origOpen = _origOpen; // Save for use in saveOrShareVideo
+
   window.open = function(url, target, features) {
     var u = (url || '') + '';
-    dbg('window.open: ' + u.substring(0, 70));
-    // Intercept Supabase video URLs
-    if (u.indexOf('supabase') > -1 || u.indexOf('blob:') === 0) {
-      dbg('INTERCEPTED - fetching blob...');
-      var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
+
+    // Intercept blob: URLs and Supabase storage URLs
+    if (u.indexOf('blob:') === 0 || (u.indexOf('supabase') > -1 && u.indexOf('.mp4') > -1)) {
+      dbg('LAYER2: window.open intercept: ' + u.substring(0, 60));
+
       fetch(u)
-        .then(function(r) { dbg('fetch ok: ' + r.status); return r.blob(); })
+        .then(function(r) {
+          if (!r.ok) throw new Error('fetch ' + r.status);
+          return r.blob();
+        })
         .then(function(blob) {
-          dbg('blob: ' + blob.size + ' bytes, converting...');
-          return new Promise(function(res) {
-            var rd = new FileReader();
-            rd.onloadend = function() { res(rd.result); };
-            rd.readAsDataURL(blob);
-          });
-        })
-        .then(function(dataUrl) {
-          dbg('dataURI ready: ' + dataUrl.substring(0, 40) + '...');
-          if (CapShare) {
-            dbg('Calling Capacitor Share...');
-            return CapShare.share({ title: 'ToonIt Video', url: dataUrl, dialogTitle: 'Save Video' });
-          } else {
-            dbg('No Share plugin, opening URL');  
-            return _origOpen.call(window, u, target, features);
+          dbg('L2 blob: ' + blob.size + ' bytes');
+          var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            dbg('L2 → navigator.share({files})');
+            return navigator.share({ files: [file], title: 'ToonIt Video' });
           }
+
+          if (CapShare) {
+            dbg('L2 → CapShare fallback');
+            return new Promise(function(res) {
+              var rd = new FileReader();
+              rd.onloadend = function() { res(rd.result); };
+              rd.readAsDataURL(blob);
+            }).then(function(dataUrl) {
+              return CapShare.share({ title: 'ToonIt Video', url: dataUrl });
+            });
+          }
+
+          return _origOpen.call(window, u, target, features);
         })
-        .then(function() { dbg('Share completed'); })
         .catch(function(e) {
-          dbg('ERROR: ' + (e && e.message || e));
+          dbg('L2 error: ' + (e && e.message || e));
           _origOpen.call(window, u, target, features);
         });
       return null;
     }
+
     return _origOpen.call(window, u, target, features);
   };
-  dbg('window.open interceptor active');
+  dbg('Layer 2 (window.open intercept) active');
 
-  // Also intercept anchor clicks with download attr
-  var _origAClick = HTMLAnchorElement.prototype.click;
-  HTMLAnchorElement.prototype.click = function() {
-    var href = this.href || '';
-    var dl = this.download || '';
-    if (href.indexOf('blob:') === 0 && dl) {
-      dbg('ANCHOR INTERCEPT: ' + dl + ' blob:...');
-      var self = this;
-      var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
-      fetch(href)
-        .then(function(r) { return r.blob(); })
-        .then(function(blob) {
-          dbg('anchor blob: ' + blob.size + ' bytes');
-          return new Promise(function(res) {
-            var rd = new FileReader();
-            rd.onloadend = function() { res(rd.result); };
-            rd.readAsDataURL(blob);
-          });
-        })
-        .then(function(dataUrl) {
-          if (CapShare) {
-            dbg('anchor -> Capacitor Share');
-            return CapShare.share({ title: dl, url: dataUrl, dialogTitle: 'Save Video' });
-          }
-          dbg('anchor -> original click');
-          return _origAClick.call(self);
-        })
-        .catch(function(e) {
-          dbg('anchor error: ' + (e && e.message || e));
-          _origAClick.call(self);
+  // ══════════════════════════════════════════════════════════════
+  //  LAYER 3: Direct Button onclick Overrides
+  //  WHY: JS closures in index.html mean downloadVideo() is a
+  //  local variable. Global overrides don't reach it. We MUST
+  //  replace the button's onclick directly.
+  // ══════════════════════════════════════════════════════════════
+
+  function getVideoUrl() {
+    // Try multiple sources for the current video URL
+    try {
+      // 1. Watermark state (most reliable)
+      if (window._wmState) {
+        if (window._wmState.currentCleanUrl) return window._wmState.currentCleanUrl;
+        if (window._wmState.currentWmUrl) return window._wmState.currentWmUrl;
+      }
+    } catch(e) {}
+
+    // 2. Result video element
+    var vid = document.getElementById('resultVideo');
+    if (vid && (vid.currentSrc || vid.src)) {
+      var src = vid.currentSrc || vid.src;
+      if (src && src !== '' && !src.endsWith('/')) return src;
+    }
+
+    // 3. Modal video (myvideos.html)
+    var mv = document.getElementById('modalVideo');
+    if (mv && (mv.currentSrc || mv.src)) {
+      return mv.currentSrc || mv.src;
+    }
+
+    return '';
+  }
+
+  function overrideIndexButtons() {
+    // === DOWNLOAD BUTTON (index.html) ===
+    var dlBtn = document.getElementById('downloadBtn');
+    if (dlBtn && dlBtn.dataset.bridgeV2 !== '1') {
+      dlBtn.dataset.bridgeV2 = '1';
+      dbg('LAYER3: overriding downloadBtn');
+
+      dlBtn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var url = getVideoUrl();
+        if (!url) {
+          dbg('L3 download: no video URL found');
+          return false;
+        }
+        dbg('L3 download: ' + url.substring(0, 60));
+        saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
+        return false;
+      };
+    }
+
+    // === SHARE BUTTON (index.html — #nativeShareBtn) ===
+    var shareBtn = document.getElementById('nativeShareBtn');
+    if (shareBtn && shareBtn.dataset.bridgeV2 !== '1') {
+      shareBtn.dataset.bridgeV2 = '1';
+      shareBtn.style.display = ''; // Make sure it's visible
+      dbg('LAYER3: overriding nativeShareBtn');
+
+      shareBtn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var url = getVideoUrl();
+        if (!url) return false;
+        dbg('L3 share: ' + url.substring(0, 60));
+        shareVideoNative(url, shareBtn);
+        return false;
+      };
+    }
+  }
+
+  function overrideDashboardButtons() {
+    // === DOWNLOAD BUTTON (myvideos.html modal) ===
+    var dashDl = document.getElementById('dashDownloadBtn');
+    if (dashDl && dashDl.dataset.bridgeV2 !== '1') {
+      dashDl.dataset.bridgeV2 = '1';
+      dbg('LAYER3: overriding dashDownloadBtn');
+
+      dashDl.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var mv = document.getElementById('modalVideo');
+        var url = mv ? (mv.currentSrc || mv.src) : '';
+        if (!url) return false;
+        dbg('L3 dash download: ' + url.substring(0, 60));
+        saveOrShareVideo(url, 'toonit-video.mp4', dashDl);
+        return false;
+      };
+    }
+
+    // === SHARE BUTTON (myvideos.html modal) ===
+    var shareBtn = document.getElementById('shareVideoBtn');
+    if (shareBtn && shareBtn.dataset.bridgeV2 !== '1') {
+      shareBtn.dataset.bridgeV2 = '1';
+      dbg('LAYER3: overriding shareVideoBtn');
+
+      shareBtn.onclick = function(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        var mv = document.getElementById('modalVideo');
+        var url = mv ? (mv.currentSrc || mv.src) : '';
+        if (!url) return false;
+        dbg('L3 dash share: ' + url.substring(0, 60));
+        shareVideoNative(url, shareBtn);
+        return false;
+      };
+    }
+  }
+
+  // Share helper — shares actual video file
+  async function shareVideoNative(videoUrl, btnEl) {
+    var origText = btnEl ? btnEl.textContent : 'Share';
+    if (btnEl) { btnEl.textContent = 'Sharing...'; btnEl.disabled = true; }
+    dbg('shareVideoNative: ' + videoUrl.substring(0, 60));
+
+    try {
+      var resp = await fetch(videoUrl);
+      if (!resp.ok) throw new Error('fetch ' + resp.status);
+      var blob = await resp.blob();
+      var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+
+      // Preferred: share actual file
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        dbg('share → navigator.share({files})');
+        await navigator.share({
+          files: [file],
+          title: 'My ToonIt Video',
+          text: "\u2728 Just toon'd myself \uD83D\uDE0D Try it free \u2192 toonit.ai"
         });
-      return;
+        try { if (CapHaptics) CapHaptics.impact({ style: 'LIGHT' }); } catch(e) {}
+        return;
+      }
+
+      // Fallback: Capacitor Share with data URI
+      if (CapShare) {
+        dbg('share → CapShare data URI');
+        var dataUrl = await new Promise(function(res) {
+          var rd = new FileReader();
+          rd.onloadend = function() { res(rd.result); };
+          rd.readAsDataURL(blob);
+        });
+        await CapShare.share({
+          title: 'My ToonIt Video',
+          text: "\u2728 Made with ToonIt.ai",
+          url: dataUrl,
+          dialogTitle: 'Share your magic'
+        });
+        try { if (CapHaptics) CapHaptics.impact({ style: 'LIGHT' }); } catch(e) {}
+        return;
+      }
+
+      // Last resort: share URL only
+      if (navigator.share) {
+        await navigator.share({
+          title: 'My ToonIt Video',
+          text: '\u2728 Check out my magical transformation!',
+          url: 'https://toonit.ai'
+        });
+      }
+    } catch (err) {
+      if (err && err.name !== 'AbortError') {
+        dbg('share error: ' + (err.message || err));
+        console.error('[Bridge] Share error:', err);
+      }
+    } finally {
+      if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
     }
-    return _origAClick.call(this);
-  };
-  dbg('anchor intercept active');
+  }
 
+  window.toonItShareVideo = shareVideoNative;
 
+  // Run button overrides now and on DOM changes
+  function runAllOverrides() {
+    overrideIndexButtons();
+    overrideDashboardButtons();
+  }
 
+  // Initial run with delays (page loads remote content)
+  setTimeout(runAllOverrides, 1500);
+  setTimeout(runAllOverrides, 3000);
+  setTimeout(runAllOverrides, 5000);
 
+  // Re-run on DOM mutations (catches dynamically shown buttons)
+  var _btnObserver = new MutationObserver(function() {
+    setTimeout(runAllOverrides, 300);
+  });
+  setTimeout(function() {
+    if (document.body) {
+      _btnObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
+    }
+  }, 2000);
 
+  dbg('Layer 3 (button overrides) scheduled');
 
-  const platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
-
-  /* ══════════════════════════════════════════
-   *  IMPORTS — Capacitor Plugins
-   * ══════════════════════════════════════════ */
-  const { Camera, CameraResultType, CameraSource } = window.Capacitor.Plugins.Camera || {};
-  const { Share } = window.Capacitor.Plugins.Share || {};
-  const { PushNotifications } = window.Capacitor.Plugins.PushNotifications || {};
-  const { Haptics, ImpactStyle } = window.Capacitor.Plugins.Haptics || {};
-  const { StatusBar, Style: StatusBarStyle } = window.Capacitor.Plugins.StatusBar || {};
-  const { Browser } = window.Capacitor.Plugins.Browser || {};
-  const { App } = window.Capacitor.Plugins.App || {};
-  const { SplashScreen } = window.Capacitor.Plugins.SplashScreen || {};
-  const { Keyboard } = window.Capacitor.Plugins.Keyboard || {};
-
-  /* ══════════════════════════════════════════
-   *  STATUS BAR — Match app theme
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  STATUS BAR — Match app theme
+  // ══════════════════════════════════════════════════════════════
   try {
-    if (StatusBar) {
-      StatusBar.setStyle({ style: 'DARK' });
-      StatusBar.setBackgroundColor({ color: '#07070f' });
-      console.log('[ToonIt Bridge] Status bar configured');
+    if (CapStatusBar) {
+      CapStatusBar.setStyle({ style: 'DARK' });
+      CapStatusBar.setBackgroundColor({ color: '#07070f' });
     }
-  } catch (e) { console.warn('[ToonIt Bridge] StatusBar error:', e); }
+  } catch (e) { console.warn('[Bridge] StatusBar error:', e); }
 
-  /* ══════════════════════════════════════════
-   *  SPLASH SCREEN — Auto-hide after load
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  SPLASH SCREEN — Auto-hide after load
+  // ══════════════════════════════════════════════════════════════
   window.addEventListener('load', function() {
     setTimeout(function() {
-      try { if (SplashScreen) SplashScreen.hide(); }
-      catch (e) { console.warn('[ToonIt Bridge] SplashScreen hide error:', e); }
+      try { if (CapSplash) CapSplash.hide(); }
+      catch (e) { console.warn('[Bridge] SplashScreen error:', e); }
     }, 500);
   });
 
-  /* ══════════════════════════════════════════
-   *  CAMERA — Native photo capture
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  CAMERA — Native photo capture
+  // ══════════════════════════════════════════════════════════════
   window.toonItNativeCamera = async function() {
     try {
-      if (!Camera) throw new Error('Camera plugin not available');
+      if (!CapCamera) throw new Error('Camera plugin not available');
 
-      const photo = await Camera.getPhoto({
+      var photo = await CapCamera.getPhoto({
         quality: 90,
         allowEditing: false,
-        resultType: CameraResultType ? CameraResultType.Uri : 'uri',
-        source: CameraSource ? CameraSource.Prompt : 'PROMPT',
+        resultType: 'uri',
+        source: 'PROMPT',
         width: 1024,
         height: 1024,
         correctOrientation: true,
         presentationStyle: 'fullScreen'
       });
 
-      console.log('[ToonIt Bridge] Photo captured:', photo.webPath);
-
-      // Trigger haptic feedback on capture
-      try { if (Haptics) await Haptics.impact({ style: 'MEDIUM' }); }
-      catch (e) { /* ignore haptic errors */ }
-
+      dbg('Photo captured: ' + (photo.webPath || '').substring(0, 40));
+      try { if (CapHaptics) await CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
       return photo;
     } catch (e) {
       if (e.message && e.message.includes('cancelled')) {
-        console.log('[ToonIt Bridge] Camera cancelled by user');
+        dbg('Camera cancelled');
         return null;
       }
-      console.error('[ToonIt Bridge] Camera error:', e);
+      dbg('Camera error: ' + e.message);
       throw e;
     }
   };
 
-  // Hook into existing upload area — add camera button for native
+  // Camera button injection
   function injectCameraButton() {
     var uploadArea = document.getElementById('uploadArea');
-    if (!uploadArea) {
-      // Retry when DOM is ready
-      setTimeout(injectCameraButton, 1000);
-      return;
-    }
-
-    // Don't inject twice
+    if (!uploadArea) { setTimeout(injectCameraButton, 1000); return; }
     if (document.getElementById('nativeCameraBtn')) return;
 
     var cameraBtn = document.createElement('button');
     cameraBtn.id = 'nativeCameraBtn';
-    cameraBtn.innerHTML = '📷 Take a Photo';
+    cameraBtn.innerHTML = '\uD83D\uDCF7 Take a Photo';
     cameraBtn.style.cssText = 'display:block;margin:12px auto 0;padding:12px 28px;'
       + 'background:linear-gradient(135deg,#7c6bfa 0%,#9d8bff 100%);color:white;'
       + 'border:none;border-radius:30px;font-size:1em;font-weight:700;cursor:pointer;'
       + 'transition:transform 0.2s;';
-    cameraBtn.addEventListener('mousedown', function() { cameraBtn.style.transform = 'scale(0.95)'; });
-    cameraBtn.addEventListener('mouseup', function() { cameraBtn.style.transform = 'scale(1)'; });
 
-    // Hidden file input with capture for native camera
     var camInput = document.createElement('input');
     camInput.type = 'file';
     camInput.accept = 'image/*';
@@ -238,8 +538,7 @@
       e.preventDefault();
       e.stopPropagation();
       try {
-        // Try Capacitor Camera plugin first
-        if (Camera) {
+        if (CapCamera) {
           var photo = await window.toonItNativeCamera();
           if (photo && photo.webPath) {
             var response = await fetch(photo.webPath);
@@ -250,127 +549,53 @@
             }
           }
         } else {
-          // Fallback: use HTML file input with capture
           camInput.value = '';
           camInput.click();
         }
       } catch (err) {
-        console.error('[ToonIt Bridge] Camera flow error:', err);
-        // On any error, fall back to HTML capture
+        dbg('Camera flow error: ' + (err.message || err));
         camInput.value = '';
         camInput.click();
-        // Visible error for debugging
-        var _errDiv = document.createElement('div');
-        _errDiv.textContent = 'Camera error: ' + (err && err.message ? err.message : String(err));
-        _errDiv.style.cssText = 'position:fixed;bottom:100px;left:10px;right:10px;background:#ef4444;color:#fff;padding:10px;border-radius:10px;font-size:12px;z-index:99999;';
-        document.body.appendChild(_errDiv);
-        setTimeout(function() { _errDiv.remove(); }, 5000);
-
       }
     });
 
     uploadArea.parentNode.insertBefore(cameraBtn, uploadArea.nextSibling);
-    console.log('[ToonIt Bridge] Camera button injected');
+    dbg('Camera button injected');
   }
 
-  // Inject camera button when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectCameraButton);
   } else {
     injectCameraButton();
   }
 
-  /* ══════════════════════════════════════════
-   *  NATIVE SHARE — Override web share
-   * ══════════════════════════════════════════ */
-  window.toonItNativeShare = async function(opts) {
-    try {
-      if (!Share) throw new Error('Share plugin not available');
-
-      await Share.share({
-        title: opts.title || 'My ToonIt Video',
-        text: opts.text || 'Check out this magical transformation! ✨ Made with Toon It!',
-        url: opts.url || 'https://toonit.ai',
-        dialogTitle: 'Share your magic ✨'
-      });
-
-      // Haptic feedback on share
-      try { if (Haptics) await Haptics.impact({ style: 'LIGHT' }); }
-      catch (e) { /* ignore */ }
-
-      console.log('[ToonIt Bridge] Shared successfully');
-      return true;
-    } catch (e) {
-      if (e.message && e.message.includes('cancelled')) {
-        console.log('[ToonIt Bridge] Share cancelled');
-        return false;
-      }
-      console.error('[ToonIt Bridge] Share error:', e);
-      // Fall back to web share
-      if (navigator.share) {
-        return navigator.share(opts);
-      }
-      throw e;
-    }
-  };
-
-  // Override the existing share functions to use native share
-  var origDownloadVideo = window.downloadVideo;
-  if (typeof origDownloadVideo === 'function') {
-    window._webDownloadVideo = origDownloadVideo;
-  }
-
-  /* ══════════════════════════════════════════
-   *  PUSH NOTIFICATIONS
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  PUSH NOTIFICATIONS
+  // ══════════════════════════════════════════════════════════════
   async function initPushNotifications() {
-    if (!PushNotifications) {
-      console.log('[ToonIt Bridge] Push plugin not available');
-      return;
-    }
-
+    if (!CapPush) return;
     try {
-      // Request permission
-      var permission = await PushNotifications.requestPermissions();
-      if (permission.receive !== 'granted') {
-        console.log('[ToonIt Bridge] Push permission denied');
-        return;
-      }
+      var permission = await CapPush.requestPermissions();
+      if (permission.receive !== 'granted') return;
+      await CapPush.register();
 
-      // Register with APNs/FCM
-      await PushNotifications.register();
-
-      // Listen for token
-      PushNotifications.addListener('registration', function(token) {
-        console.log('[ToonIt Bridge] Push token:', token.value);
-        // Store token for backend use
+      CapPush.addListener('registration', function(token) {
+        dbg('Push token: ' + token.value.substring(0, 20) + '...');
         window._pushToken = token.value;
-        // TODO: Send token to Supabase for this user
       });
-
-      PushNotifications.addListener('registrationError', function(err) {
-        console.error('[ToonIt Bridge] Push registration error:', err);
+      CapPush.addListener('registrationError', function(err) {
+        dbg('Push reg error: ' + (err.error || err));
       });
-
-      // Handle received notifications (foreground)
-      PushNotifications.addListener('pushNotificationReceived', function(notification) {
-        console.log('[ToonIt Bridge] Push received:', notification);
-        // Show in-app notification banner
+      CapPush.addListener('pushNotificationReceived', function(notification) {
         showInAppNotification(notification);
       });
-
-      // Handle notification tap
-      PushNotifications.addListener('pushNotificationActionPerformed', function(action) {
-        console.log('[ToonIt Bridge] Push action:', action);
+      CapPush.addListener('pushNotificationActionPerformed', function(action) {
         var data = action.notification.data;
-        if (data && data.url) {
-          window.location.href = data.url;
-        }
+        if (data && data.url) window.location.href = data.url;
       });
-
-      console.log('[ToonIt Bridge] Push notifications initialized');
+      dbg('Push initialized');
     } catch (e) {
-      console.error('[ToonIt Bridge] Push init error:', e);
+      dbg('Push init error: ' + e.message);
     }
   }
 
@@ -380,7 +605,7 @@
       + 'background:#181830;border:1px solid #f0b429;border-radius:16px;padding:14px 18px;'
       + 'z-index:99999;display:flex;align-items:center;gap:12px;'
       + 'animation:slideDown 0.3s ease-out;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
-    banner.innerHTML = '<div style="font-size:1.5em;">✨</div>'
+    banner.innerHTML = '<div style="font-size:1.5em;">\u2728</div>'
       + '<div><strong style="color:#f0b429;font-size:0.9em;">' + (notification.title || 'Toon It!') + '</strong>'
       + '<div style="color:#9090b0;font-size:0.8em;margin-top:2px;">' + (notification.body || '') + '</div></div>';
     document.body.appendChild(banner);
@@ -392,284 +617,140 @@
     }, 4000);
   }
 
-  // Init push after a brief delay (let app settle)
   setTimeout(initPushNotifications, 3000);
 
-  /* ══════════════════════════════════════════
-   *  APP REVIEW PROMPT
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  APP REVIEW PROMPT
+  // ══════════════════════════════════════════════════════════════
   window.toonItRequestReview = async function() {
     try {
-      // Check if user has done 2+ transforms (positive experience)
       var transforms = parseInt(localStorage.getItem('toonit_transform_count') || '0');
       var reviewShown = localStorage.getItem('toonit_review_prompted');
-
       if (transforms >= 2 && !reviewShown) {
-        // Use the app review plugin
-        var AppReview = window.Capacitor.Plugins.AppReview;
+        var AppReview = Plugins.AppReview;
         if (AppReview) {
           await AppReview.requestReview();
           localStorage.setItem('toonit_review_prompted', Date.now().toString());
-          console.log('[ToonIt Bridge] Review prompt shown');
+          dbg('Review prompt shown');
         }
       }
-    } catch (e) {
-      console.warn('[ToonIt Bridge] Review prompt error:', e);
-    }
+    } catch (e) { dbg('Review error: ' + e.message); }
   };
 
-  // Track transform count and prompt review after positive experience
-  var origTransformCount = parseInt(localStorage.getItem('toonit_transform_count') || '0');
-  // Observe result display to track completed transforms
-  var resultObserver = new MutationObserver(function(mutations) {
-    mutations.forEach(function(m) {
-      if (m.target.id === 'result' && m.target.style.display === 'block') {
-        var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
-        localStorage.setItem('toonit_transform_count', count.toString());
-        console.log('[ToonIt Bridge] Transform completed, count:', count);
-
-        // Inject native share button after transform
-        setTimeout(injectNativeShareButton, 500);
-
-        // Haptic celebration!
-        try { if (Haptics) Haptics.impact({ style: 'HEAVY' }); }
-        catch (e) { /* ignore */ }
-
-        // Prompt review after 2nd transform
-        if (count === 2) {
-          setTimeout(function() { window.toonItRequestReview(); }, 5000);
-        }
-      }
-    });
-  });
-
+  // Track transforms and trigger review
   function observeResults() {
     var resultArea = document.getElementById('result');
-    if (resultArea) {
-      resultObserver.observe(resultArea, { attributes: true, attributeFilter: ['style'] });
-      console.log('[ToonIt Bridge] Observing result area');
-    } else {
-      setTimeout(observeResults, 1000);
-    }
+    if (!resultArea) { setTimeout(observeResults, 1000); return; }
+
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        if (m.target.id === 'result' && m.target.style.display === 'block') {
+          var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
+          localStorage.setItem('toonit_transform_count', count.toString());
+          dbg('Transform #' + count + ' completed');
+
+          // Re-run button overrides (result area just appeared)
+          setTimeout(runAllOverrides, 500);
+          setTimeout(runAllOverrides, 1500);
+
+          // Haptic celebration
+          try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
+
+          // Review after 2nd transform
+          if (count === 2) {
+            setTimeout(function() { window.toonItRequestReview(); }, 5000);
+          }
+        }
+      });
+    });
+    observer.observe(resultArea, { attributes: true, attributeFilter: ['style'] });
+    dbg('Result observer active');
   }
   observeResults();
 
-  /* ══════════════════════════════════════════
-   *  DEEP LINKS — Web checkout return
-   * ══════════════════════════════════════════ */
-  if (App) {
-    App.addListener('appUrlOpen', function(event) {
-      console.log('[ToonIt Bridge] Deep link:', event.url);
-      // Handle toonit:// deep links
-      // toonit://checkout-complete → refresh credits
-      // toonit://checkout-cancelled → show message
-      var url = new URL(event.url);
-      var path = url.hostname + url.pathname;
-
-      if (path.includes('checkout-complete') || path.includes('checkout-success')) {
-        // Refresh user credits from Supabase
-        console.log('[ToonIt Bridge] Checkout complete — refreshing credits');
-        if (typeof window.refreshCredits === 'function') {
-          window.refreshCredits();
+  // ══════════════════════════════════════════════════════════════
+  //  DEEP LINKS — Checkout return
+  // ══════════════════════════════════════════════════════════════
+  if (CapApp) {
+    CapApp.addListener('appUrlOpen', function(event) {
+      dbg('Deep link: ' + event.url);
+      try {
+        var url = new URL(event.url);
+        var path = url.hostname + url.pathname;
+        if (path.includes('checkout-complete') || path.includes('checkout-success')) {
+          if (typeof window.refreshCredits === 'function') window.refreshCredits();
+          try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
+          showInAppNotification({ title: 'Credits Added! \u2728', body: 'Your credits are ready to use.' });
         }
-        // Show success message
-        try { if (Haptics) Haptics.impact({ style: 'HEAVY' }); }
-        catch (e) { /* ignore */ }
-        showInAppNotification({
-          title: 'Credits Added! ✨',
-          body: 'Your credits are ready to use. Start transforming!'
-        });
-      }
+      } catch(e) { dbg('Deep link error: ' + e.message); }
     });
   }
 
-  /* ══════════════════════════════════════════
-   *  PAYMENT — Route to web checkout
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  PAYMENT — Route to web checkout
+  // ══════════════════════════════════════════════════════════════
   window.toonItOpenCheckout = async function(priceId) {
+    var url = 'https://toonit.ai/pricing.html' + (priceId ? '?price=' + priceId : '');
     try {
-      if (Browser) {
-        await Browser.open({
-          url: 'https://toonit.ai/pricing.html' + (priceId ? '?price=' + priceId : ''),
-          presentationStyle: 'popover'
-        });
+      if (CapBrowser) {
+        await CapBrowser.open({ url: url, presentationStyle: 'popover' });
       } else {
-        window.open('https://toonit.ai/pricing.html' + (priceId ? '?price=' + priceId : ''), '_blank');
+        _origOpen.call(window, url, '_blank');
       }
-      console.log('[ToonIt Bridge] Checkout opened');
     } catch (e) {
-      console.error('[ToonIt Bridge] Checkout error:', e);
-      window.open('https://toonit.ai/pricing.html', '_blank');
+      _origOpen.call(window, url, '_blank');
     }
   };
 
-  /* ══════════════════════════════════════════
-   *  KEYBOARD — iOS safe area handling
-   * ══════════════════════════════════════════ */
-  if (Keyboard && platform === 'ios') {
-    Keyboard.addListener('keyboardWillShow', function(info) {
+  // ══════════════════════════════════════════════════════════════
+  //  KEYBOARD — iOS safe area
+  // ══════════════════════════════════════════════════════════════
+  if (CapKeyboard && platform === 'ios') {
+    CapKeyboard.addListener('keyboardWillShow', function(info) {
       document.body.style.paddingBottom = info.keyboardHeight + 'px';
     });
-    Keyboard.addListener('keyboardWillHide', function() {
+    CapKeyboard.addListener('keyboardWillHide', function() {
       document.body.style.paddingBottom = '0';
     });
   }
 
-  /* ══════════════════════════════════════════
-   *  BACK BUTTON — Android
-   * ══════════════════════════════════════════ */
-  if (App && platform === 'android') {
-    App.addListener('backButton', function(event) {
-      // If a modal is open, close it
+  // ══════════════════════════════════════════════════════════════
+  //  BACK BUTTON — Android
+  // ══════════════════════════════════════════════════════════════
+  if (CapApp && platform === 'android') {
+    CapApp.addListener('backButton', function() {
       var modal = document.querySelector('.modal[style*="display: flex"], .modal[style*="display:flex"]');
-      if (modal) {
-        modal.style.display = 'none';
-        return;
-      }
-      // If on home page, minimize app
+      if (modal) { modal.style.display = 'none'; return; }
       if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-        App.minimizeApp();
+        CapApp.minimizeApp();
       } else {
         window.history.back();
       }
     });
   }
 
-  /* ══════════════════════════════════════════
-   *  HIDE PWA INSTALL BANNER in native app
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  HIDE PWA INSTALL BANNER in native
+  // ══════════════════════════════════════════════════════════════
   var pwaInstallBanner = document.getElementById('pwaInstallBanner');
-  if (pwaInstallBanner) {
-    pwaInstallBanner.style.display = 'none';
-  }
-  // Also prevent it from showing later
+  if (pwaInstallBanner) pwaInstallBanner.style.display = 'none';
   var origAddEventListener = window.addEventListener;
   window.addEventListener = function(type, listener, options) {
-    if (type === 'beforeinstallprompt') return; // suppress in native
+    if (type === 'beforeinstallprompt') return;
     return origAddEventListener.call(window, type, listener, options);
   };
 
-  /* ══════════════════════════════════════════
-   *  NATIVE APP INDICATOR
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  NATIVE APP INDICATOR
+  // ══════════════════════════════════════════════════════════════
   document.documentElement.classList.add('capacitor-app');
   document.documentElement.classList.add('platform-' + platform);
   window.toonItIsNative = true;
   window.toonItPlatform = platform;
 
-
-  /* ══════════════════════════════════════════
-   *  DOWNLOAD — Capacitor native save
-   *  <a download> doesn't work in WebView;
-   *  use navigator.share({files}) instead
-   * ══════════════════════════════════════════ */
-
-
-  // Override global download functions
-
-  // Override dashboard download + share (myvideos.html modal)
-  function overrideDashButtons() {
-    var dashDl = document.getElementById('dashDownloadBtn');
-    if (dashDl) {
-      dashDl.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        var mv = document.getElementById('modalVideo');
-        var url = mv ? (mv.currentSrc || mv.src) : '';
-        if (url) window.burnWatermarkAndDownload(url, true, 'toonit-video.mp4', function() {
-          dashDl.textContent = 'Download'; dashDl.disabled = false;
-        });
-        return false;
-      };
-    }
-    var shareBtn = document.getElementById('shareVideoBtn');
-    if (shareBtn) {
-      shareBtn.onclick = async function(e) {
-        if (e) e.preventDefault();
-        var mv = document.getElementById('modalVideo');
-        var url = mv ? (mv.currentSrc || mv.src) : '';
-        if (!url) return;
-        shareBtn.textContent = 'Sharing...';
-        try {
-          var shared = false;
-          try {
-            var resp = await fetch(url);
-            var blob = await resp.blob();
-            var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              await navigator.share({ files: [file], title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai' });
-              shared = true;
-            }
-          } catch(fe) {
-            console.log('[ToonIt Bridge] File share failed:', fe.message);
-          }
-          if (!shared && navigator.share) {
-            await navigator.share({ title: 'My ToonIt Video', text: 'Check out my magical transformation! Made with ToonIt.ai', url: 'https://toonit.ai' });
-          }
-        } catch (e) {
-          if (e.name !== 'AbortError') console.error('[ToonIt Bridge] Modal share error:', e);
-        } finally { shareBtn.textContent = 'Share Video'; }
-      };
-    }
-  }
-  setTimeout(overrideDashButtons, 2000);
-  var _dashObs = new MutationObserver(function() { setTimeout(overrideDashButtons, 300); });
-  setTimeout(function() {
-    var modal = document.getElementById('videoModal');
-    if (modal) _dashObs.observe(modal, { attributes: true, attributeFilter: ['class'] });
-  }, 2000);
-
-  /* ══════════════════════════════════════════
-   *  SHARE BUTTON — Inject in result area
-   * ══════════════════════════════════════════ */
-  function injectNativeShareButton() {
-    var resultBtns = document.querySelector('#result .result-buttons');
-    if (!resultBtns || document.getElementById('nativeShareBtn')) return;
-    var btn = document.createElement('button');
-    btn.id = 'nativeShareBtn';
-    btn.type = 'button';
-    btn.textContent = 'Share';
-    btn.style.cssText = 'background:transparent;color:#f0b429;border:1.5px solid #f0b429;padding:10px 20px;border-radius:25px;cursor:pointer;font-weight:600;font-size:0.95em;';
-    btn.addEventListener('click', async function(e) {
-      e.preventDefault();
-      var video = document.getElementById('resultVideo');
-      var url = video ? (video.currentSrc || video.src) : '';
-      if (!url) return;
-      btn.textContent = 'Sharing...';
-      btn.disabled = true;
-      try {
-        var CapShare = window.Capacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.Share : null;
-        if (CapShare) {
-          await CapShare.share({
-            title: 'My ToonIt Video',
-            text: 'Check out my magical transformation! Made with ToonIt.ai',
-            url: 'https://toonit.ai',
-            dialogTitle: 'Share your magic'
-          });
-        } else if (navigator.share) {
-          await navigator.share({
-            title: 'My ToonIt Video',
-            text: 'Check out my magical transformation! Made with ToonIt.ai',
-            url: 'https://toonit.ai'
-          });
-        }
-        try { if (window.Capacitor.Plugins.Haptics) window.Capacitor.Plugins.Haptics.impact({ style: 'LIGHT' }); } catch(e) {}
-      } catch (e) {
-        if (e.name !== 'AbortError') console.error('[ToonIt Bridge] Share error:', e);
-      } finally {
-        btn.textContent = 'Share';
-        btn.disabled = false;
-      }
-    });
-    var newBtn = document.getElementById('newBtn');
-    if (newBtn) resultBtns.insertBefore(btn, newBtn);
-    else resultBtns.appendChild(btn);
-    console.log('[ToonIt Bridge] Native share button injected');
-  }
-
-  /* ══════════════════════════════════════════
-   *  THUMBNAILS — Fix video poster in WebView
-   *  Android WebView doesn't auto-show frames
-   * ══════════════════════════════════════════ */
+  // ══════════════════════════════════════════════════════════════
+  //  VIDEO THUMBNAILS — Fix for Android WebView
+  // ══════════════════════════════════════════════════════════════
   function fixVideoThumbnails() {
     var thumbs = document.querySelectorAll('.video-card-thumb video, .video-thumbnail video');
     for (var i = 0; i < thumbs.length; i++) {
@@ -691,146 +772,9 @@
     fixVideoThumbnails();
   }, 1500);
 
-
-  /* ══════════════════════════════════════════
-   *  DOWNLOAD — Override burnWatermarkAndDownload only
-   *  This preserves the existing watermark pipeline
-   *  (downloadVideo → _resolveLandingDownloadUrl → here)
-   *  We only replace the final save-to-device step
-   * ══════════════════════════════════════════ */
-
-
-  /* ══════════════════════════════════════════
-   *  DOWNLOAD + SHARE — Direct button override
-   *  The page's local functions take precedence
-   *  over window overrides (JS closure rules).
-   *  So we directly replace button onclick handlers.
-   * ══════════════════════════════════════════ */
-
-
-
-
-  /* ══════════════════════════════════════════
-   *  DOWNLOAD INTERCEPT — Capture blob: anchor downloads
-   *  The existing page code does: fetch→blob→createObjectURL→<a download>→click()
-   *  In WebView, <a download> silently fails.
-   *  We monkey-patch HTMLAnchorElement.prototype.click to intercept
-   *  blob: URL downloads and use Capacitor Share plugin instead.
-   * ══════════════════════════════════════════ */
-  (function() {
-    var origClick = HTMLAnchorElement.prototype.click;
-    var CapShare = window.Capacitor.Plugins.Share;
-
-    HTMLAnchorElement.prototype.click = function() {
-      var href = this.href || '';
-      var dl = this.download || this.getAttribute('download') || '';
-
-      // Only intercept blob: URLs with a download attribute (video downloads)
-      if (href.indexOf('blob:') === 0 && dl) {
-        console.log('[ToonIt Bridge] Intercepted blob download:', dl);
-
-        var self = this;
-        fetch(href)
-          .then(function(r) { return r.blob(); })
-          .then(function(blob) {
-            return new Promise(function(resolve) {
-              var reader = new FileReader();
-              reader.onloadend = function() { resolve(reader.result); };
-              reader.readAsDataURL(blob);
-            });
-          })
-          .then(function(dataUrl) {
-            if (CapShare) {
-              return CapShare.share({
-                title: dl || 'ToonIt Video',
-                url: dataUrl,
-                dialogTitle: 'Save Video'
-              });
-            }
-            // If no Share plugin, call original
-            return origClick.call(self);
-          })
-          .catch(function(err) {
-            if (err && err.name !== 'AbortError') {
-              console.error('[ToonIt Bridge] Blob download intercept error:', err);
-              origClick.call(self);
-            }
-          });
-        return; // Don't call original click
-      }
-
-      // For non-blob or non-download links, use original
-      return origClick.call(this);
-    };
-
-    console.log('[ToonIt Bridge] Blob download intercept installed');
-  })();
-
-  /* ══════════════════════════════════════════
-   *  SHARE — Native Capacitor Share for buttons
-   * ══════════════════════════════════════════ */
-  function nativeShareVideo(videoEl, btnEl) {
-    var url = videoEl ? (videoEl.currentSrc || videoEl.src) : '';
-    if (!url) return;
-    var origText = btnEl ? btnEl.textContent : 'Share';
-    if (btnEl) { btnEl.textContent = 'Sharing...'; btnEl.disabled = true; }
-
-    var CapShare = window.Capacitor.Plugins.Share;
-
-    // Fetch video and share as data URI (so the actual video gets shared)
-    fetch(url)
-      .then(function(r) {
-        if (!r.ok) throw new Error('fetch ' + r.status);
-        return r.blob();
-      })
-      .then(function(blob) {
-        return new Promise(function(resolve) {
-          var reader = new FileReader();
-          reader.onloadend = function() { resolve(reader.result); };
-          reader.readAsDataURL(blob);
-        });
-      })
-      .then(function(dataUrl) {
-        if (CapShare) {
-          return CapShare.share({
-            title: 'My ToonIt Video',
-            text: 'Check out my magical transformation! Made with ToonIt.ai',
-            url: dataUrl,
-            dialogTitle: 'Share your magic'
-          });
-        }
-      })
-      .catch(function(err) {
-        if (err && err.name !== 'AbortError') {
-          console.error('[ToonIt Bridge] Share error:', err);
-        }
-      })
-      .finally(function() {
-        if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
-      });
-  }
-
-  // Override share buttons (not download - download uses blob intercept above)
-  function overrideShareButtons() {
-    // Dashboard share button
-    var shareBtn = document.getElementById('shareVideoBtn');
-    if (shareBtn && !shareBtn.dataset.bridgeShare) {
-      shareBtn.dataset.bridgeShare = '1';
-      shareBtn.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        nativeShareVideo(document.getElementById('modalVideo'), shareBtn);
-        return false;
-      };
-    }
-  }
-  setTimeout(overrideShareButtons, 3000);
-  var _shareObs = new MutationObserver(function() { setTimeout(overrideShareButtons, 300); });
-  setTimeout(function() {
-    var modal = document.getElementById('videoModal');
-    if (modal) _shareObs.observe(modal, { attributes: true, attributeFilter: ['class'] });
-  }, 2000);
-
-
-
-  console.log('[ToonIt Bridge] ✅ Native bridge initialized for ' + platform);
+  // ══════════════════════════════════════════════════════════════
+  //  DONE
+  // ══════════════════════════════════════════════════════════════
+  dbg('\u2705 Bridge v2.0 ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.0 initialized for ' + platform);
 })();
