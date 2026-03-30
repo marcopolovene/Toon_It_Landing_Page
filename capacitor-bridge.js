@@ -28,20 +28,10 @@
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
 
   // ══════════════════════════════════════════════════════════════
-  //  DEBUG OVERLAY — Live logging visible on device
+  //  LOGGING — Console only (no visible overlay in production)
   // ══════════════════════════════════════════════════════════════
-  var _dbg = [];
   function dbg(msg) {
-    _dbg.push(new Date().toLocaleTimeString() + ' ' + msg);
     console.log('[Bridge] ' + msg);
-    var el = document.getElementById('_bdg');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = '_bdg';
-      el.style.cssText = 'position:fixed;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.92);color:#0f0;padding:8px 10px;border-radius:10px;font:11px/1.4 monospace;z-index:999999;max-height:180px;overflow-y:auto;white-space:pre-wrap;pointer-events:none;';
-      (document.body || document.documentElement).appendChild(el);
-    }
-    el.textContent = _dbg.slice(-15).join('\n');
   }
   dbg('Bridge v2.0 init | platform=' + platform);
 
@@ -573,11 +563,19 @@
   //  PUSH NOTIFICATIONS
   // ══════════════════════════════════════════════════════════════
   async function initPushNotifications() {
-    if (!CapPush) return;
+    if (!CapPush) { dbg('Push: plugin not available, skipping'); return; }
     try {
+      // Check if Firebase/FCM is available before attempting registration
+      // Without google-services.json, register() will crash the app
       var permission = await CapPush.requestPermissions();
-      if (permission.receive !== 'granted') return;
-      await CapPush.register();
+      if (permission.receive !== 'granted') { dbg('Push: permission denied'); return; }
+      try {
+        await CapPush.register();
+      } catch (regErr) {
+        dbg('Push register failed (Firebase not configured?): ' + (regErr.message || regErr));
+        console.warn('[Bridge] Push registration failed — Firebase may not be configured:', regErr);
+        return;
+      }
 
       CapPush.addListener('registration', function(token) {
         dbg('Push token: ' + token.value.substring(0, 20) + '...');
@@ -595,7 +593,8 @@
       });
       dbg('Push initialized');
     } catch (e) {
-      dbg('Push init error: ' + e.message);
+      dbg('Push init error: ' + (e && e.message || e));
+      console.warn('[Bridge] Push initialization error (non-fatal):', e);
     }
   }
 
