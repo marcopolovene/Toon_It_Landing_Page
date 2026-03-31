@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email — Toon It!</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 480px;
+            width: 100%;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(168,85,247,0.2);
+            border-radius: 1rem;
+            padding: 2.5rem 2rem;
+            margin-top: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid rgba(168,85,247,0.2);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .icon-success {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounceIn 0.6s ease;
+        }
+        .icon-error {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        h2 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+        .success h2 { color: #a855f7; }
+        .error h2 { color: #f87171; }
+        p {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+        .credits-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: #fff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.4); }
+            50% { box-shadow: 0 0 0 12px rgba(168,85,247,0); }
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: #fff;
+            padding: 0.85rem 2rem;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(168,85,247,0.3);
+        }
+        .email-text {
+            color: #a855f7;
+            font-weight: 600;
+        }
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+    <div class="container">
+        <div class="logo">Toon It!</div>
+        <div class="card" id="card">
+            <div id="state-loading">
+                <div class="spinner"></div>
+                <h2>Verifying your email...</h2>
+                <p>Just a moment while we confirm everything.</p>
+            </div>
+            <div id="state-success" style="display:none" class="success">
+                <div class="icon-success">🎉</div>
+                <h2>Email Verified!</h2>
+                <p>Your email <span id="verified-email" class="email-text"></span> is now verified.</p>
+                <div class="credits-badge">+2 Bonus Credits Earned! ✨</div>
+                <p>Use your credits to create amazing transformations.</p>
+                <a href="/" class="btn">Go to App →</a>
+            </div>
+            <div id="state-already" style="display:none" class="error">
+                <div class="icon-error">✅</div>
+                <h2>Already Verified</h2>
+                <p>Your email <span id="already-email" class="email-text"></span> was already verified.</p>
+                <p>You're all set — no further action needed!</p>
+                <a href="/" class="btn">Go to App →</a>
+            </div>
+            <div id="state-error" style="display:none" class="error">
+                <div class="icon-error">❌</div>
+                <h2>Verification Failed</h2>
+                <p id="error-message">The verification link is invalid or has expired.</p>
+                <p>Please try clicking the link in your email again, or request a new verification email from the app.</p>
+                <a href="/" class="btn">Go to App →</a>
+            </div>
+            <div id="state-notoken" style="display:none" class="error">
+                <div class="icon-error">🔗</div>
+                <h2>Missing Verification Link</h2>
+                <p>It looks like you opened this page without a verification token.</p>
+                <p>Please click the link in your verification email to continue.</p>
+                <a href="/" class="btn">Go to App →</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ====== Confetti Animation ======
+    function launchConfetti() {
+        const canvas = document.getElementById("confetti-canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const pieces = [];
+        const colors = ["#a855f7","#6366f1","#f472b6","#facc15","#34d399","#60a5fa","#fb923c"];
+        for (let i = 0; i < 150; i++) {
+            pieces.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                w: Math.random() * 10 + 5,
+                h: Math.random() * 6 + 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                vx: (Math.random() - 0.5) * 3,
+                vy: Math.random() * 3 + 2,
+                rot: Math.random() * 360,
+                rv: (Math.random() - 0.5) * 8,
+                opacity: 1
+            });
+        }
+        let frame = 0;
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let alive = false;
+            pieces.forEach(p => {
+                if (p.opacity <= 0) return;
+                alive = true;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.rv;
+                p.vy += 0.05;
+                if (frame > 60) p.opacity -= 0.008;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot * Math.PI / 180);
+                ctx.globalAlpha = Math.max(0, p.opacity);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                ctx.restore();
+            });
+            frame++;
+            if (alive) requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // ====== Main Verification Logic ======
+    (async function() {
+        const SUPABASE_URL = "https://zgfpxdkanwbcieowrqoz.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0";
+
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+
+        function show(id) {
+            ["state-loading","state-success","state-already","state-error","state-notoken"].forEach(
+                s => document.getElementById(s).style.display = "none"
+            );
+            document.getElementById(id).style.display = "block";
+        }
+
+        if (!token) {
+            show("state-notoken");
+            return;
+        }
+
+        try {
+            const resp = await fetch(SUPABASE_URL + "/rest/v1/rpc/verify_email_token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": "Bearer " + SUPABASE_ANON_KEY
+                },
+                body: JSON.stringify({ p_token: token })
+            });
+
+            if (!resp.ok) throw new Error("Server error: " + resp.status);
+
+            const data = await resp.json();
+
+            if (data.success) {
+                document.getElementById("verified-email").textContent = data.email;
+                show("state-success");
+                launchConfetti();
+            } else if (data.error === "Email already verified") {
+                document.getElementById("already-email").textContent = data.email || "";
+                show("state-already");
+            } else {
+                document.getElementById("error-message").textContent = data.error || "Verification failed.";
+                show("state-error");
+            }
+        } catch (err) {
+            console.error("Verification error:", err);
+            document.getElementById("error-message").textContent = "Something went wrong. Please try again later.";
+            show("state-error");
+        }
+    })();
+    </script>
+</body>
+</html>

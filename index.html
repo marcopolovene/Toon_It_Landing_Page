@@ -5488,4 +5488,209 @@
 })();
 </script>
 
+<!-- ==========================================
+     EMAIL VERIFICATION MODULE
+     Soft verification with 2 bonus credits
+     Added: 2026-03-31
+     ========================================== -->
+<script>
+(function() {
+    'use strict';
+
+    var SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+    var N8N_VERIFY_WEBHOOK = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-email';
+    var DISMISS_KEY = 'toonit_verify_banner_dismissed';
+    var SENT_KEY = 'toonit_verify_email_sent';
+    var _emailVerified = null;
+
+    function getSb() { return window.supabaseClient || null; }
+    function getUser() { return window.currentUser || null; }
+
+    // ========================================
+    // Send Verification Email (fire-and-forget)
+    // ========================================
+    async function sendVerificationEmail(email) {
+        if (!email) return;
+        try {
+            var user = getUser();
+            var sb = getSb();
+            if (!user || !user.id || !sb) {
+                console.log('[EMAIL-VERIFY] No user/client, skipping');
+                return;
+            }
+
+            var resp = await sb.from('profiles')
+                .select('email_verification_token, email_verified')
+                .eq('id', user.id)
+                .single();
+
+            if (resp.error || !resp.data) {
+                console.log('[EMAIL-VERIFY] Token fetch error:', resp.error);
+                return;
+            }
+            if (resp.data.email_verified) {
+                console.log('[EMAIL-VERIFY] Already verified');
+                return;
+            }
+
+            var token = resp.data.email_verification_token;
+            if (!token) { console.log('[EMAIL-VERIFY] No token found'); return; }
+
+            fetch(N8N_VERIFY_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'email_verification', to: email, token: token })
+            }).then(function(r) {
+                console.log('[EMAIL-VERIFY] Verification email sent, status:', r.status);
+            }).catch(function(e) {
+                console.log('[EMAIL-VERIFY] Send failed:', e.message);
+            });
+        } catch(e) {
+            console.error('[EMAIL-VERIFY] Error:', e);
+        }
+    }
+    window.sendVerificationEmail = sendVerificationEmail;
+
+    // ========================================
+    // Check verification status from profiles
+    // ========================================
+    async function checkVerificationStatus() {
+        var user = getUser();
+        var sb = getSb();
+        if (!user || !user.id || !sb) return;
+        try {
+            var resp = await sb.from('profiles')
+                .select('email_verified')
+                .eq('id', user.id)
+                .single();
+            if (resp.data) {
+                _emailVerified = !!resp.data.email_verified;
+                updateBannerVisibility();
+            }
+        } catch(e) {
+            console.log('[EMAIL-VERIFY] Status check error:', e);
+        }
+    }
+
+    // ========================================
+    // Verification Banner (nudge)
+    // ========================================
+    function createBanner() {
+        if (document.getElementById('emailVerifyBanner')) return;
+
+        var banner = document.createElement('div');
+        banner.id = 'emailVerifyBanner';
+        banner.style.cssText = 'display:none;background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(99,102,241,0.12));border:1px solid rgba(168,85,247,0.25);border-radius:12px;padding:12px 40px 12px 20px;margin:10px auto;max-width:600px;text-align:center;position:relative;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;z-index:100;';
+        banner.innerHTML = '<span style="color:#e2e8f0;font-size:14px;">\u{1F4E7} Verify your email to earn <strong style="color:#a855f7;">2 bonus credits</strong>!</span>'
+            + ' <button id="verifyNowBtn" style="background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;border:none;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;margin-left:10px;transition:transform 0.2s;">Verify Now</button>'
+            + '<button id="verifyDismissBtn" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:none;color:#94a3b8;cursor:pointer;font-size:20px;line-height:1;padding:4px;" aria-label="Dismiss">&times;</button>';
+
+        var header = document.querySelector('header') || document.querySelector('nav');
+        if (header && header.parentNode) {
+            header.parentNode.insertBefore(banner, header.nextSibling);
+        } else {
+            var main = document.querySelector('main') || document.body;
+            main.insertBefore(banner, main.firstChild);
+        }
+
+        document.getElementById('verifyNowBtn').addEventListener('click', async function() {
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            var user = getUser();
+            if (user && user.email) {
+                await sendVerificationEmail(user.email);
+                if (typeof showToast === 'function') {
+                    showToast('Verification email sent! Check your inbox.', 'success');
+                }
+            }
+            setTimeout(function() { btn.disabled = false; btn.textContent = 'Verify Now'; }, 3000);
+        });
+
+        document.getElementById('verifyDismissBtn').addEventListener('click', function() {
+            banner.style.display = 'none';
+            try { localStorage.setItem(DISMISS_KEY, Date.now().toString()); } catch(e) {}
+        });
+    }
+
+    function updateBannerVisibility() {
+        var banner = document.getElementById('emailVerifyBanner');
+        if (!banner) return;
+
+        var user = getUser();
+        if (!user || _emailVerified === true || _emailVerified === null) {
+            banner.style.display = 'none';
+            return;
+        }
+
+        try {
+            var dismissed = localStorage.getItem(DISMISS_KEY);
+            if (dismissed && (Date.now() - parseInt(dismissed, 10)) < 86400000) {
+                banner.style.display = 'none';
+                return;
+            }
+            if (dismissed) localStorage.removeItem(DISMISS_KEY);
+        } catch(e) {}
+
+        banner.style.display = 'block';
+    }
+
+    // ========================================
+    // Auth state listener for auto-send on signup
+    // ========================================
+    function setupAuthHook() {
+        var sb = getSb();
+        if (!sb || !sb.auth) {
+            setTimeout(setupAuthHook, 1000);
+            return;
+        }
+
+        sb.auth.onAuthStateChange(function(event, session) {
+            if (event === 'SIGNED_IN' && session && session.user) {
+                var createdAt = new Date(session.user.created_at);
+                var now = new Date();
+                var isNewSignup = (now - createdAt) < 60000;
+
+                if (isNewSignup) {
+                    var sentFlag = sessionStorage.getItem(SENT_KEY);
+                    if (!sentFlag) {
+                        sessionStorage.setItem(SENT_KEY, '1');
+                        setTimeout(function() {
+                            sendVerificationEmail(session.user.email);
+                        }, 3000);
+                    }
+                }
+
+                setTimeout(checkVerificationStatus, 2000);
+            }
+
+            if (event === 'SIGNED_OUT') {
+                _emailVerified = null;
+                updateBannerVisibility();
+                try { sessionStorage.removeItem(SENT_KEY); } catch(e) {}
+            }
+        });
+    }
+
+    // ========================================
+    // Initialize
+    // ========================================
+    function init() {
+        createBanner();
+        setupAuthHook();
+
+        setTimeout(function() {
+            if (getUser()) checkVerificationStatus();
+        }, 2500);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        setTimeout(init, 500);
+    }
+})();
+</script>
+
 </html>
