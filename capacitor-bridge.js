@@ -1,5 +1,5 @@
 /**
- * Toon It! — Capacitor Native Bridge v2.0
+ * Toon It! — Capacitor Native Bridge v2.1
  * Rewritten with clean download/share handling.
  *
  * THE CORE PROBLEM:
@@ -26,6 +26,8 @@
   console.log('[ToonIt Bridge] Initializing native bridge v2.0...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
+  // Android WebView: navigator.share({files}) silently resolves without actually sharing
+  var useCapShareOnly = (platform === 'android');
 
   // ══════════════════════════════════════════════════════════════
   //  LOGGING — Console only (no visible overlay in production)
@@ -33,7 +35,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.0 init | platform=' + platform);
+  dbg('Bridge v2.1 init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -78,7 +80,7 @@
 
       // Step 3: Try navigator.share with actual file (PREFERRED)
       // This opens the Android share sheet where user can "Save to device", send via WhatsApp, etc.
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
         dbg('Using navigator.share({files}) — PREFERRED');
         await navigator.share({
           files: [file],
@@ -155,7 +157,7 @@
           var file = new File([blob], dl, { type: blob.type || 'video/mp4' });
 
           // Preferred: share with actual file
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
             dbg('L1 → navigator.share({files})');
             return navigator.share({ files: [file], title: dl });
           }
@@ -213,7 +215,7 @@
           dbg('L2 blob: ' + blob.size + ' bytes');
           var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
 
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
             dbg('L2 → navigator.share({files})');
             return navigator.share({ files: [file], title: 'ToonIt Video' });
           }
@@ -278,74 +280,86 @@
   function overrideIndexButtons() {
     // === DOWNLOAD BUTTON (index.html) ===
     var dlBtn = document.getElementById('downloadBtn');
-    if (dlBtn && dlBtn.dataset.bridgeV2 !== '1') {
-      dlBtn.dataset.bridgeV2 = '1';
-      dbg('LAYER3: overriding downloadBtn');
+    if (dlBtn && !dlBtn._bridgeCapture) {
+      dlBtn._bridgeCapture = true;
+      dbg('LAYER3: overriding downloadBtn (capture-phase)');
 
-      dlBtn.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
+      dlBtn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         var url = getVideoUrl();
         if (!url) {
           dbg('L3 download: no video URL found');
-          return false;
+          return;
         }
         dbg('L3 download: ' + url.substring(0, 60));
         saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
-        return false;
-      };
+      }, true); // capture phase — beats failsafe onclick rebinding
     }
 
-    // === SHARE BUTTON (index.html — #nativeShareBtn) ===
+    // === SHARE BUTTON (index.html — inject if not found) ===
     var shareBtn = document.getElementById('nativeShareBtn');
-    if (shareBtn && shareBtn.dataset.bridgeV2 !== '1') {
-      shareBtn.dataset.bridgeV2 = '1';
-      shareBtn.style.display = ''; // Make sure it's visible
-      dbg('LAYER3: overriding nativeShareBtn');
+    if (!shareBtn) {
+      var resultBtns = document.querySelector('.result-buttons');
+      var newBtnRef = document.getElementById('newBtn');
+      if (resultBtns) {
+        shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
+        shareBtn.id = 'nativeShareBtn';
+        shareBtn.textContent = '📤 Share';
+        if (newBtnRef && newBtnRef.parentNode === resultBtns) {
+          resultBtns.insertBefore(shareBtn, newBtnRef);
+        } else {
+          resultBtns.appendChild(shareBtn);
+        }
+        dbg('LAYER3: injected nativeShareBtn');
+      }
+    }
+    if (shareBtn && !shareBtn._bridgeCapture) {
+      shareBtn._bridgeCapture = true;
+      shareBtn.style.display = '';
+      dbg('LAYER3: overriding nativeShareBtn (capture)');
 
-      shareBtn.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
+      shareBtn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         var url = getVideoUrl();
-        if (!url) return false;
+        if (!url) return;
         dbg('L3 share: ' + url.substring(0, 60));
         shareVideoNative(url, shareBtn);
-        return false;
-      };
+      }, true);
     }
   }
 
   function overrideDashboardButtons() {
     // === DOWNLOAD BUTTON (myvideos.html modal) ===
     var dashDl = document.getElementById('dashDownloadBtn');
-    if (dashDl && dashDl.dataset.bridgeV2 !== '1') {
-      dashDl.dataset.bridgeV2 = '1';
-      dbg('LAYER3: overriding dashDownloadBtn');
+    if (dashDl && !dashDl._bridgeCapture) {
+      dashDl._bridgeCapture = true;
+      dbg('LAYER3: overriding dashDownloadBtn (capture-phase)');
 
-      dashDl.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
+      dashDl.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         var mv = document.getElementById('modalVideo');
         var url = mv ? (mv.currentSrc || mv.src) : '';
-        if (!url) return false;
+        if (!url) return;
         dbg('L3 dash download: ' + url.substring(0, 60));
         saveOrShareVideo(url, 'toonit-video.mp4', dashDl);
-        return false;
-      };
+      }, true);
     }
 
     // === SHARE BUTTON (myvideos.html modal) ===
     var shareBtn = document.getElementById('shareVideoBtn');
-    if (shareBtn && shareBtn.dataset.bridgeV2 !== '1') {
-      shareBtn.dataset.bridgeV2 = '1';
-      dbg('LAYER3: overriding shareVideoBtn');
+    if (shareBtn && !shareBtn._bridgeCapture) {
+      shareBtn._bridgeCapture = true;
+      dbg('LAYER3: overriding shareVideoBtn (capture-phase)');
 
-      shareBtn.onclick = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
+      shareBtn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         var mv = document.getElementById('modalVideo');
         var url = mv ? (mv.currentSrc || mv.src) : '';
-        if (!url) return false;
+        if (!url) return;
         dbg('L3 dash share: ' + url.substring(0, 60));
         shareVideoNative(url, shareBtn);
-        return false;
-      };
+      }, true);
     }
   }
 
@@ -362,7 +376,7 @@
       var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
 
       // Preferred: share actual file
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
         dbg('share → navigator.share({files})');
         await navigator.share({
           files: [file],
@@ -643,21 +657,31 @@
 
     var observer = new MutationObserver(function(mutations) {
       mutations.forEach(function(m) {
-        if (m.target.id === 'result' && m.target.style.display === 'block') {
-          var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
-          localStorage.setItem('toonit_transform_count', count.toString());
-          dbg('Transform #' + count + ' completed');
+        if (m.target.id === 'result') {
+          var camBtn = document.getElementById('nativeCameraBtn');
+          if (m.target.style.display === 'block') {
+            // Hide camera button when result is shown
+            if (camBtn) camBtn.style.display = 'none';
 
-          // Re-run button overrides (result area just appeared)
-          setTimeout(runAllOverrides, 500);
-          setTimeout(runAllOverrides, 1500);
+            var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
+            localStorage.setItem('toonit_transform_count', count.toString());
+            dbg('Transform #' + count + ' completed (camera hidden)');
 
-          // Haptic celebration
-          try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
+            // Re-run button overrides (result area just appeared)
+            setTimeout(runAllOverrides, 500);
+            setTimeout(runAllOverrides, 1500);
 
-          // Review after 2nd transform
-          if (count === 2) {
-            setTimeout(function() { window.toonItRequestReview(); }, 5000);
+            // Haptic celebration
+            try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
+
+            // Review after 2nd transform
+            if (count === 2) {
+              setTimeout(function() { window.toonItRequestReview(); }, 5000);
+            }
+          } else {
+            // Result hidden (Create Another) — restore camera button
+            if (camBtn) camBtn.style.display = 'block';
+            dbg('Result hidden — camera button restored');
           }
         }
       });
@@ -774,6 +798,6 @@
   // ══════════════════════════════════════════════════════════════
   //  DONE
   // ══════════════════════════════════════════════════════════════
-  dbg('\u2705 Bridge v2.0 ready | ' + platform);
-  console.log('[ToonIt Bridge] \u2705 v2.0 initialized for ' + platform);
+  dbg('\u2705 Bridge v2.1 ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.1 initialized for ' + platform);
 })();
