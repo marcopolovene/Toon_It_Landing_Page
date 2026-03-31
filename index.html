@@ -1552,6 +1552,8 @@
                     }
                     currentUser = data.session.user;
                     await loadUserCredits();
+                    // Process referral code after signup
+                    processReferral(data.session.user.id, email);
                     updateUIForUser();
                     closeModals();
                     submitBtn.disabled = false;
@@ -1613,6 +1615,8 @@
                 } else if (loginData.session) {
                     console.log('Auto-login successful!');
                     currentUser = loginData.session.user;
+                    // Process referral code after auto-login signup
+                    processReferral(loginData.session.user.id, email);
                     await loadUserCredits();
                     updateUIForUser();
                     closeModals();
