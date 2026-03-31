@@ -6,7 +6,7 @@
     <meta name="description" content="Transform your photos into magical animated art with AI. Upload any photo and watch it come alive as an enchanting animated story. Try free!">
     <meta name="keywords" content="AI photo transformation, magical transformation video, photo to video, AI animation, magical video, cartoon video maker">
     <meta name="author" content="Toon It!">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="index, follow, max-video-preview:0">
     <link rel="canonical" href="https://toonit.ai/">
 
     <!-- Open Graph (Facebook, LinkedIn) -->
@@ -123,7 +123,7 @@
         .showcase-scroll { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 0 20px 16px; scrollbar-width: none; }
         .showcase-scroll::-webkit-scrollbar { display: none; }
         .showcase-card { flex: 0 0 76vw; max-width: 300px; scroll-snap-align: center; border-radius: 22px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border); position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        .showcase-card video { width: 100%; display: block; aspect-ratio: 9/16; object-fit: cover; }
+        .showcase-card video, .showcase-card img { width: 100%; display: block; aspect-ratio: 9/16; object-fit: cover; cursor: pointer; }
         .showcase-label { position: absolute; top: 12px; right: 12px; background: rgba(7,7,15,0.82); backdrop-filter: blur(8px); border: 1px solid rgba(240,180,41,0.35); border-radius: 20px; padding: 4px 12px; font-size: 0.72em; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
         .showcase-dots { display: flex; justify-content: center; gap: 6px; padding-top: 18px; }
         .showcase-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.3s; cursor: pointer; }
@@ -503,27 +503,27 @@
             <button class="showcase-arrow showcase-arrow-left" type="button" aria-label="Scroll showcase left" onclick="scrollShowcase(-1)">←</button>
             <div class="showcase-scroll" id="showcaseScroll">
                 <div class="showcase-card">
-                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4">
                     <div class="showcase-label">Superhero</div>
                 </div>
                 <div class="showcase-card">
-                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4">
                     <div class="showcase-label">3D Cartoon</div>
                 </div>
                 <div class="showcase-card">
-                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4">
                     <div class="showcase-label">Superhero</div>
                 </div>
                 <div class="showcase-card">
-                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/09_golden_retriever_park_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4">
                     <div class="showcase-label">3D Cartoon</div>
                 </div>
                 <div class="showcase-card">
-                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4">
                     <div class="showcase-label">Magical Storybook</div>
                 </div>
                 <div class="showcase-card">
-                    <video src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" autoplay muted loop playsinline preload="auto"></video>
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4">
                     <div class="showcase-label">Watercolor</div>
                 </div>
             </div>
@@ -5425,6 +5425,45 @@
             sc.scrollTo({left: i * sc.clientWidth, behavior:'smooth'});
         });
     });
+    // Layer 3: Lazy-load showcase videos (hidden from Googlebot)
+    // Replaces poster <img> with <video> when showcase enters viewport
+    var showcaseSection = document.querySelector('.showcase');
+    if (showcaseSection && 'IntersectionObserver' in window) {
+        var showcaseObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    var posters = sc.querySelectorAll('img[data-video-src]');
+                    posters.forEach(function(img) {
+                        var vid = document.createElement('video');
+                        vid.src = img.getAttribute('data-video-src');
+                        vid.autoplay = true;
+                        vid.muted = true;
+                        vid.loop = true;
+                        vid.playsInline = true;
+                        vid.preload = 'auto';
+                        vid.setAttribute('playsinline', '');
+                        img.parentNode.replaceChild(vid, img);
+                        vid.play().catch(function(){});
+                    });
+                    showcaseObserver.disconnect();
+                }
+            });
+        }, { rootMargin: '200px' });
+        showcaseObserver.observe(showcaseSection);
+    } else if (showcaseSection) {
+        // Fallback for browsers without IntersectionObserver
+        var posters = sc.querySelectorAll('img[data-video-src]');
+        posters.forEach(function(img) {
+            var vid = document.createElement('video');
+            vid.src = img.getAttribute('data-video-src');
+            vid.autoplay = true;
+            vid.muted = true;
+            vid.loop = true;
+            vid.playsInline = true;
+            vid.setAttribute('playsinline', '');
+            img.parentNode.replaceChild(vid, img);
+        });
+    }
   // Extend _getStyleLoaderMeta map (loader CSS classes for new styles)
   var origGetStyleLoaderMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
   if (origGetStyleLoaderMeta) {
