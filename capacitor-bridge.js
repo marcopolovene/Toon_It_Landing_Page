@@ -23,10 +23,10 @@
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge v2.0...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.2 (Filesystem)...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
-  // [OPTION-E] navigator.share({files}) is now the primary download/share method on all platforms
+  // [v2.2] Filesystem plugin used for reliable Android downloads
 
   // ══════════════════════════════════════════════════════════════
   //  LOGGING — Console only (no visible overlay in production)
@@ -34,7 +34,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.1 init | platform=' + platform);
+  dbg('Bridge v2.2-fs init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -45,22 +45,41 @@
   var CapHaptics   = Plugins.Haptics;
   var CapStatusBar = Plugins.StatusBar;
   var CapBrowser   = Plugins.Browser;
+  var CapFilesystem = Plugins.Filesystem;
   var CapApp       = Plugins.App;
   var CapSplash    = Plugins.SplashScreen;
   var CapKeyboard  = Plugins.Keyboard;
   var CapPush      = Plugins.PushNotifications;
 
-  dbg('Plugins: Share=' + !!CapShare + ' Camera=' + !!CapCamera);
+  dbg('Plugins: Share=' + !!CapShare + ' Camera=' + !!CapCamera + ' Filesystem=' + !!CapFilesystem);
 
   // ══════════════════════════════════════════════════════════════
   //  CORE HELPER: Save/share a video from URL
   //  This is THE function that replaces broken <a download>
   // ══════════════════════════════════════════════════════════════
+  // Native toast helper
+  function _showNativeToast(msg) {
+    try {
+      var toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'
+        + 'background:#181830;border:1px solid #7c6bfa;border-radius:12px;padding:12px 24px;'
+        + 'z-index:99999;color:#fff;font-size:0.9em;box-shadow:0 4px 20px rgba(0,0,0,0.5);'
+        + 'max-width:90vw;text-align:center;';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(function() {
+        toast.style.transition = 'opacity 0.3s';
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 3000);
+    } catch(e) {}
+  }
+
   async function saveOrShareVideo(videoUrl, filename, btnEl) {
     filename = filename || 'toonit-video.mp4';
     var origText = btnEl ? btnEl.textContent : '';
-    if (btnEl) { btnEl.textContent = '\u2B07\uFE0F Preparing MP4...'; btnEl.disabled = true; }
-    dbg('saveOrShare: ' + videoUrl.substring(0, 60));
+    if (btnEl) { btnEl.textContent = '⬇️ Preparing MP4...'; btnEl.disabled = true; }
+    dbg('saveOrShare: ' + videoUrl.substring(0, 80));
 
     try {
       // Step 1: Fetch the video blob
@@ -68,66 +87,60 @@
       if (!resp.ok) throw new Error('fetch failed: ' + resp.status);
       var blob = await resp.blob();
       dbg('blob: ' + blob.size + ' bytes, type=' + blob.type);
+      if (blob.size < 1000) throw new Error('Video blob too small: ' + blob.size);
 
-      if (blob.size < 1000) {
-        dbg('WARNING: blob too small, likely error');
-        throw new Error('Video blob too small: ' + blob.size);
+      // Step 2: Convert to base64 for Filesystem plugin
+      var base64Data = await new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onloadend = function() { resolve(reader.result.split(',')[1]); };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      dbg('base64 ready: ' + base64Data.length + ' chars');
+
+      // Step 3: Write to device via Filesystem plugin
+      if (CapFilesystem) {
+        dbg('Writing to device via Filesystem plugin...');
+        var writeResult = await CapFilesystem.writeFile({
+          path: 'Download/' + filename,
+          data: base64Data,
+          directory: 'EXTERNAL_STORAGE',
+          recursive: true
+        });
+        dbg('File written: ' + JSON.stringify(writeResult));
+        if (btnEl) { btnEl.textContent = '✅ Saved!'; }
+        setTimeout(function() {
+          if (btnEl) { btnEl.textContent = origText || '⬇️ Download'; btnEl.disabled = false; }
+        }, 2000);
+        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+        _showNativeToast('✅ Video saved to Downloads!');
+        return true;
       }
 
-      // Step 2: Create a File object
+      // Fallback: try navigator.share with file
       var file = new File([blob], filename, { type: blob.type || 'video/mp4' });
-
-      // Step 3: Try navigator.share with actual file (PREFERRED)
-      // This opens the Android share sheet where user can "Save to device", send via WhatsApp, etc.
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        dbg('Using navigator.share({files}) — PREFERRED');
-        await navigator.share({
-          files: [file],
-          title: 'My ToonIt Video',
-          text: '\u2728 Made with ToonIt.ai'
-        });
-        dbg('navigator.share completed OK');
-        // Haptic feedback
-        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+        dbg('Fallback: navigator.share({files})');
+        await navigator.share({ files: [file], title: 'My ToonIt Video' });
         return true;
       }
 
-      // Step 4: Fallback — Capacitor Share plugin with data URI
-      if (CapShare) {
-        dbg('Fallback: CapShare with data URI...');
-        var dataUrl = await new Promise(function(resolve) {
-          var reader = new FileReader();
-          reader.onloadend = function() { resolve(reader.result); };
-          reader.readAsDataURL(blob);
-        });
-        dbg('dataURI ready: ' + dataUrl.substring(0, 40) + '...');
-        await CapShare.share({
-          title: filename,
-          url: dataUrl,
-          dialogTitle: 'Save Video'
-        });
-        dbg('CapShare completed OK');
-        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
-        return true;
-      }
-
-      // Step 5: Last resort — try opening URL directly
+      // Last resort: open URL
       dbg('Last resort: window.open');
       window._origOpen.call(window, videoUrl, '_blank');
       return false;
 
     } catch (err) {
-      if (err && err.name === 'AbortError') {
-        dbg('User cancelled share');
-        return false;
-      }
+      if (err && err.name === 'AbortError') { dbg('User cancelled'); return false; }
       dbg('ERROR: ' + (err && err.message || err));
       console.error('[Bridge] saveOrShare error:', err);
-      // Try opening URL as absolute last resort
+      _showNativeToast('❌ Download failed: ' + (err && err.message || 'Unknown error'));
       try { window._origOpen.call(window, videoUrl, '_blank'); } catch(e) {}
       return false;
     } finally {
-      if (btnEl) { btnEl.textContent = origText || '\u2B07\uFE0F Download'; btnEl.disabled = false; }
+      setTimeout(function() {
+        if (btnEl) { btnEl.textContent = origText || '⬇️ Download'; btnEl.disabled = false; }
+      }, 2500);
     }
   }
 
@@ -251,43 +264,45 @@
   // ══════════════════════════════════════════════════════════════
 
   function getVideoUrl() {
-    // [OPTION-E] Resolve URL respecting watermark on/off state
+    // [v2.2] Resolve URL respecting watermark on/off state
     try {
       var wm = window._wmState;
       if (wm) {
         var isRemoved = wm.globalRemoved || wm.currentVideoRemoved;
         if (isRemoved) {
-          // Watermark removed — serve clean URL
           if (wm.currentCleanUrl) return wm.currentCleanUrl;
         } else {
-          // Watermark ON — prefer burned watermark URL if ready
           if (wm.wmReady && wm.currentWmUrl) return wm.currentWmUrl;
-          // Fall through to clean URL if burn not ready yet
           if (wm.currentCleanUrl) return wm.currentCleanUrl;
         }
       }
     } catch(e) { dbg('getVideoUrl wmState error: ' + e); }
 
-    // Fallback: video element (page logic already sets correct src)
     var vid = document.getElementById('resultVideo');
     if (vid && (vid.currentSrc || vid.src)) {
       var src = vid.currentSrc || vid.src;
       if (src && src !== '' && !src.endsWith('/')) return src;
     }
-
-    // Modal video (myvideos.html)
     var mv = document.getElementById('modalVideo');
-    if (mv && (mv.currentSrc || mv.src)) {
-      return mv.currentSrc || mv.src;
-    }
-
+    if (mv && (mv.currentSrc || mv.src)) return mv.currentSrc || mv.src;
     return '';
   }
 
   function overrideIndexButtons() {
-    // [OPTION-E] Download button NOT intercepted by bridge.
-    // index.html downloadVideo() handles watermark resolution + burnWatermarkAndDownload().
-    // On Android, the <a download>.click() is caught by Layer 1 → navigator.share({files}).
+    // === DOWNLOAD BUTTON (index.html) — Filesystem plugin ===
+    var dlBtn = document.getElementById('downloadBtn');
+    if (dlBtn && !dlBtn._bridgeCapture) {
+      dlBtn._bridgeCapture = true;
+      dbg('LAYER3: overriding downloadBtn with Filesystem download');
+
+      dlBtn.addEventListener('click', function(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        var url = getVideoUrl();
+        if (!url) { dbg('L3 download: no video URL'); return; }
+        dbg('L3 download: ' + url.substring(0, 80));
+        saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
+      }, true);
+    }
 
     // === SHARE BUTTON (index.html — inject if not found) ===
     var shareBtn = document.getElementById('nativeShareBtn');
@@ -356,60 +371,69 @@
     }
   }
 
-  // Share helper — shares actual video file
   async function shareVideoNative(videoUrl, btnEl) {
     var origText = btnEl ? btnEl.textContent : 'Share';
-    if (btnEl) { btnEl.textContent = 'Sharing...'; btnEl.disabled = true; }
-    dbg('shareVideoNative: ' + videoUrl.substring(0, 60));
+    if (btnEl) { btnEl.textContent = 'Preparing...'; btnEl.disabled = true; }
+    dbg('shareVideoNative: ' + videoUrl.substring(0, 80));
 
     try {
       var resp = await fetch(videoUrl);
       if (!resp.ok) throw new Error('fetch ' + resp.status);
       var blob = await resp.blob();
-      var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
+      dbg('share blob: ' + blob.size + ' bytes');
 
-      // Preferred: share actual file
+      // Write to cache, then share file URI
+      if (CapFilesystem && CapShare) {
+        var base64Data = await new Promise(function(resolve, reject) {
+          var reader = new FileReader();
+          reader.onloadend = function() { resolve(reader.result.split(',')[1]); };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        var tmpName = 'toonit-share-' + Date.now() + '.mp4';
+        var writeResult = await CapFilesystem.writeFile({
+          path: tmpName,
+          data: base64Data,
+          directory: 'CACHE'
+        });
+        dbg('Share temp file: ' + JSON.stringify(writeResult));
+        var fileUri = writeResult.uri;
+        dbg('Sharing file URI: ' + fileUri);
+        await CapShare.share({
+          title: 'My ToonIt Video',
+          text: '✨ Made with ToonIt.ai',
+          url: fileUri,
+          dialogTitle: 'Share your ToonIt video'
+        });
+        dbg('Share completed');
+        try { if (CapHaptics) CapHaptics.impact({ style: 'LIGHT' }); } catch(e) {}
+        // Cleanup temp file after delay
+        setTimeout(function() {
+          try { CapFilesystem.deleteFile({ path: tmpName, directory: 'CACHE' }); } catch(e) {}
+        }, 30000);
+        return;
+      }
+
+      // Fallback: navigator.share with File
+      var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        dbg('share → navigator.share({files})');
+        dbg('share fallback: navigator.share({files})');
         await navigator.share({
           files: [file],
           title: 'My ToonIt Video',
-          text: "\u2728 Just toon'd myself \uD83D\uDE0D Try it free \u2192 toonit.ai"
+          text: '✨ Made with ToonIt.ai'
         });
-        try { if (CapHaptics) CapHaptics.impact({ style: 'LIGHT' }); } catch(e) {}
         return;
       }
 
-      // Fallback: Capacitor Share with data URI
-      if (CapShare) {
-        dbg('share → CapShare data URI');
-        var dataUrl = await new Promise(function(res) {
-          var rd = new FileReader();
-          rd.onloadend = function() { res(rd.result); };
-          rd.readAsDataURL(blob);
-        });
-        await CapShare.share({
-          title: 'My ToonIt Video',
-          text: "\u2728 Made with ToonIt.ai",
-          url: dataUrl,
-          dialogTitle: 'Share your magic'
-        });
-        try { if (CapHaptics) CapHaptics.impact({ style: 'LIGHT' }); } catch(e) {}
-        return;
-      }
-
-      // Last resort: share URL only
+      // Last resort: share URL
       if (navigator.share) {
-        await navigator.share({
-          title: 'My ToonIt Video',
-          text: '\u2728 Check out my magical transformation!',
-          url: 'https://toonit.ai'
-        });
+        await navigator.share({ title: 'My ToonIt Video', url: 'https://toonit.ai' });
       }
     } catch (err) {
       if (err && err.name !== 'AbortError') {
         dbg('share error: ' + (err.message || err));
-        console.error('[Bridge] Share error:', err);
+        _showNativeToast('❌ Share failed. Please try again.');
       }
     } finally {
       if (btnEl) { btnEl.textContent = origText; btnEl.disabled = false; }
@@ -791,6 +815,6 @@
   // ══════════════════════════════════════════════════════════════
   //  DONE
   // ══════════════════════════════════════════════════════════════
-  dbg('\u2705 Bridge v2.1 ready | ' + platform);
-  console.log('[ToonIt Bridge] \u2705 v2.1 initialized for ' + platform);
+  dbg('\u2705 Bridge v2.2-fs ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.2-fs initialized for ' + platform);
 })();
