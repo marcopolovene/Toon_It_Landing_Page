@@ -503,27 +503,27 @@
             <button class="showcase-arrow showcase-arrow-left" type="button" aria-label="Scroll showcase left" onclick="scrollShowcase(-1)">←</button>
             <div class="showcase-scroll" id="showcaseScroll">
                 <div class="showcase-card">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4">
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/01_baby_laughing_highchair_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-idx="0">
                     <div class="showcase-label">Superhero</div>
                 </div>
                 <div class="showcase-card">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4">
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-idx="1">
                     <div class="showcase-label">3D Cartoon</div>
                 </div>
                 <div class="showcase-card">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4">
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-idx="2">
                     <div class="showcase-label">Superhero</div>
                 </div>
                 <div class="showcase-card">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/09_golden_retriever_park_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4">
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/09_golden_retriever_park_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-idx="3">
                     <div class="showcase-label">3D Cartoon</div>
                 </div>
                 <div class="showcase-card">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4">
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/06_kids_sharing_icecream_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-idx="4">
                     <div class="showcase-label">Magical Storybook</div>
                 </div>
                 <div class="showcase-card">
-                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-video-src="https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4">
+                    <img src="https://res.cloudinary.com/dzarqnick/video/upload/so_0,f_jpg,w_600/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4" alt="Toon It transformation showcase" loading="lazy" data-idx="5">
                     <div class="showcase-label">Watercolor</div>
                 </div>
             </div>
@@ -5458,25 +5458,39 @@
         });
     });
     // Layer 3: Lazy-load showcase videos (hidden from Googlebot)
+    // Video URLs defined ONLY in JS — Googlebot cannot discover these
+    var _showcaseVideoMap = [
+        'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/01_baby_laughing_highchair_vertical.mp4',
+        'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/05_kid_puddle_rainboots_vertical.mp4',
+        'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/07_grandpa_napping_recliner_vertical.mp4',
+        'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/09_golden_retriever_park_vertical.mp4',
+        'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/06_kids_sharing_icecream_vertical.mp4',
+        'https://res.cloudinary.com/dzarqnick/video/upload/toon_it_composites/10_fat_tabby_cat_box_vertical.mp4'
+    ];
     // Replaces poster <img> with <video> when showcase enters viewport
     var showcaseSection = document.querySelector('.showcase');
+    function _swapPostersToVideo(container) {
+        var posters = container.querySelectorAll('img[data-idx]');
+        posters.forEach(function(img) {
+            var idx = parseInt(img.getAttribute('data-idx'), 10);
+            if (isNaN(idx) || !_showcaseVideoMap[idx]) return;
+            var vid = document.createElement('video');
+            vid.src = _showcaseVideoMap[idx];
+            vid.autoplay = true;
+            vid.muted = true;
+            vid.loop = true;
+            vid.playsInline = true;
+            vid.preload = 'auto';
+            vid.setAttribute('playsinline', '');
+            img.parentNode.replaceChild(vid, img);
+            vid.play().catch(function(){});
+        });
+    }
     if (showcaseSection && 'IntersectionObserver' in window) {
         var showcaseObserver = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
                 if (entry.isIntersecting) {
-                    var posters = sc.querySelectorAll('img[data-video-src]');
-                    posters.forEach(function(img) {
-                        var vid = document.createElement('video');
-                        vid.src = img.getAttribute('data-video-src');
-                        vid.autoplay = true;
-                        vid.muted = true;
-                        vid.loop = true;
-                        vid.playsInline = true;
-                        vid.preload = 'auto';
-                        vid.setAttribute('playsinline', '');
-                        img.parentNode.replaceChild(vid, img);
-                        vid.play().catch(function(){});
-                    });
+                    _swapPostersToVideo(sc);
                     showcaseObserver.disconnect();
                 }
             });
@@ -5484,17 +5498,7 @@
         showcaseObserver.observe(showcaseSection);
     } else if (showcaseSection) {
         // Fallback for browsers without IntersectionObserver
-        var posters = sc.querySelectorAll('img[data-video-src]');
-        posters.forEach(function(img) {
-            var vid = document.createElement('video');
-            vid.src = img.getAttribute('data-video-src');
-            vid.autoplay = true;
-            vid.muted = true;
-            vid.loop = true;
-            vid.playsInline = true;
-            vid.setAttribute('playsinline', '');
-            img.parentNode.replaceChild(vid, img);
-        });
+        _swapPostersToVideo(sc);
     }
   // Extend _getStyleLoaderMeta map (loader CSS classes for new styles)
   var origGetStyleLoaderMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
