@@ -1261,21 +1261,28 @@
             if (typeof unlockControlsAfterSignup === 'function') {
                 unlockControlsAfterSignup();
             }
-            // Claim anonymous generation if exists
+            // Claim anonymous generation if exists (via RPC to bypass RLS)
             var anonJobId = sessionStorage.getItem('toonit_anon_job');
             if (anonJobId && supabaseClient && currentUser && currentUser.id) {
                 var anonSessionId = sessionStorage.getItem('toonit_anon_id');
                 if (anonSessionId) {
-                    console.log('[ANON] Claiming anonymous generation:', anonJobId, 'for user:', currentUser.id);
-                    supabaseClient.from('generations')
-                        .update({ user_id: currentUser.id })
-                        .eq('job_id', anonJobId)
+                    console.log('[ANON] Claiming anonymous generation via RPC:', anonJobId, 'for user:', currentUser.id);
+                    supabaseClient.rpc('claim_anonymous_generation', {
+                        p_job_id: anonJobId,
+                        p_anon_session_id: anonSessionId,
+                        p_new_user_id: currentUser.id
+                    })
                         .then(function(res) {
-                            console.log('[ANON] Claim result:', res);
-                            sessionStorage.removeItem('toonit_anon_job');
-                            sessionStorage.removeItem('toonit_anon_id');
+                            console.log('[ANON] Claim RPC result:', res);
+                            if (res.data && res.data.success) {
+                                console.log('[ANON] Generation claimed successfully!');
+                                sessionStorage.removeItem('toonit_anon_job');
+                                sessionStorage.removeItem('toonit_anon_id');
+                            } else {
+                                console.log('[ANON] Claim RPC returned:', res.data);
+                            }
                         })
-                        .catch(function(err) { console.log('[ANON] Claim error:', err); });
+                        .catch(function(err) { console.log('[ANON] Claim RPC error:', err); });
                 }
             }
 
@@ -2388,6 +2395,8 @@
 
         
         // Process referral reward when a referred user makes a purchase
+        window.processReferral = processReferral;
+
         async function processReferralPurchase() {
             var user = window.currentUser || currentUser;
             if (!user || !supabaseClient) return;
@@ -4125,23 +4134,31 @@
         if (typeof unlockControlsAfterSignup === 'function') {
             unlockControlsAfterSignup();
         }
-        // Claim anonymous generation if exists
+        // Claim anonymous generation if exists (via RPC to bypass RLS)
         var anonJobId = sessionStorage.getItem('toonit_anon_job');
-        if (anonJobId && typeof supabaseClient !== 'undefined' && supabaseClient) {
+        if (anonJobId) {
+            var _sb = (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : (typeof getSupabase === 'function' ? getSupabase() : null);
             var realUser = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
-            if (realUser && realUser.id) {
+            if (_sb && realUser && realUser.id) {
                 var anonSessionId = sessionStorage.getItem('toonit_anon_id');
                 if (anonSessionId) {
-                    console.log('[ANON] Claiming anonymous generation:', anonJobId);
-                    supabaseClient.from('generations')
-                        .update({ user_id: realUser.id })
-                        .eq('job_id', anonJobId)
+                    console.log('[ANON] Claiming anonymous generation via RPC:', anonJobId, 'for user:', realUser.id);
+                    _sb.rpc('claim_anonymous_generation', {
+                        p_job_id: anonJobId,
+                        p_anon_session_id: anonSessionId,
+                        p_new_user_id: realUser.id
+                    })
                         .then(function(res) {
-                            console.log('[ANON] Claim result:', res);
-                            sessionStorage.removeItem('toonit_anon_job');
-                            sessionStorage.removeItem('toonit_anon_id');
+                            console.log('[ANON] Claim RPC result:', res);
+                            if (res.data && res.data.success) {
+                                console.log('[ANON] Generation claimed successfully!');
+                                sessionStorage.removeItem('toonit_anon_job');
+                                sessionStorage.removeItem('toonit_anon_id');
+                            } else {
+                                console.log('[ANON] Claim RPC returned:', res.data);
+                            }
                         })
-                        .catch(function(err) { console.log('[ANON] Claim error:', err); });
+                        .catch(function(err) { console.log('[ANON] Claim RPC error:', err); });
                 }
             }
         }
@@ -4782,6 +4799,11 @@
             if (signupResult.data && signupResult.data.session) {
                 console.log('[SIGNUP] Immediate session - success!');
                 window.currentUser = signupResult.data.session.user;
+                // Process referral code after immediate signup
+                try {
+                    var _prFn = (typeof window.processReferral === 'function') ? window.processReferral : (typeof processReferral === 'function' ? processReferral : null);
+                    if (_prFn) _prFn(window.currentUser.id, email);
+                } catch(e) { console.log('[SIGNUP] processReferral error:', e); }
                 closeAllModals();
                 updateUIForUser(email, 2);
                 showToast('✨ Welcome to Toon It! You have 2 free credits to start!', 'success');
@@ -4797,6 +4819,11 @@
             if (loginResult.data && loginResult.data.session) {
                 console.log('[SIGNUP] Auto-login successful!');
                 window.currentUser = loginResult.data.session.user;
+                // Process referral code after auto-login signup
+                try {
+                    var _prFn2 = (typeof window.processReferral === 'function') ? window.processReferral : (typeof processReferral === 'function' ? processReferral : null);
+                    if (_prFn2) _prFn2(window.currentUser.id, email);
+                } catch(e) { console.log('[SIGNUP] processReferral error:', e); }
                 closeAllModals();
                 updateUIForUser(email, 2);
                 showToast('✨ Welcome to Toon It! You have 2 free credits to start!', 'success');
