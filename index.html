@@ -3332,6 +3332,7 @@
             currentJobId: null,
             wmReady: false
         };
+        window._wmState = _wmState; // [OPTION-E] Expose for capacitor-bridge.js
 
         // Load watermark state for current user
         async function loadWatermarkState() {

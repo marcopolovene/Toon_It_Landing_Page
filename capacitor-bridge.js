@@ -26,8 +26,7 @@
   console.log('[ToonIt Bridge] Initializing native bridge v2.0...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
-  // Android WebView: navigator.share({files}) silently resolves without actually sharing
-  var useCapShareOnly = (platform === 'android');
+  // [OPTION-E] navigator.share({files}) is now the primary download/share method on all platforms
 
   // ══════════════════════════════════════════════════════════════
   //  LOGGING — Console only (no visible overlay in production)
@@ -60,7 +59,7 @@
   async function saveOrShareVideo(videoUrl, filename, btnEl) {
     filename = filename || 'toonit-video.mp4';
     var origText = btnEl ? btnEl.textContent : '';
-    if (btnEl) { btnEl.textContent = '\u2B07\uFE0F Saving...'; btnEl.disabled = true; }
+    if (btnEl) { btnEl.textContent = '\u2B07\uFE0F Preparing MP4...'; btnEl.disabled = true; }
     dbg('saveOrShare: ' + videoUrl.substring(0, 60));
 
     try {
@@ -80,7 +79,7 @@
 
       // Step 3: Try navigator.share with actual file (PREFERRED)
       // This opens the Android share sheet where user can "Save to device", send via WhatsApp, etc.
-      if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
         dbg('Using navigator.share({files}) — PREFERRED');
         await navigator.share({
           files: [file],
@@ -157,7 +156,7 @@
           var file = new File([blob], dl, { type: blob.type || 'video/mp4' });
 
           // Preferred: share with actual file
-          if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
             dbg('L1 → navigator.share({files})');
             return navigator.share({ files: [file], title: dl });
           }
@@ -215,7 +214,7 @@
           dbg('L2 blob: ' + blob.size + ' bytes');
           var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
 
-          if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
             dbg('L2 → navigator.share({files})');
             return navigator.share({ files: [file], title: 'ToonIt Video' });
           }
@@ -252,23 +251,31 @@
   // ══════════════════════════════════════════════════════════════
 
   function getVideoUrl() {
-    // Try multiple sources for the current video URL
+    // [OPTION-E] Resolve URL respecting watermark on/off state
     try {
-      // 1. Watermark state (most reliable)
-      if (window._wmState) {
-        if (window._wmState.currentCleanUrl) return window._wmState.currentCleanUrl;
-        if (window._wmState.currentWmUrl) return window._wmState.currentWmUrl;
+      var wm = window._wmState;
+      if (wm) {
+        var isRemoved = wm.globalRemoved || wm.currentVideoRemoved;
+        if (isRemoved) {
+          // Watermark removed — serve clean URL
+          if (wm.currentCleanUrl) return wm.currentCleanUrl;
+        } else {
+          // Watermark ON — prefer burned watermark URL if ready
+          if (wm.wmReady && wm.currentWmUrl) return wm.currentWmUrl;
+          // Fall through to clean URL if burn not ready yet
+          if (wm.currentCleanUrl) return wm.currentCleanUrl;
+        }
       }
-    } catch(e) {}
+    } catch(e) { dbg('getVideoUrl wmState error: ' + e); }
 
-    // 2. Result video element
+    // Fallback: video element (page logic already sets correct src)
     var vid = document.getElementById('resultVideo');
     if (vid && (vid.currentSrc || vid.src)) {
       var src = vid.currentSrc || vid.src;
       if (src && src !== '' && !src.endsWith('/')) return src;
     }
 
-    // 3. Modal video (myvideos.html)
+    // Modal video (myvideos.html)
     var mv = document.getElementById('modalVideo');
     if (mv && (mv.currentSrc || mv.src)) {
       return mv.currentSrc || mv.src;
@@ -278,23 +285,9 @@
   }
 
   function overrideIndexButtons() {
-    // === DOWNLOAD BUTTON (index.html) ===
-    var dlBtn = document.getElementById('downloadBtn');
-    if (dlBtn && !dlBtn._bridgeCapture) {
-      dlBtn._bridgeCapture = true;
-      dbg('LAYER3: overriding downloadBtn (capture-phase)');
-
-      dlBtn.addEventListener('click', function(e) {
-        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-        var url = getVideoUrl();
-        if (!url) {
-          dbg('L3 download: no video URL found');
-          return;
-        }
-        dbg('L3 download: ' + url.substring(0, 60));
-        saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
-      }, true); // capture phase — beats failsafe onclick rebinding
-    }
+    // [OPTION-E] Download button NOT intercepted by bridge.
+    // index.html downloadVideo() handles watermark resolution + burnWatermarkAndDownload().
+    // On Android, the <a download>.click() is caught by Layer 1 → navigator.share({files}).
 
     // === SHARE BUTTON (index.html — inject if not found) ===
     var shareBtn = document.getElementById('nativeShareBtn');
@@ -376,7 +369,7 @@
       var file = new File([blob], 'toonit-video.mp4', { type: 'video/mp4' });
 
       // Preferred: share actual file
-      if (!useCapShareOnly && navigator.canShare && navigator.canShare({ files: [file] })) {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
         dbg('share → navigator.share({files})');
         await navigator.share({
           files: [file],
