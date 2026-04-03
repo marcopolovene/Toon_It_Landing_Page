@@ -23,10 +23,10 @@
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge v2.3 (Cache+Share Download)...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.4 (Platform-Aware Download)...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
-  // [v2.3] Cache+Share: write to CACHE then share sheet for reliable Android downloads
+  // [v2.4] Platform-aware: MediaSaver plugin (Android silent) / native <a download> (iOS) / Share sheet (fallback)
 
   // ══════════════════════════════════════════════════════════════
   //  LOGGING — Console only (no visible overlay in production)
@@ -34,7 +34,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.3-cs init | platform=' + platform);
+  dbg('Bridge v2.4-pa init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -51,7 +51,9 @@
   var CapKeyboard  = Plugins.Keyboard;
   var CapPush      = Plugins.PushNotifications;
 
-  dbg('Plugins: Share=' + !!CapShare + ' Camera=' + !!CapCamera + ' Filesystem=' + !!CapFilesystem);
+  var CapMediaSaver = Plugins.MediaSaver;  // Custom plugin for silent Android downloads
+
+  dbg('Plugins: Share=' + !!CapShare + ' Camera=' + !!CapCamera + ' Filesystem=' + !!CapFilesystem + ' MediaSaver=' + !!CapMediaSaver);
 
   // ══════════════════════════════════════════════════════════════
   //  CORE HELPER: Save/share a video from URL
@@ -78,8 +80,8 @@
   async function saveOrShareVideo(videoUrl, filename, btnEl) {
     filename = filename || 'toonit-video.mp4';
     var origText = btnEl ? btnEl.textContent : '';
-    if (btnEl) { btnEl.textContent = '⬇️ Preparing MP4...'; btnEl.disabled = true; }
-    dbg('saveOrShare: ' + videoUrl.substring(0, 80));
+    if (btnEl) { btnEl.textContent = '⬇️ Saving...'; btnEl.disabled = true; }
+    dbg('saveOrShare: platform=' + platform + ' url=' + videoUrl.substring(0, 80));
 
     try {
       // Step 1: Fetch the video blob
@@ -89,7 +91,7 @@
       dbg('blob: ' + blob.size + ' bytes, type=' + blob.type);
       if (blob.size < 1000) throw new Error('Video blob too small: ' + blob.size);
 
-      // Step 2: Convert to base64 for Filesystem plugin
+      // Step 2: Convert to base64
       var base64Data = await new Promise(function(resolve, reject) {
         var reader = new FileReader();
         reader.onloadend = function() { resolve(reader.result.split(',')[1]); };
@@ -98,45 +100,57 @@
       });
       dbg('base64 ready: ' + base64Data.length + ' chars');
 
-      // Step 3: Write to CACHE dir (always works, no permissions needed)
-      // Then use Share plugin so user can "Save to Files" / "Save to Downloads"
-      if (CapFilesystem && CapShare) {
+      // ─── ANDROID: Use MediaSaver plugin for silent save to Downloads ───
+      if (platform === 'android' && CapMediaSaver) {
+        dbg('Android: Using MediaSaver plugin for silent download...');
+        if (btnEl) { btnEl.textContent = '⬇️ Saving to Downloads...'; }
+        var saveResult = await CapMediaSaver.saveVideo({
+          data: base64Data,
+          filename: filename,
+          mimeType: 'video/mp4'
+        });
+        dbg('MediaSaver result: ' + JSON.stringify(saveResult));
+        if (btnEl) { btnEl.textContent = '✅ Saved to Downloads!'; }
+        setTimeout(function() {
+          if (btnEl) { btnEl.textContent = origText || '⬇️ Download'; btnEl.disabled = false; }
+        }, 2000);
+        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+        _showNativeToast('✅ Video saved to Downloads!');
+        return true;
+      }
+
+      // ─── ANDROID FALLBACK: CACHE + Share sheet if MediaSaver not available ───
+      if (platform === 'android' && CapFilesystem && CapShare) {
+        dbg('Android fallback: CACHE + Share sheet...');
         var tmpName = 'toonit-download-' + Date.now() + '.mp4';
-        dbg('Writing to CACHE via Filesystem plugin...');
         var writeResult = await CapFilesystem.writeFile({
           path: tmpName,
           data: base64Data,
           directory: 'CACHE'
         });
-        dbg('File cached: ' + JSON.stringify(writeResult));
         var fileUri = writeResult.uri;
-        dbg('Sharing file URI for save: ' + fileUri);
-
         if (btnEl) { btnEl.textContent = '💾 Choose save location...'; }
         await CapShare.share({
           title: filename,
           url: fileUri,
           dialogTitle: 'Save your ToonIt video'
         });
-
         if (btnEl) { btnEl.textContent = '✅ Done!'; }
         setTimeout(function() {
           if (btnEl) { btnEl.textContent = origText || '⬇️ Download'; btnEl.disabled = false; }
         }, 2000);
         try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
-        _showNativeToast('✅ Video ready — save it from the menu above!');
-
-        // Cleanup temp file after delay
         setTimeout(function() {
           try { CapFilesystem.deleteFile({ path: tmpName, directory: 'CACHE' }); } catch(e) {}
         }, 60000);
         return true;
       }
 
-      // Fallback: try navigator.share with file
+      // ─── iOS: Use navigator.share with file (saves directly) ───
+      // Or fallback to blob + <a download> which works in WKWebView
       var file = new File([blob], filename, { type: blob.type || 'video/mp4' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        dbg('Fallback: navigator.share({files})');
+        dbg('iOS/fallback: navigator.share({files})');
         await navigator.share({ files: [file], title: 'My ToonIt Video' });
         return true;
       }
@@ -147,7 +161,7 @@
       return false;
 
     } catch (err) {
-      if (err && err.name === 'AbortError') { dbg('User cancelled share/save'); return false; }
+      if (err && err.name === 'AbortError') { dbg('User cancelled'); return false; }
       dbg('ERROR: ' + (err && err.message || err));
       console.error('[Bridge] saveOrShare error:', err);
       _showNativeToast('❌ Download failed: ' + (err && err.message || 'Unknown error'));
@@ -280,7 +294,7 @@
   // ══════════════════════════════════════════════════════════════
 
   function getVideoUrl() {
-    // [v2.3] Resolve URL respecting watermark on/off state
+    // [v2.4] Resolve URL respecting watermark on/off state
     try {
       var wm = window._wmState;
       if (wm) {
@@ -305,11 +319,11 @@
   }
 
   function overrideIndexButtons() {
-    // === DOWNLOAD BUTTON (index.html) — Filesystem plugin ===
+    // === DOWNLOAD BUTTON (index.html) — Android only (iOS uses web's native download) ===
     var dlBtn = document.getElementById('downloadBtn');
-    if (dlBtn && !dlBtn._bridgeCapture) {
+    if (platform === 'android' && dlBtn && !dlBtn._bridgeCapture) {
       dlBtn._bridgeCapture = true;
-      dbg('LAYER3: overriding downloadBtn with Filesystem download');
+      dbg('LAYER3: overriding downloadBtn with MediaSaver download (Android)');
 
       dlBtn.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
@@ -354,11 +368,11 @@
   }
 
   function overrideDashboardButtons() {
-    // === DOWNLOAD BUTTON (myvideos.html modal) ===
+    // === DOWNLOAD BUTTON (myvideos.html modal) — Android only ===
     var dashDl = document.getElementById('dashDownloadBtn');
-    if (dashDl && !dashDl._bridgeCapture) {
+    if (platform === 'android' && dashDl && !dashDl._bridgeCapture) {
       dashDl._bridgeCapture = true;
-      dbg('LAYER3: overriding dashDownloadBtn (capture-phase)');
+      dbg('LAYER3: overriding dashDownloadBtn (Android, capture-phase)');
 
       dashDl.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
@@ -831,6 +845,6 @@
   // ══════════════════════════════════════════════════════════════
   //  DONE
   // ══════════════════════════════════════════════════════════════
-  dbg('\u2705 Bridge v2.3-cs ready | ' + platform);
-  console.log('[ToonIt Bridge] \u2705 v2.3-cs initialized for ' + platform);
+  dbg('\u2705 Bridge v2.4-pa ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.4-pa initialized for ' + platform);
 })();
