@@ -3720,26 +3720,115 @@
                 return;
             }
 
-            // ─── Android Chrome/Brave: skip canvas-burn (CORS blocks it), do direct blob download ───
+            // ─── Android: Pre-fetch video blob to bypass CORS, then canvas-burn watermark ───
             var isAndroid = /Android/i.test(navigator.userAgent || '');
             if (isAndroid) {
-                _showShareToast('⬇️ Downloading video...');
+                _showShareToast(isRemoved ? '⬇️ Downloading...' : '✨ Adding watermark...');
                 fetch(videoUrl)
                     .then(function(r) { if (!r.ok) throw new Error('fetch ' + r.status); return r.blob(); })
                     .then(function(blob) {
+                        if (isRemoved) {
+                            // No watermark needed — direct download
+                            var directUrl = URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = directUrl;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            setTimeout(function() { URL.revokeObjectURL(directUrl); }, 5000);
+                            if (onDone) onDone();
+                            return;
+                        }
+                        // Watermark ON — use blob URL for canvas burn (same-origin, bypasses CORS)
                         var blobUrl = URL.createObjectURL(blob);
-                        var a = document.createElement('a');
-                        a.href = blobUrl;
-                        a.download = filename;
-                        a.rel = 'noopener';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
-                        if (onDone) onDone();
+                        var burnVid = document.createElement('video');
+                        burnVid.muted = true;
+                        burnVid.playsInline = true;
+                        burnVid.style.display = 'none';
+                        document.body.appendChild(burnVid);
+
+                        var cvs = document.createElement('canvas');
+                        cvs.style.display = 'none';
+                        document.body.appendChild(cvs);
+                        var cx = cvs.getContext('2d');
+
+                        burnVid.onloadedmetadata = function() {
+                            cvs.width = burnVid.videoWidth || 720;
+                            cvs.height = burnVid.videoHeight || 480;
+
+                            var stream = cvs.captureStream(30);
+                            var mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' :
+                                           MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+                                           MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                                           'video/webm';
+                            var rec = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 });
+                            var chunks = [];
+
+                            rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+                            rec.onstop = function() {
+                                var outBlob = new Blob(chunks, { type: mimeType });
+                                var ext = mimeType.includes('webm') ? 'toon-it-video.webm' : filename;
+                                document.body.removeChild(burnVid);
+                                document.body.removeChild(cvs);
+                                URL.revokeObjectURL(blobUrl);
+                                var dlUrl = URL.createObjectURL(outBlob);
+                                var a = document.createElement('a');
+                                a.href = dlUrl;
+                                a.download = ext;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                setTimeout(function() { URL.revokeObjectURL(dlUrl); }, 5000);
+                                if (onDone) onDone();
+                            };
+
+                            var drawWm = function() {
+                                if (burnVid.paused || burnVid.ended) return;
+                                cx.drawImage(burnVid, 0, 0, cvs.width, cvs.height);
+                                var fSz = Math.max(18, Math.round(cvs.width * 0.038));
+                                cx.save();
+                                cx.font = fSz + 'px Pacifico, cursive';
+                                cx.globalAlpha = 0.72;
+                                cx.fillStyle = 'rgba(255,255,255,0.78)';
+                                cx.shadowColor = 'rgba(0,0,0,0.6)';
+                                cx.shadowBlur = 4;
+                                cx.shadowOffsetX = 0;
+                                cx.shadowOffsetY = 1;
+                                cx.fillText('ToonIt.ai', 10, cvs.height - Math.round(fSz * 0.33));
+                                cx.restore();
+                                requestAnimationFrame(drawWm);
+                            };
+
+                            rec.start(100);
+                            burnVid.play();
+                            drawWm();
+
+                            burnVid.onended = function() {
+                                setTimeout(function() { rec.stop(); }, 200);
+                            };
+                        };
+
+                        burnVid.onerror = function() {
+                            console.log('[DL] Android canvas burn failed, falling back to direct download');
+                            document.body.removeChild(burnVid);
+                            document.body.removeChild(cvs);
+                            var a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+                            if (onDone) onDone();
+                        };
+
+                        burnVid.src = blobUrl;  // blob: URL = same-origin, bypasses CORS!
+                        burnVid.load();
                     })
                     .catch(function(err) {
-                        console.log('[DL] Android direct download failed, opening url:', err);
+                        console.log('[DL] Android blob fetch failed:', err);
                         window.open(videoUrl, '_blank');
                         if (onDone) onDone();
                     });
@@ -5358,7 +5447,7 @@
         document.head.appendChild(css);
 
         var js = document.createElement('script');
-        js.src = '/capacitor-bridge.js?v=20260403v5';
+        js.src = '/capacitor-bridge.js?v=20260403v6';
         document.body.appendChild(js);
         console.log('[ToonIt] Native bridge loading...');
     }

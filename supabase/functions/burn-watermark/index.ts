@@ -119,17 +119,21 @@ Deno.serve(async (req: Request) => {
 
   // ── SECURITY FIX: Verify job belongs to authenticated user ───────────────
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const { data: jobRow, error: jobErr } = await supabase
-    .from("generations")
-    .select("user_id")
-    .eq("job_id", job_id)
-    .single();
-  if (jobErr || !jobRow || jobRow.user_id !== user.id) {
-    console.log("[BURN] Ownership check failed — job:", job_id, "user:", user.id);
-    return new Response(JSON.stringify({ error: "Forbidden" }), {
-      status: 403,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
+
+  // Skip ownership check for service calls (n8n internal — already trusted)
+  if (!isServiceCall) {
+    const { data: jobRow, error: jobErr } = await supabase
+      .from("generations")
+      .select("user_id")
+      .eq("job_id", job_id)
+      .single();
+    if (jobErr || !jobRow || jobRow.user_id !== user.id) {
+      console.log("[BURN] Ownership check failed — job:", job_id, "user:", user.id);
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
   }
 
   // ── SECURITY FIX: Validate URL against allowlist (blocks SSRF) ───────────
