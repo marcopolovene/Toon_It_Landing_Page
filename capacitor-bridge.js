@@ -23,10 +23,10 @@
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge v2.4 (Platform-Aware Download)...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.5 (Watermark-Preserving Download)...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
-  // [v2.4] Platform-aware: MediaSaver plugin (Android silent) / native <a download> (iOS) / Share sheet (fallback)
+  // [v2.5] Watermark-preserving: Let web code handle watermark burn, then Layer 1 intercepts blob <a download> for MediaSaver/share
 
   // ══════════════════════════════════════════════════════════════
   //  LOGGING — Console only (no visible overlay in production)
@@ -34,7 +34,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.4-pa init | platform=' + platform);
+  dbg('Bridge v2.5-wp init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -195,25 +195,51 @@
       fetch(href)
         .then(function(r) { return r.blob(); })
         .then(function(blob) {
-          dbg('L1 blob: ' + blob.size + ' bytes');
-          var file = new File([blob], dl, { type: blob.type || 'video/mp4' });
+          dbg('L1 blob: ' + blob.size + ' bytes, platform=' + platform);
 
-          // Preferred: share with actual file
+          // ─── Android: Use MediaSaver for silent save to Downloads ───
+          if (platform === 'android' && CapMediaSaver) {
+            dbg('L1 → Android MediaSaver silent download');
+            return new Promise(function(resolve, reject) {
+              var reader = new FileReader();
+              reader.onloadend = function() { resolve(reader.result.split(',')[1]); };
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            }).then(function(base64Data) {
+              return CapMediaSaver.saveVideo({
+                data: base64Data,
+                filename: dl,
+                mimeType: blob.type || 'video/mp4'
+              });
+            }).then(function(result) {
+              dbg('L1 MediaSaver saved: ' + JSON.stringify(result));
+              try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
+              _showNativeToast('✅ Video saved to Downloads!');
+            });
+          }
+
+          // ─── Android fallback: CACHE + Share sheet ───
+          if (platform === 'android' && CapFilesystem && CapShare) {
+            dbg('L1 → Android CACHE+Share fallback');
+            return new Promise(function(resolve, reject) {
+              var reader = new FileReader();
+              reader.onloadend = function() { resolve(reader.result.split(',')[1]); };
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            }).then(function(base64Data) {
+              var tmpName = 'toonit-dl-' + Date.now() + '.mp4';
+              return CapFilesystem.writeFile({ path: tmpName, data: base64Data, directory: 'CACHE' })
+                .then(function(wr) {
+                  return CapShare.share({ title: dl, url: wr.uri, dialogTitle: 'Save your ToonIt video' });
+                });
+            });
+          }
+
+          // ─── Non-Android (iOS): use navigator.share with file ───
+          var file = new File([blob], dl, { type: blob.type || 'video/mp4' });
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             dbg('L1 → navigator.share({files})');
             return navigator.share({ files: [file], title: dl });
-          }
-
-          // Fallback: Capacitor Share with data URI
-          if (CapShare) {
-            dbg('L1 → CapShare data URI fallback');
-            return new Promise(function(resolve) {
-              var reader = new FileReader();
-              reader.onloadend = function() { resolve(reader.result); };
-              reader.readAsDataURL(blob);
-            }).then(function(dataUrl) {
-              return CapShare.share({ title: dl, url: dataUrl, dialogTitle: 'Save Video' });
-            });
           }
 
           // Last resort: original click
@@ -294,7 +320,7 @@
   // ══════════════════════════════════════════════════════════════
 
   function getVideoUrl() {
-    // [v2.4] Resolve URL respecting watermark on/off state
+    // [v2.5] Resolve URL respecting watermark on/off state
     try {
       var wm = window._wmState;
       if (wm) {
@@ -319,20 +345,10 @@
   }
 
   function overrideIndexButtons() {
-    // === DOWNLOAD BUTTON (index.html) — Android only (iOS uses web's native download) ===
-    var dlBtn = document.getElementById('downloadBtn');
-    if (platform === 'android' && dlBtn && !dlBtn._bridgeCapture) {
-      dlBtn._bridgeCapture = true;
-      dbg('LAYER3: overriding downloadBtn with MediaSaver download (Android)');
-
-      dlBtn.addEventListener('click', function(e) {
-        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-        var url = getVideoUrl();
-        if (!url) { dbg('L3 download: no video URL'); return; }
-        dbg('L3 download: ' + url.substring(0, 80));
-        saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
-      }, true);
-    }
+    // === DOWNLOAD BUTTON (index.html) ===
+    // NOT overridden — web code's downloadVideo() → burnWatermarkAndDownload() handles
+    // watermark logic, then creates blob → <a download> → Layer 1 intercepts for MediaSaver
+    // This preserves watermark on downloads across all platforms
 
     // === SHARE BUTTON (index.html — inject if not found) ===
     var shareBtn = document.getElementById('nativeShareBtn');
@@ -368,21 +384,8 @@
   }
 
   function overrideDashboardButtons() {
-    // === DOWNLOAD BUTTON (myvideos.html modal) — Android only ===
-    var dashDl = document.getElementById('dashDownloadBtn');
-    if (platform === 'android' && dashDl && !dashDl._bridgeCapture) {
-      dashDl._bridgeCapture = true;
-      dbg('LAYER3: overriding dashDownloadBtn (Android, capture-phase)');
-
-      dashDl.addEventListener('click', function(e) {
-        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-        var mv = document.getElementById('modalVideo');
-        var url = mv ? (mv.currentSrc || mv.src) : '';
-        if (!url) return;
-        dbg('L3 dash download: ' + url.substring(0, 60));
-        saveOrShareVideo(url, 'toonit-video.mp4', dashDl);
-      }, true);
-    }
+    // === DOWNLOAD BUTTON (myvideos.html modal) ===
+    // NOT overridden — web code handles watermark logic, Layer 1 intercepts blob download
 
     // === SHARE BUTTON (myvideos.html modal) ===
     var shareBtn = document.getElementById('shareVideoBtn');
@@ -845,6 +848,6 @@
   // ══════════════════════════════════════════════════════════════
   //  DONE
   // ══════════════════════════════════════════════════════════════
-  dbg('\u2705 Bridge v2.4-pa ready | ' + platform);
-  console.log('[ToonIt Bridge] \u2705 v2.4-pa initialized for ' + platform);
+  dbg('\u2705 Bridge v2.5-wp ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.5-wp initialized for ' + platform);
 })();
