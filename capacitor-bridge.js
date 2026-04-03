@@ -23,10 +23,10 @@
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge v2.2 (Filesystem)...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.3 (Cache+Share Download)...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
-  // [v2.2] Filesystem plugin used for reliable Android downloads
+  // [v2.3] Cache+Share: write to CACHE then share sheet for reliable Android downloads
 
   // ══════════════════════════════════════════════════════════════
   //  LOGGING — Console only (no visible overlay in production)
@@ -34,7 +34,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.2-fs init | platform=' + platform);
+  dbg('Bridge v2.3-cs init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -98,22 +98,38 @@
       });
       dbg('base64 ready: ' + base64Data.length + ' chars');
 
-      // Step 3: Write to device via Filesystem plugin
-      if (CapFilesystem) {
-        dbg('Writing to device via Filesystem plugin...');
+      // Step 3: Write to CACHE dir (always works, no permissions needed)
+      // Then use Share plugin so user can "Save to Files" / "Save to Downloads"
+      if (CapFilesystem && CapShare) {
+        var tmpName = 'toonit-download-' + Date.now() + '.mp4';
+        dbg('Writing to CACHE via Filesystem plugin...');
         var writeResult = await CapFilesystem.writeFile({
-          path: 'Download/' + filename,
+          path: tmpName,
           data: base64Data,
-          directory: 'EXTERNAL_STORAGE',
-          recursive: true
+          directory: 'CACHE'
         });
-        dbg('File written: ' + JSON.stringify(writeResult));
-        if (btnEl) { btnEl.textContent = '✅ Saved!'; }
+        dbg('File cached: ' + JSON.stringify(writeResult));
+        var fileUri = writeResult.uri;
+        dbg('Sharing file URI for save: ' + fileUri);
+
+        if (btnEl) { btnEl.textContent = '💾 Choose save location...'; }
+        await CapShare.share({
+          title: filename,
+          url: fileUri,
+          dialogTitle: 'Save your ToonIt video'
+        });
+
+        if (btnEl) { btnEl.textContent = '✅ Done!'; }
         setTimeout(function() {
           if (btnEl) { btnEl.textContent = origText || '⬇️ Download'; btnEl.disabled = false; }
         }, 2000);
         try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
-        _showNativeToast('✅ Video saved to Downloads!');
+        _showNativeToast('✅ Video ready — save it from the menu above!');
+
+        // Cleanup temp file after delay
+        setTimeout(function() {
+          try { CapFilesystem.deleteFile({ path: tmpName, directory: 'CACHE' }); } catch(e) {}
+        }, 60000);
         return true;
       }
 
@@ -131,7 +147,7 @@
       return false;
 
     } catch (err) {
-      if (err && err.name === 'AbortError') { dbg('User cancelled'); return false; }
+      if (err && err.name === 'AbortError') { dbg('User cancelled share/save'); return false; }
       dbg('ERROR: ' + (err && err.message || err));
       console.error('[Bridge] saveOrShare error:', err);
       _showNativeToast('❌ Download failed: ' + (err && err.message || 'Unknown error'));
@@ -264,7 +280,7 @@
   // ══════════════════════════════════════════════════════════════
 
   function getVideoUrl() {
-    // [v2.2] Resolve URL respecting watermark on/off state
+    // [v2.3] Resolve URL respecting watermark on/off state
     try {
       var wm = window._wmState;
       if (wm) {
@@ -815,6 +831,6 @@
   // ══════════════════════════════════════════════════════════════
   //  DONE
   // ══════════════════════════════════════════════════════════════
-  dbg('\u2705 Bridge v2.2-fs ready | ' + platform);
-  console.log('[ToonIt Bridge] \u2705 v2.2-fs initialized for ' + platform);
+  dbg('\u2705 Bridge v2.3-cs ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.3-cs initialized for ' + platform);
 })();
