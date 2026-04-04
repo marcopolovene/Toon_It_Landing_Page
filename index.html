@@ -189,6 +189,7 @@
         .sbadge { position: absolute; top: -5px; right: -5px; font-size: 0.5em; font-weight: 800; padding: 1px 5px; border-radius: 6px; line-height: 1.3; z-index: 2; pointer-events: none; }
         .sbadge-new { background: linear-gradient(135deg, #4ade80, #22c55e); color: #052e16; }
         .sbadge-today { background: linear-gradient(135deg, #f59e0b, #d97706); color: #451a03; }
+        .sbadge-bday { background: linear-gradient(135deg, #FFD700, #FF6B35); color: #fff; font-weight: 700; }
         .style-cards-more .style-card { min-width: 0; }
         
         .style-loader--actionfigure .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6); box-shadow: 0 0 16px rgba(245,158,11,0.24); }
@@ -220,6 +221,7 @@
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
+        .style-loader--finns_bday .style-loader-fill { background-image: linear-gradient(90deg, #FFD700, #FF6B35, #00B4D8); box-shadow: 0 0 16px rgba(255,215,0,0.24); }
         .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #B8A7FF, #FFC8DD, #A8E6CF); box-shadow: 0 0 16px rgba(184,167,255,0.24); }
         .style-loader--easter_egghunt .style-loader-fill { background-image: linear-gradient(90deg, #FF6FB1, #FFD166, #2FD8C3); box-shadow: 0 0 16px rgba(255,111,177,0.24); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
@@ -603,7 +605,12 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card active" data-style="easter_enchanted" onclick="selectStyle(this)">
+                                <div class="style-card active" data-style="finns_bday" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-bday">🎂 BDAY</span>
+                    <span class="style-icon">🏆</span>
+                    <span class="style-name">Finn’s Bday!</span>
+                </div>
+<div class="style-card" data-style="easter_enchanted" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-today">🐣 EASTER</span>
                     <span class="style-icon">🌱</span>
                     <span class="style-name">Enchanted Easter</span>
@@ -613,12 +620,12 @@
                     <span class="style-icon">🥚</span>
                     <span class="style-name">Easter Egg Hunt</span>
                 </div>
+            </div>
+            <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                     <span class="style-icon">💥</span>
                     <span class="style-name">Superhero</span>
                 </div>
-            </div>
-            <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
@@ -3173,6 +3180,7 @@
     function _getStyleLoaderMeta() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         var map = {
+            finns_bday: { cls: 'style-loader--finns_bday', label: "Finn's Bday!" },
             storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook' },
             cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' },
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
@@ -5412,6 +5420,47 @@
       'The oversized eyes in chibi art aren’t just cute — they’re placed LOW on the face to create a massive forehead, which amplifies the baby-like cuteness.',
       'Chibi hands are deliberately simplified into "mitten" shapes — detailed fingers on a tiny chibi body creates an uncanny valley effect that breaks the magic.',
       'The 2025 viral chibi trend of characters inside transparent toy capsules comes directly from Japanese gashapon vending machine culture.'
+    ];
+  }
+})();
+</script>
+
+<script>
+// === FINN'S BDAY STYLE EXTENSION (temporary - April 4, 2026) ===
+(function(){
+  // Loader map entry
+  var origMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
+  if(origMeta){
+    _getStyleLoaderMeta = function() {
+      var map = origMeta();
+      map.finns_bday = { cls: 'style-loader--finns_bday', label: "Finn's Bday!" };
+      return map;
+    };
+  }
+
+  // Magic themes
+  if(typeof _magicThemes !== 'undefined'){
+    _magicThemes.finns_bday = {
+      spell: 'Championship Time! 🏆',
+      wand: '🏆',
+      particles: ['🏆','⚽','🏀','🏈','⚾','🎾','🥇','⭐'],
+      msgs: {
+        1: ['Scouting the MVP... 🔍','Setting up the championship arena... 🏟️','Rolling out the red carpet for #3... ⭐','Warming up all the sports balls... ⚽','The crowd is going wild already... 🎉'],
+        2: ['Suiting up in the golden #3 jersey... 🏅','Raining down championship confetti... 🎉','Trophies are being polished... 🏆','The scoreboard reads CHAMPION... 🥇','Sports magic at full power... ⚡'],
+        3: ['The crowd chants FINN! FINN! FINN!... 🏆','Hoisting the birthday trophy... 🥇','Champion portrait almost ready... ⭐','Final golden confetti blast... 🎉','Happy 3rd Birthday, MVP! 🎂']
+      }
+    };
+  }
+
+  // Fun facts
+  if(typeof _magicFacts !== 'undefined'){
+    _magicFacts.finns_bday = [
+      'The youngest person to ever score a goal in professional soccer was just 12 years old — proof that sports stars start young!',
+      'A basketball court is exactly 94 feet long — thats about the length of 16 three-year-olds lying head to toe!',
+      'The first ever Super Bowl was played in 1967 — the football has been flying for almost 60 years!',
+      'Tennis balls used to be white — they switched to bright yellow-green in 1972 so fans could see them better on TV!',
+      'The Olympic gold medal is actually mostly silver with a thin gold coating — but it still means you are the champion!',
+      'A baseball can travel over 100 miles per hour when thrown by a pro pitcher — faster than most cars on the highway!'
     ];
   }
 })();
