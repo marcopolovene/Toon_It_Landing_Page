@@ -269,6 +269,18 @@
         .share-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
         .share-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); cursor: pointer; font-size: 0.82em; font-weight: 600; transition: all 0.2s; }
         .share-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Mobile-first native share prominence */
+        .share-btn-native { display: none; width: 100%; padding: 14px 20px !important; font-size: 1.05em !important; background: var(--primary) !important; color: #fff !important; border: none !important; border-radius: 12px !important; font-weight: 700 !important; letter-spacing: 0.3px; }
+        .share-btn-native:hover { opacity: 0.9; }
+        @media (max-width: 600px) {
+            .share-btn-native { display: none; /* JS will show on supported devices */ }
+            .share-platform-btns { display: none !important; }
+            .share-section.has-native .share-platform-btns { display: none !important; }
+            .share-section.has-native .share-btn-native { display: block !important; }
+            .share-section:not(.has-native) .share-platform-btns { display: flex !important; }
+        }
+
         .copy-toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,32,0.96); color: #fff; padding: 10px 22px; border-radius: 22px; font-size: 0.88em; z-index: 9999; pointer-events: none; border: 1px solid var(--border); }
 
         /* App toast notifications (replaces browser alert()) */
@@ -684,6 +696,21 @@
             <div class="result-buttons">
                 <button type="button" id="downloadBtn" onclick="if (window.downloadVideoFallbackLocal) { window.downloadVideoFallbackLocal(); } else if (window.downloadVideo) { window.downloadVideo(); } return false;">⬇️ Download</button>
                 <button type="button" id="newBtn" onclick="if (window.resetForNewFallbackLocal) { window.resetForNewFallbackLocal(); } else if (window.resetForNew) { window.resetForNew(); } return false;">🔄 Create Another</button>
+
+            <!-- Share Section -->
+            <div class="share-section" style="display:none;">
+                <div class="share-label">📤 Share Your Creation</div>
+                <button type="button" class="share-btn share-btn-native" id="nativeShareBtn" onclick="nativeShare()">📱 Share Your Toon</button>
+                <div class="share-buttons share-platform-btns">
+                    <button type="button" class="share-btn" onclick="shareOnTwitter()">𝕏 Post</button>
+                    <button type="button" class="share-btn" onclick="shareOnFacebook()">📘 Facebook</button>
+                    <button type="button" class="share-btn" onclick="shareOnWhatsApp()">💬 WhatsApp</button>
+                    <button type="button" class="share-btn" onclick="downloadAndShare('tiktok')">🎵 TikTok</button>
+                    <button type="button" class="share-btn" onclick="downloadAndShare('instagram')">📸 Instagram</button>
+                    <button type="button" class="share-btn" onclick="copyVideoLink()">🔗 Copy Link</button>
+                </div>
+                <div id="shareToast" style="display:none; text-align:center; margin-top:8px; font-size:0.85em; color:var(--primary); font-weight:600;"></div>
+            </div>
             </div>
             <!-- Watermark Removal CTA (shown to paid users only) -->
             
@@ -2065,6 +2092,8 @@
             if (navigator.share) {
                 var btn = document.getElementById('nativeShareBtn');
                 if (btn) btn.style.display = '';
+                var section = document.querySelector('.share-section');
+                if (section) section.classList.add('has-native');
             }
         })();
 
