@@ -189,7 +189,6 @@
         .sbadge { position: absolute; top: -5px; right: -5px; font-size: 0.5em; font-weight: 800; padding: 1px 5px; border-radius: 6px; line-height: 1.3; z-index: 2; pointer-events: none; }
         .sbadge-new { background: linear-gradient(135deg, #4ade80, #22c55e); color: #052e16; }
         .sbadge-today { background: linear-gradient(135deg, #f59e0b, #d97706); color: #451a03; }
-        .sbadge-bday { background: linear-gradient(135deg, #FFD700, #FF6B35); color: #fff; font-weight: 700; }
         .style-cards-more .style-card { min-width: 0; }
         
         .style-loader--actionfigure .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6); box-shadow: 0 0 16px rgba(245,158,11,0.24); }
@@ -221,8 +220,7 @@
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
-        .style-loader--finns_bday .style-loader-fill { background-image: linear-gradient(90deg, #FFD700, #FF6B35, #00B4D8); box-shadow: 0 0 16px rgba(255,215,0,0.24); }
-        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #B8A7FF, #FFC8DD, #A8E6CF); box-shadow: 0 0 16px rgba(184,167,255,0.24); }
+        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #9B7FD4, #E8B4B8, #7ECFB3); box-shadow: 0 0 16px rgba(155,127,212,0.24); }
         .style-loader--easter_egghunt .style-loader-fill { background-image: linear-gradient(90deg, #FF6FB1, #FFD166, #2FD8C3); box-shadow: 0 0 16px rgba(255,111,177,0.24); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
@@ -605,12 +603,7 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                                <div class="style-card active" data-style="finns_bday" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-bday">🎂 BDAY</span>
-                    <span class="style-icon">🏆</span>
-                    <span class="style-name">Finn’s Bday!</span>
-                </div>
-<div class="style-card" data-style="easter_enchanted" onclick="selectStyle(this)">
+<div class="style-card active" data-style="easter_enchanted" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-today">🐣 EASTER</span>
                     <span class="style-icon">🌱</span>
                     <span class="style-name">Enchanted Easter</span>
@@ -620,15 +613,16 @@
                     <span class="style-icon">🥚</span>
                     <span class="style-name">Easter Egg Hunt</span>
                 </div>
+            
+                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
+                    <span class="style-icon">🎬</span>
+                    <span class="style-name">Cartoon</span>
+                </div>
             </div>
             <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                     <span class="style-icon">💥</span>
                     <span class="style-name">Superhero</span>
-                </div>
-                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
-                    <span class="style-icon">🎬</span>
-                    <span class="style-name">Cartoon</span>
                 </div>
                 <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
                     <span class="style-icon">🏰</span>
@@ -3180,7 +3174,6 @@
     function _getStyleLoaderMeta() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         var map = {
-            finns_bday: { cls: 'style-loader--finns_bday', label: "Finn's Bday!" },
             storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook' },
             cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' },
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
@@ -4734,8 +4727,8 @@
                 watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
                 st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] },
                 chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] },
-                easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter', facts: ['The tradition of decorating Easter eggs dates back over 2,500 years to ancient Persia.','In medieval Europe, eggs were forbidden during Lent so people decorated them on Easter Sunday.','The White House Easter Egg Roll has been an annual tradition since 1878.','Cherry blossoms bloom for only about two weeks each spring in Japan.','The word Easter may come from Eostre, the Anglo-Saxon goddess of spring and dawn.'] },
-                easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt', facts: ['The concept of an Easter egg hunt was brought to America by German immigrants in the 1700s.','Cadbury produces over 500 million cream eggs per year.','The Faberge Imperial Easter Eggs are worth over $30 million each.','In Switzerland, Easter eggs are delivered by a cuckoo bird, not a bunny.','The largest chocolate Easter egg ever made weighed over 15,000 pounds.'] }
+                easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter', facts: ['In Celtic mythology, fairy rings of mushrooms were believed to be portals to the fairy realm.','Fireflies produce light with near-perfect efficiency — almost 100% of their energy becomes light.','The oldest living tree is over 5,000 years old — a bristlecone pine named Methuselah in California.','Spider silk is five times stronger than steel — and morning dew on webs splits sunlight into rainbow spectrums.','Foxes can literally feel the Earth magnetic field and use it to hunt with incredible precision.'] },
+                easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt', facts: ['The human brain can spot a hidden object in a complex scene in under 200 milliseconds — faster than you can blink.','True camouflage masters are cuttlefish, which can match any pattern in 0.3 seconds.','Where is Waldo creator Martin Handford spends up to 8 weeks drawing a single hidden page.','The first digital Easter egg was hidden in Atari Adventure in 1980 by a developer.','Birds can see ultraviolet patterns on flowers and eggs that are completely invisible to humans.'] }
             };
             var theme = themes[style] || themes.storybook;
             if (host) {
@@ -5425,91 +5418,51 @@
 })();
 </script>
 
-<script>
-// === FINN'S BDAY STYLE EXTENSION (temporary - April 4, 2026) ===
-(function(){
-  // Loader map entry
-  var origMeta = (typeof _getStyleLoaderMeta === 'function') ? _getStyleLoaderMeta : null;
-  if(origMeta){
-    _getStyleLoaderMeta = function() {
-      var map = origMeta();
-      map.finns_bday = { cls: 'style-loader--finns_bday', label: "Finn's Bday!" };
-      return map;
-    };
-  }
 
-  // Magic themes
-  if(typeof _magicThemes !== 'undefined'){
-    _magicThemes.finns_bday = {
-      spell: 'Happy Birthday Finn! 🏆',
-      wand: '🏆',
-      particles: ['🏆','⚽','🏀','🏈','⚾','🎾','🥇','⭐'],
-      msgs: {
-        1: ['Getting Finn ready for the big game... 🔍','Building Finn an epic championship arena... 🏟️','Rolling out the red carpet for Finn... ⭐','Warming up all the sports balls for Finn... ⚽','The crowd is chanting for Finn already... 🎉'],
-        2: ['Suiting Finn up in the golden #3 jersey... 🏅','Raining down championship confetti for Finn... 🎉','Polishing Finn s trophy... 🏆','The scoreboard reads FINN = CHAMPION... 🥇','Finn s sports magic is at full power... ⚡'],
-        3: ['The crowd chants FINN! FINN! FINN!... 🏆','Finn is hoisting the birthday trophy... 🥇','Finn s champion portrait is almost ready... ⭐','Final golden confetti blast for Finn... 🎉','Happy 3rd Birthday Finn, you are the MVP! 🎂']
-      }
-    };
-  }
-
-  // Fun facts
-  if(typeof _magicFacts !== 'undefined'){
-    _magicFacts.finns_bday = [
-      'The youngest person to ever score a goal in professional soccer was just 12 years old — proof that sports stars start young!',
-      'A basketball court is exactly 94 feet long — thats about the length of 16 three-year-olds lying head to toe!',
-      'The first ever Super Bowl was played in 1967 — the football has been flying for almost 60 years!',
-      'Tennis balls used to be white — they switched to bright yellow-green in 1972 so fans could see them better on TV!',
-      'The Olympic gold medal is actually mostly silver with a thin gold coating — but it still means you are the champion!',
-      'A baseball can travel over 100 miles per hour when thrown by a pro pitcher — faster than most cars on the highway!'
-    ];
-  }
-})();
-</script>
 
 <script>
 // === EASTER STYLES EXTENSION ===
 (function(){
   if(typeof _magicThemes !== 'undefined'){
     _magicThemes.easter_enchanted = {
-      spell: 'Easter Enchantment Rising! 🌱',
-      wand: '🌱',
-      particles: ['🌱','✨','🌸','🐇','🦋','🌟','🌼','🐣'],
+      spell: 'Entering the Fairy Kingdom!',
+      wand: '✨',
+      particles: ['✨','🌸','🦊','🦉','🍄','🌼','🦔','🌟'],
       msgs: {
-        1: ['Awakening the enchanted garden... 🌱','Soft cherry blossoms beginning to fall... 🌸','A little bunny hops into your scene... 🐇','Painting your world in dreamy pastels... 🎨','Golden sparkles drifting through the air... ✨'],
-        2: ['Weaving fairy-tale magic into every detail... 🦋','Easter eggs appearing among the flowers... 🥚','Soft watercolor washes spreading beautifully... 💧','Baby chicks hatching in the background... 🐣','The enchanted meadow is coming to life... 🌼'],
-        3: ['Sprinkling the final Easter fairy dust... ✨','Your enchanted portrait is almost complete... 🌟','The bunnies approve — masterpiece incoming! 🐇','Adding the last golden glow... ✨','Happy Easter — your fairy-tale awaits! 🌱']
-      }
+        1: ['Opening a portal to the Fairy Kingdom...','Ancient trees are awakening around you...','A fox with knowing eyes watches from the shadows...','Bioluminescent moss begins to glow on the trunks...','Cherry blossom petals drift through the enchanted air...'],
+        2: ['Fairy companions are choosing their partners...','Glowing mushroom rings form fairy circles at your feet...','Golden pollen and luminous sprites fill the light rays...','An owl with golden spectacles surveys the magic...','Spider webs glitter with rainbow dewdrops...'],
+        3: ['The forest glade is alive with ancient magic...','Your fairy companion trails golden sparkle dust...','Hedgehogs don their tiny flower crowns...','The enchantment is nearly complete...','Welcome to the Fairy Kingdom!']}
     };
     _magicThemes.easter_egghunt = {
-      spell: 'Let the Egg Hunt Begin! 🥚',
-      wand: '🥚',
-      particles: ['🥚','🎉','🐣','🌈','🍬','🌟','🪨','🌻'],
+      spell: 'Can You Find Them All?',
+      wand: '🔍',
+      particles: ['🔍','🌸','🦋','🌞','🌼','🌟','🐞','🌺'],
       msgs: {
-        1: ['Setting up the ultimate Easter egg hunt... 🥚','Hiding colorful eggs in every corner... 🌈','Stringing up the bunting flags... 🎉','Filling Easter baskets with goodies... 🍬','The countdown to the egg hunt begins... 🐣'],
-        2: ['Painting eggs in brilliant rainbow colors... 🎨','Scattering confetti across your scene... 🎉','The Easter bunny is hiding the golden egg... 🥇','Adding jelly beans and chocolate treats... 🍬','Your egg hunt world is taking shape... 🌟'],
-        3: ['The final eggs are hidden — ready to hunt! 🥚','Confetti cannon loaded for the big reveal... 🎉','Your Easter adventure is almost ready... 🐣','Adding the last splash of celebration... ✨','Happy hunting — your egg-cellent portrait awaits! 🥚']
-      }
+        1: ['Painting the most beautiful spring day imaginable...','Cherry trees bursting into magnificent bloom...','Butterflies dancing between wildflowers...','Warm golden sunshine flooding the scene...','The perfect spring day is taking shape...'],
+        2: ['Now the sneaky part — hiding the eggs...','Camouflaging one among the flower petals...','Tucking another behind a tree trunk...','Blending one perfectly into the grass...','Can you spot the one on the windowsill?'],
+        3: ['All five eggs are cleverly hidden...','Even the butterflies cannot find them all...','Your spring scene with hidden surprises is almost ready...','Sharp eyes will be rewarded...','Happy hunting — can you find all five?']}
     };
   }
   if(typeof _magicFacts !== 'undefined'){
     _magicFacts.easter_enchanted = [
-      'The tradition of decorating Easter eggs dates back over 2,500 years to ancient Persia where painted eggs celebrated the spring equinox.',
-      'In medieval Europe, eggs were forbidden during Lent so people decorated and gifted them on Easter Sunday — the original Easter basket tradition.',
-      'The White House Easter Egg Roll has been an annual tradition since 1878, making it one of the oldest presidential events still held today.',
-      'Cherry blossoms bloom for only about two weeks each spring — in Japan this fleeting beauty is called mono no aware, the bittersweet awareness of impermanence.',
-      'Easter lilies were brought to the US from Bermuda in the 1880s and became the unofficial flower of Easter because they bloom naturally around the spring equinox.',
-      'The word Easter may come from Eostre, the Anglo-Saxon goddess of spring and dawn — her festival celebrated renewal and new life.'
+      'In Celtic mythology, fairy rings of mushrooms were believed to be portals to the fairy realm where time moves differently.',
+      'Fireflies produce light with near-perfect efficiency — almost 100% of their energy becomes light, compared to just 10% for an incandescent bulb.',
+      'The oldest living tree on Earth is over 5,000 years old — a bristlecone pine named Methuselah, still standing in the White Mountains of California.',
+      'Spider silk is five times stronger than steel by weight — and morning dew on webs creates tiny prisms that split sunlight into rainbow spectrums.',
+      'Foxes have magnetic-field sensing abilities — they can literally feel the Earth magnetic field and use it to hunt with incredible precision.',
+      'Cherry blossoms bloom for only about two weeks each spring — in Japan, this fleeting beauty is called mono no aware, the bittersweet awareness of impermanence.'
     ];
     _magicFacts.easter_egghunt = [
-      'The concept of an Easter egg hunt was brought to America by German immigrants in the 1700s — children made nests for the Easter Hare to fill.',
-      'Cadbury produces over 500 million cream eggs per year — stacked on top of each other they would be taller than Mount Everest ten times over.',
-      'The Faberge Imperial Easter Eggs are worth over $30 million each — originally crafted for Russian royalty, only 50 were ever made.',
-      'In Switzerland, Easter eggs are delivered by a cuckoo bird, not a bunny — every country has its own magical Easter messenger.',
-      'The largest chocolate Easter egg ever made weighed over 15,000 pounds and stood 34 feet tall — created in Italy in 2011.',
-      'The world\'s largest Easter egg hunt used over 500,000 eggs — organized in Florida in 2007, it took 9,753 children to find them all.'
+      'The human brain can spot a hidden object in a complex scene in under 200 milliseconds — faster than you can blink.',
+      'Chameleons do not actually change color to blend in — true camouflage masters are cuttlefish, which can match any pattern in 0.3 seconds.',
+      'Where is Waldo creator Martin Handford spends up to 8 weeks drawing a single page, hiding Waldo among hundreds of detailed characters and scenes.',
+      'Easter eggs in movies and video games got their name from Atari — a developer hid his name inside Adventure in 1980, creating the very first digital Easter egg.',
+      'The Faberge Imperial Easter Eggs are worth over $30 million each — originally crafted for Russian royalty, only 50 were ever made, and several are still missing.',
+      'Birds can see ultraviolet light, meaning they see patterns on flowers and eggs that are completely invisible to humans — a hidden world of color all around us.'
     ];
   }
 })();
+
 </script>
 
 
