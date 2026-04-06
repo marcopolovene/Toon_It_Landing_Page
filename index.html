@@ -220,7 +220,7 @@
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
-        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #B8A7FF, #FFC8DD, #A8E6CF); box-shadow: 0 0 16px rgba(184,167,255,0.24); }
+        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #9B7FD4, #E8B4B8, #7ECFB3); box-shadow: 0 0 16px rgba(155,127,212,0.24); }
         .style-loader--easter_egghunt .style-loader-fill { background-image: linear-gradient(90deg, #FF6FB1, #FFD166, #2FD8C3); box-shadow: 0 0 16px rgba(255,111,177,0.24); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
@@ -278,6 +278,19 @@
         .app-toast-success { background: rgba(30,180,80,0.97); color: #fff; border: 1px solid rgba(50,220,100,0.4); }
         .app-toast-info { background: rgba(18,18,32,0.97); color: #fff; border: 1px solid var(--border); }
 
+
+        /* ── Promo Code ──────────────────────────── */
+        .promo-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .promo-row { display: flex; gap: 8px; align-items: center; }
+        .promo-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 14px; color: #fff; font-size: 0.95em; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+        .promo-input::placeholder { text-transform: none; color: var(--text-muted); font-weight: 400; letter-spacing: 0; }
+        .promo-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(240,180,41,0.15); }
+        .promo-btn { background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 0.9em; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .promo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(240,180,41,0.3); }
+        .promo-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .promo-msg { font-size: 0.82em; margin-top: 6px; min-height: 1.2em; }
+        .promo-msg.success { color: var(--success); }
+        .promo-msg.error { color: var(--error); }
         /* MODALS */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.active { display: flex; }
@@ -603,7 +616,7 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card active" data-style="easter_enchanted" onclick="selectStyle(this)">
+<div class="style-card active" data-style="easter_enchanted" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-today">🐣 EASTER</span>
                     <span class="style-icon">🌱</span>
                     <span class="style-name">Enchanted Easter</span>
@@ -613,15 +626,16 @@
                     <span class="style-icon">🥚</span>
                     <span class="style-name">Easter Egg Hunt</span>
                 </div>
-                <div class="style-card" data-style="comic" onclick="selectStyle(this)">
-                    <span class="style-icon">💥</span>
-                    <span class="style-name">Superhero</span>
-                </div>
-            </div>
-            <div id="moreStyles" class="style-cards-more">
+            
                 <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
+                </div>
+            </div>
+            <div id="moreStyles" class="style-cards-more">
+                <div class="style-card" data-style="comic" onclick="selectStyle(this)">
+                    <span class="style-icon">💥</span>
+                    <span class="style-name">Superhero</span>
                 </div>
                 <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
                     <span class="style-icon">🏰</span>
@@ -683,6 +697,7 @@
         </div>
             <div class="result-buttons">
                 <button type="button" id="downloadBtn" onclick="if (window.downloadVideoFallbackLocal) { window.downloadVideoFallbackLocal(); } else if (window.downloadVideo) { window.downloadVideo(); } return false;">⬇️ Download</button>
+                <button type="button" id="shareVideoBtn" onclick="shareResult()">📤 Share</button>
                 <button type="button" id="newBtn" onclick="if (window.resetForNewFallbackLocal) { window.resetForNewFallbackLocal(); } else if (window.resetForNew) { window.resetForNew(); } return false;">🔄 Create Another</button>
             </div>
             <!-- Watermark Removal CTA (shown to paid users only) -->
@@ -853,6 +868,16 @@
 
             </div>
 
+
+            <!-- Promo Code Section -->
+            <div class="promo-section">
+                <div style="text-align:center;color:var(--text-muted);font-size:0.85em;margin-bottom:8px;">🎁 Have a promo code?</div>
+                <div class="promo-row">
+                    <input type="text" class="promo-input" id="promoInput" placeholder="Enter code" maxlength="30" autocomplete="off">
+                    <button class="promo-btn" id="promoBtn" onclick="redeemPromoCode()">Redeem</button>
+                </div>
+                <div class="promo-msg" id="promoMsg"></div>
+            </div>
             <div class="cb-trust">
                 <span>&#128274;</span>
                 <span>Secure checkout via <strong>Stripe</strong> &mdash; you'll be redirected to complete payment</span>
@@ -2057,6 +2082,33 @@
                 toast.textContent = msg;
                 toast.style.display = 'block';
                 setTimeout(function() { toast.style.display = 'none'; }, 4000);
+            }
+        }
+
+        function shareResult() {
+            var videoUrl = _getVideoUrl();
+            if (!videoUrl) return;
+            var btn = document.getElementById('shareVideoBtn');
+            if (navigator.share) {
+                fetch(videoUrl).then(function(r) { return r.blob(); }).then(function(blob) {
+                    var file = new File([blob], 'toonit_creation.mp4', { type: 'video/mp4' });
+                    var shareData = { title: 'My Toon It! Creation', text: '✨ Check out my magical transformation! Try it free at toonit.ai', files: [file] };
+                    if (navigator.canShare && navigator.canShare(shareData)) {
+                        navigator.share(shareData).catch(function(){});
+                        trackEvent('share_native_file');
+                    } else {
+                        navigator.share({ title: 'My Toon It! Creation', text: '✨ Check out my magical transformation! Try it free at toonit.ai', url: videoUrl }).catch(function(){});
+                        trackEvent('share_native_url');
+                    }
+                }).catch(function() {
+                    navigator.share({ title: 'My Toon It! Creation', text: '✨ Check out my magical transformation! Try it free at toonit.ai', url: videoUrl }).catch(function(){});
+                    trackEvent('share_native_fallback');
+                });
+            } else {
+                navigator.clipboard.writeText(videoUrl).then(function() {
+                    if (btn) { btn.textContent = '✅ Link Copied!'; setTimeout(function() { btn.textContent = '📤 Share'; }, 2000); }
+                    trackEvent('share_copy_link');
+                }).catch(function() { prompt('Copy this link:', videoUrl); });
             }
         }
 
@@ -3720,26 +3772,115 @@
                 return;
             }
 
-            // ─── Android Chrome/Brave: skip canvas-burn (CORS blocks it), do direct blob download ───
+            // ─── Android: Pre-fetch video blob to bypass CORS, then canvas-burn watermark ───
             var isAndroid = /Android/i.test(navigator.userAgent || '');
             if (isAndroid) {
-                _showShareToast('⬇️ Downloading video...');
+                _showShareToast(isRemoved ? '⬇️ Downloading...' : '✨ Adding watermark...');
                 fetch(videoUrl)
                     .then(function(r) { if (!r.ok) throw new Error('fetch ' + r.status); return r.blob(); })
                     .then(function(blob) {
+                        if (isRemoved) {
+                            // No watermark needed — direct download
+                            var directUrl = URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = directUrl;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            setTimeout(function() { URL.revokeObjectURL(directUrl); }, 5000);
+                            if (onDone) onDone();
+                            return;
+                        }
+                        // Watermark ON — use blob URL for canvas burn (same-origin, bypasses CORS)
                         var blobUrl = URL.createObjectURL(blob);
-                        var a = document.createElement('a');
-                        a.href = blobUrl;
-                        a.download = filename;
-                        a.rel = 'noopener';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
-                        if (onDone) onDone();
+                        var burnVid = document.createElement('video');
+                        burnVid.muted = true;
+                        burnVid.playsInline = true;
+                        burnVid.style.display = 'none';
+                        document.body.appendChild(burnVid);
+
+                        var cvs = document.createElement('canvas');
+                        cvs.style.display = 'none';
+                        document.body.appendChild(cvs);
+                        var cx = cvs.getContext('2d');
+
+                        burnVid.onloadedmetadata = function() {
+                            cvs.width = burnVid.videoWidth || 720;
+                            cvs.height = burnVid.videoHeight || 480;
+
+                            var stream = cvs.captureStream(30);
+                            var mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ? 'video/mp4;codecs=avc1' :
+                                           MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+                                           MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+                                           'video/webm';
+                            var rec = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 4000000 });
+                            var chunks = [];
+
+                            rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+                            rec.onstop = function() {
+                                var outBlob = new Blob(chunks, { type: mimeType });
+                                var ext = mimeType.includes('webm') ? 'toon-it-video.webm' : filename;
+                                document.body.removeChild(burnVid);
+                                document.body.removeChild(cvs);
+                                URL.revokeObjectURL(blobUrl);
+                                var dlUrl = URL.createObjectURL(outBlob);
+                                var a = document.createElement('a');
+                                a.href = dlUrl;
+                                a.download = ext;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                setTimeout(function() { URL.revokeObjectURL(dlUrl); }, 5000);
+                                if (onDone) onDone();
+                            };
+
+                            var drawWm = function() {
+                                if (burnVid.paused || burnVid.ended) return;
+                                cx.drawImage(burnVid, 0, 0, cvs.width, cvs.height);
+                                var fSz = Math.max(18, Math.round(cvs.width * 0.038));
+                                cx.save();
+                                cx.font = fSz + 'px Pacifico, cursive';
+                                cx.globalAlpha = 0.72;
+                                cx.fillStyle = 'rgba(255,255,255,0.78)';
+                                cx.shadowColor = 'rgba(0,0,0,0.6)';
+                                cx.shadowBlur = 4;
+                                cx.shadowOffsetX = 0;
+                                cx.shadowOffsetY = 1;
+                                cx.fillText('ToonIt.ai', 10, cvs.height - Math.round(fSz * 0.33));
+                                cx.restore();
+                                requestAnimationFrame(drawWm);
+                            };
+
+                            rec.start(100);
+                            burnVid.play();
+                            drawWm();
+
+                            burnVid.onended = function() {
+                                setTimeout(function() { rec.stop(); }, 200);
+                            };
+                        };
+
+                        burnVid.onerror = function() {
+                            console.log('[DL] Android canvas burn failed, falling back to direct download');
+                            document.body.removeChild(burnVid);
+                            document.body.removeChild(cvs);
+                            var a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 5000);
+                            if (onDone) onDone();
+                        };
+
+                        burnVid.src = blobUrl;  // blob: URL = same-origin, bypasses CORS!
+                        burnVid.load();
                     })
                     .catch(function(err) {
-                        console.log('[DL] Android direct download failed, opening url:', err);
+                        console.log('[DL] Android blob fetch failed:', err);
                         window.open(videoUrl, '_blank');
                         if (onDone) onDone();
                     });
@@ -4609,8 +4750,8 @@
                 watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
                 st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] },
                 chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] },
-                easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter', facts: ['The tradition of decorating Easter eggs dates back over 2,500 years to ancient Persia.','In medieval Europe, eggs were forbidden during Lent so people decorated them on Easter Sunday.','The White House Easter Egg Roll has been an annual tradition since 1878.','Cherry blossoms bloom for only about two weeks each spring in Japan.','The word Easter may come from Eostre, the Anglo-Saxon goddess of spring and dawn.'] },
-                easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt', facts: ['The concept of an Easter egg hunt was brought to America by German immigrants in the 1700s.','Cadbury produces over 500 million cream eggs per year.','The Faberge Imperial Easter Eggs are worth over $30 million each.','In Switzerland, Easter eggs are delivered by a cuckoo bird, not a bunny.','The largest chocolate Easter egg ever made weighed over 15,000 pounds.'] }
+                easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter', facts: ['In Celtic mythology, fairy rings of mushrooms were believed to be portals to the fairy realm.','Fireflies produce light with near-perfect efficiency — almost 100% of their energy becomes light.','The oldest living tree is over 5,000 years old — a bristlecone pine named Methuselah in California.','Spider silk is five times stronger than steel — and morning dew on webs splits sunlight into rainbow spectrums.','Foxes can literally feel the Earth magnetic field and use it to hunt with incredible precision.'] },
+                easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt', facts: ['The human brain can spot a hidden object in a complex scene in under 200 milliseconds — faster than you can blink.','True camouflage masters are cuttlefish, which can match any pattern in 0.3 seconds.','Where is Waldo creator Martin Handford spends up to 8 weeks drawing a single hidden page.','The first digital Easter egg was hidden in Atari Adventure in 1980 by a developer.','Birds can see ultraviolet patterns on flowers and eggs that are completely invisible to humans.'] }
             };
             var theme = themes[style] || themes.storybook;
             if (host) {
@@ -5300,50 +5441,51 @@
 })();
 </script>
 
+
+
 <script>
 // === EASTER STYLES EXTENSION ===
 (function(){
   if(typeof _magicThemes !== 'undefined'){
     _magicThemes.easter_enchanted = {
-      spell: 'Easter Enchantment Rising! 🌱',
-      wand: '🌱',
-      particles: ['🌱','✨','🌸','🐇','🦋','🌟','🌼','🐣'],
+      spell: 'Entering the Fairy Kingdom!',
+      wand: '✨',
+      particles: ['✨','🌸','🦊','🦉','🍄','🌼','🦔','🌟'],
       msgs: {
-        1: ['Awakening the enchanted garden... 🌱','Soft cherry blossoms beginning to fall... 🌸','A little bunny hops into your scene... 🐇','Painting your world in dreamy pastels... 🎨','Golden sparkles drifting through the air... ✨'],
-        2: ['Weaving fairy-tale magic into every detail... 🦋','Easter eggs appearing among the flowers... 🥚','Soft watercolor washes spreading beautifully... 💧','Baby chicks hatching in the background... 🐣','The enchanted meadow is coming to life... 🌼'],
-        3: ['Sprinkling the final Easter fairy dust... ✨','Your enchanted portrait is almost complete... 🌟','The bunnies approve — masterpiece incoming! 🐇','Adding the last golden glow... ✨','Happy Easter — your fairy-tale awaits! 🌱']
-      }
+        1: ['Opening a portal to the Fairy Kingdom...','Ancient trees are awakening around you...','A fox with knowing eyes watches from the shadows...','Bioluminescent moss begins to glow on the trunks...','Cherry blossom petals drift through the enchanted air...'],
+        2: ['Fairy companions are choosing their partners...','Glowing mushroom rings form fairy circles at your feet...','Golden pollen and luminous sprites fill the light rays...','An owl with golden spectacles surveys the magic...','Spider webs glitter with rainbow dewdrops...'],
+        3: ['The forest glade is alive with ancient magic...','Your fairy companion trails golden sparkle dust...','Hedgehogs don their tiny flower crowns...','The enchantment is nearly complete...','Welcome to the Fairy Kingdom!']}
     };
     _magicThemes.easter_egghunt = {
-      spell: 'Let the Egg Hunt Begin! 🥚',
-      wand: '🥚',
-      particles: ['🥚','🎉','🐣','🌈','🍬','🌟','🪨','🌻'],
+      spell: 'Can You Find Them All?',
+      wand: '🔍',
+      particles: ['🔍','🌸','🦋','🌞','🌼','🌟','🐞','🌺'],
       msgs: {
-        1: ['Setting up the ultimate Easter egg hunt... 🥚','Hiding colorful eggs in every corner... 🌈','Stringing up the bunting flags... 🎉','Filling Easter baskets with goodies... 🍬','The countdown to the egg hunt begins... 🐣'],
-        2: ['Painting eggs in brilliant rainbow colors... 🎨','Scattering confetti across your scene... 🎉','The Easter bunny is hiding the golden egg... 🥇','Adding jelly beans and chocolate treats... 🍬','Your egg hunt world is taking shape... 🌟'],
-        3: ['The final eggs are hidden — ready to hunt! 🥚','Confetti cannon loaded for the big reveal... 🎉','Your Easter adventure is almost ready... 🐣','Adding the last splash of celebration... ✨','Happy hunting — your egg-cellent portrait awaits! 🥚']
-      }
+        1: ['Painting the most beautiful spring day imaginable...','Cherry trees bursting into magnificent bloom...','Butterflies dancing between wildflowers...','Warm golden sunshine flooding the scene...','The perfect spring day is taking shape...'],
+        2: ['Now the sneaky part — hiding the eggs...','Camouflaging one among the flower petals...','Tucking another behind a tree trunk...','Blending one perfectly into the grass...','Can you spot the one on the windowsill?'],
+        3: ['All five eggs are cleverly hidden...','Even the butterflies cannot find them all...','Your spring scene with hidden surprises is almost ready...','Sharp eyes will be rewarded...','Happy hunting — can you find all five?']}
     };
   }
   if(typeof _magicFacts !== 'undefined'){
     _magicFacts.easter_enchanted = [
-      'The tradition of decorating Easter eggs dates back over 2,500 years to ancient Persia where painted eggs celebrated the spring equinox.',
-      'In medieval Europe, eggs were forbidden during Lent so people decorated and gifted them on Easter Sunday — the original Easter basket tradition.',
-      'The White House Easter Egg Roll has been an annual tradition since 1878, making it one of the oldest presidential events still held today.',
-      'Cherry blossoms bloom for only about two weeks each spring — in Japan this fleeting beauty is called mono no aware, the bittersweet awareness of impermanence.',
-      'Easter lilies were brought to the US from Bermuda in the 1880s and became the unofficial flower of Easter because they bloom naturally around the spring equinox.',
-      'The word Easter may come from Eostre, the Anglo-Saxon goddess of spring and dawn — her festival celebrated renewal and new life.'
+      'In Celtic mythology, fairy rings of mushrooms were believed to be portals to the fairy realm where time moves differently.',
+      'Fireflies produce light with near-perfect efficiency — almost 100% of their energy becomes light, compared to just 10% for an incandescent bulb.',
+      'The oldest living tree on Earth is over 5,000 years old — a bristlecone pine named Methuselah, still standing in the White Mountains of California.',
+      'Spider silk is five times stronger than steel by weight — and morning dew on webs creates tiny prisms that split sunlight into rainbow spectrums.',
+      'Foxes have magnetic-field sensing abilities — they can literally feel the Earth magnetic field and use it to hunt with incredible precision.',
+      'Cherry blossoms bloom for only about two weeks each spring — in Japan, this fleeting beauty is called mono no aware, the bittersweet awareness of impermanence.'
     ];
     _magicFacts.easter_egghunt = [
-      'The concept of an Easter egg hunt was brought to America by German immigrants in the 1700s — children made nests for the Easter Hare to fill.',
-      'Cadbury produces over 500 million cream eggs per year — stacked on top of each other they would be taller than Mount Everest ten times over.',
-      'The Faberge Imperial Easter Eggs are worth over $30 million each — originally crafted for Russian royalty, only 50 were ever made.',
-      'In Switzerland, Easter eggs are delivered by a cuckoo bird, not a bunny — every country has its own magical Easter messenger.',
-      'The largest chocolate Easter egg ever made weighed over 15,000 pounds and stood 34 feet tall — created in Italy in 2011.',
-      'The world\'s largest Easter egg hunt used over 500,000 eggs — organized in Florida in 2007, it took 9,753 children to find them all.'
+      'The human brain can spot a hidden object in a complex scene in under 200 milliseconds — faster than you can blink.',
+      'Chameleons do not actually change color to blend in — true camouflage masters are cuttlefish, which can match any pattern in 0.3 seconds.',
+      'Where is Waldo creator Martin Handford spends up to 8 weeks drawing a single page, hiding Waldo among hundreds of detailed characters and scenes.',
+      'Easter eggs in movies and video games got their name from Atari — a developer hid his name inside Adventure in 1980, creating the very first digital Easter egg.',
+      'The Faberge Imperial Easter Eggs are worth over $30 million each — originally crafted for Russian royalty, only 50 were ever made, and several are still missing.',
+      'Birds can see ultraviolet light, meaning they see patterns on flowers and eggs that are completely invisible to humans — a hidden world of color all around us.'
     ];
   }
 })();
+
 </script>
 
 
@@ -5358,7 +5500,7 @@
         document.head.appendChild(css);
 
         var js = document.createElement('script');
-        js.src = '/capacitor-bridge.js?v=20260402v2';
+        js.src = '/capacitor-bridge.js?v=20260403v6';
         document.body.appendChild(js);
         console.log('[ToonIt] Native bridge loading...');
     }
@@ -5439,7 +5581,56 @@
         console.log('[PWA] App installed successfully');
     });
 })();
-</script>
+
+        // ── Promo Code Redemption ──────────────────────
+        async function redeemPromoCode() {
+            const input = document.getElementById('promoInput');
+            const btn = document.getElementById('promoBtn');
+            const msg = document.getElementById('promoMsg');
+            const code = (input.value || '').trim();
+
+            if (!code) { msg.className = 'promo-msg error'; msg.textContent = 'Please enter a promo code'; return; }
+            if (!supabaseClient) { msg.className = 'promo-msg error'; msg.textContent = 'Please log in first'; return; }
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) { msg.className = 'promo-msg error'; msg.textContent = 'Please log in to redeem codes'; return; }
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            msg.className = 'promo-msg'; msg.textContent = '';
+
+            try {
+                const { data, error } = await supabaseClient.rpc('redeem_promo_code', { p_code: code });
+                if (error) throw error;
+
+                if (data && data.success) {
+                    msg.className = 'promo-msg success';
+                    msg.textContent = '🎉 ' + data.message;
+                    input.value = '';
+                    // Refresh credit display
+                    const cResult = await supabaseClient.from('profiles').select('credits').eq('id', session.user.id).single();
+                    if (cResult.data) {
+                        var el = document.getElementById('creditCount');
+                        if (el) el.textContent = cResult.data.credits;
+                    }
+                } else {
+                    msg.className = 'promo-msg error';
+                    msg.textContent = (data && data.error) || 'Invalid promo code';
+                }
+            } catch (e) {
+                msg.className = 'promo-msg error';
+                msg.textContent = e.message || 'Something went wrong';
+            }
+            btn.disabled = false;
+            btn.textContent = 'Redeem';
+        }
+        // Enter key support for promo input
+        document.addEventListener('DOMContentLoaded', function() {
+            var pi = document.getElementById('promoInput');
+            if (pi) pi.addEventListener('keydown', function(e) { if (e.key === 'Enter') redeemPromoCode(); });
+        });
+
+        </script>
 
 </body>
 <script>
