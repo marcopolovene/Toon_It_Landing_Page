@@ -4,7 +4,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://toonit.ai/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -12,7 +12,7 @@
   <!-- Blog index -->
   <url>
     <loc>https://toonit.ai/blog/</loc>
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -20,13 +20,13 @@
   <!-- Blog posts - pillar / high-priority -->
   <url>
     <loc>https://toonit.ai/blog/animated-video-from-photo-ai.html</loc>
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toonit.ai/blog/how-to-animate-a-photo-ai.html</loc>
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -52,7 +52,7 @@
   </url>
   <url>
     <loc>https://toonit.ai/blog/blog_storybook_character_generator_20260308_1100PM.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -70,7 +70,7 @@
   </url>
   <url>
     <loc>https://toonit.ai/blog/pet-cartoon-maker-2026-02-22.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-02-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -157,31 +157,37 @@
   </url>
   <url>
     <loc>https://toonit.ai/video/baby-laughing-highchair-cartoon.html</loc>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toonit.ai/video/kid-puddle-rainboots-cartoon.html</loc>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toonit.ai/video/grandpa-napping-recliner-cartoon.html</loc>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toonit.ai/video/golden-retriever-park-cartoon.html</loc>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toonit.ai/video/kids-sharing-icecream-cartoon.html</loc>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toonit.ai/video/tabby-cat-in-box-cartoon.html</loc>
+    <lastmod>2026-04-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

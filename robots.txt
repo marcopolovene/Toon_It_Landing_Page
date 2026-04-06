@@ -1,5 +1,25 @@
+# Toon It! — Robots.txt
+# Last updated: 2026-04-06
+#
+# POLICY: Pages with noindex meta tags are NOT blocked here.
+# Blocking prevents Googlebot from reading the noindex directive.
+# Only truly non-content resources are Disallowed.
+
 User-agent: *
 Allow: /
-Disallow: /dashboard.html
+
+# Utility / system pages (no HTML noindex — block at crawl level)
+Disallow: /app-diag.html
+Disallow: /offline.html
+Disallow: /404.html
+
+# Static assets (not content)
+Disallow: /capacitor-native.css
+Disallow: /capacitor-bridge.js
+Disallow: /sw.js
+Disallow: /manifest.json
+
+# Internal functions
+Disallow: /supabase/
 
 Sitemap: https://toonit.ai/sitemap.xml
