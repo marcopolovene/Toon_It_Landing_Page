@@ -220,8 +220,6 @@
         .style-loader--anime .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #a78bfa, #f9a8d4); box-shadow: 0 0 16px rgba(167,139,250,0.24); }
         .style-loader--watercolor .style-loader-fill { background-image: linear-gradient(90deg, #60a5fa, #67e8f9, #a78bfa); box-shadow: 0 0 16px rgba(103,232,249,0.22); }
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
-        .style-loader--easter_enchanted .style-loader-fill { background-image: linear-gradient(90deg, #9B7FD4, #E8B4B8, #7ECFB3); box-shadow: 0 0 16px rgba(155,127,212,0.24); }
-        .style-loader--easter_egghunt .style-loader-fill { background-image: linear-gradient(90deg, #FF6FB1, #FFD166, #2FD8C3); box-shadow: 0 0 16px rgba(255,111,177,0.24); }
         @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -616,35 +614,26 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-<div class="style-card active" data-style="easter_enchanted" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-today">🐣 EASTER</span>
-                    <span class="style-icon">🌱</span>
-                    <span class="style-name">Enchanted Easter</span>
-                </div>
-                <div class="style-card" data-style="easter_egghunt" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-today">🐣 EASTER</span>
-                    <span class="style-icon">🥚</span>
-                    <span class="style-name">Easter Egg Hunt</span>
-                </div>
-            
-                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
+                <div class="style-card active" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
                 </div>
-            </div>
-            <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                     <span class="style-icon">💥</span>
                     <span class="style-name">Superhero</span>
-                </div>
-                <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
-                    <span class="style-icon">🏰</span>
-                    <span class="style-name">Storybook</span>
                 </div>
                 <div class="style-card" data-style="cyberpunk" onclick="selectStyle(this)">
                     <span class="style-icon">🌆</span>
                     <span class="style-name">Cyberpunk</span>
                 </div>
+            </div>
+            <div id="moreStyles" class="style-cards-more">
+                
+                <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
+                    <span class="style-icon">🏰</span>
+                    <span class="style-name">Storybook</span>
+                </div>
+                
                 <div class="style-card" data-style="actionfigure" onclick="selectStyle(this)">
                     <span class="style-icon">🦸</span>
                     <span class="style-name">Action Figure</span>
@@ -4733,25 +4722,13 @@
             var active = document.querySelector('.style-card.active');
             var style = active ? (active.getAttribute('data-style') || 'storybook') : 'storybook';
             var themes = {
-                storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook', facts: ['Researchers used ancestral DNA tracing to prove that Beauty and the Beast is at least 4,000 years old. Some stories truly never get old.','The golden ratio (1.618) appears in nearly every classic storybook illustration — great artists used it instinctively before math confirmed it.','The hero journey structure behind every fairy tale has been found in stories from every known human culture on Earth.','Children raised with illustrated storybooks develop stronger spatial reasoning and empathy well into adulthood. Pictures shape minds.','The word magic comes from magus — the ancient Persian term for someone who could see what others could not. Art still does this.'],
-            easter_enchanted: [
-                'Your enchanted Easter portrait is almost ready... 🌱',
-                'Adding the final sparkle of Easter magic... ✨',
-                'Your fairy-tale Easter masterpiece is being revealed... 🐇'
-            ],
-            easter_egghunt: [
-                'Animation complete — hiding the last Easter eggs... 🥚',
-                'Adding the final burst of Easter confetti... 🎉',
-                'Your Easter egg hunt adventure is almost ready... 🐣'
-            ] },
+                storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook', facts: ['Researchers used ancestral DNA tracing to prove that Beauty and the Beast is at least 4,000 years old. Some stories truly never get old.','The golden ratio (1.618) appears in nearly every classic storybook illustration — great artists used it instinctively before math confirmed it.','The hero journey structure behind every fairy tale has been found in stories from every known human culture on Earth.','Children raised with illustrated storybooks develop stronger spatial reasoning and empathy well into adulthood. Pictures shape minds.','The word magic comes from magus — the ancient Persian term for someone who could see what others could not. Art still does this.'], },
                 cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon', facts: ['Pixar animators spent 3 years studying ocean light just to animate one scene in Finding Nemo — your photo gets that same obsession, in seconds.','A single 3D animated character can have 500 individual facial controls — more expressive range than most humans use in a day.','The 12 Principles of Animation were invented by Disney artists in 1937 — every Pixar, DreamWorks, and AI model still follows them today.','Claymation-style 3D is having a massive revival in 2025 across social media, brand ads, and music videos. You are riding the wave.','Inside Out 2 used real neuroscience consultants to design the new emotions — proof that animation is now part psychology, part art.'] },
                 comic: { cls: 'style-loader--comic', label: 'Superhero', facts: ['Spider-Man: Into the Spider-Verse was animated at two different frame rates at once to replicate a real comic book — a first in cinema history.','The halftone dot pattern in classic comics was originally a printing limitation — now it is one of the most iconic aesthetics in modern fashion and fine art.','The first Superman comic sold for $6 million at auction in 2022 — the most expensive comic ever sold.','The bold blue and orange combo in superhero films is scientifically linked to urgency, excitement, and heroic energy. Color does the heavy lifting.','Stan Lee created most of the Avengers while commuting on the NYC subway in the 1960s. Great ideas do not wait for perfect conditions.'] },
                 anime: { cls: 'style-loader--anime', label: 'Anime', facts: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'] },
                 watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
                 st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] },
                 chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] },
-                easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter', facts: ['In Celtic mythology, fairy rings of mushrooms were believed to be portals to the fairy realm.','Fireflies produce light with near-perfect efficiency — almost 100% of their energy becomes light.','The oldest living tree is over 5,000 years old — a bristlecone pine named Methuselah in California.','Spider silk is five times stronger than steel — and morning dew on webs splits sunlight into rainbow spectrums.','Foxes can literally feel the Earth magnetic field and use it to hunt with incredible precision.'] },
-                easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt', facts: ['The human brain can spot a hidden object in a complex scene in under 200 milliseconds — faster than you can blink.','True camouflage masters are cuttlefish, which can match any pattern in 0.3 seconds.','Where is Waldo creator Martin Handford spends up to 8 weeks drawing a single hidden page.','The first digital Easter egg was hidden in Atari Adventure in 1980 by a developer.','Birds can see ultraviolet patterns on flowers and eggs that are completely invisible to humans.'] }
             };
             var theme = themes[style] || themes.storybook;
             if (host) {
@@ -5306,8 +5283,6 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
-        easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter' },
-        easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt' }
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5443,50 +5418,7 @@
 
 
 
-<script>
-// === EASTER STYLES EXTENSION ===
-(function(){
-  if(typeof _magicThemes !== 'undefined'){
-    _magicThemes.easter_enchanted = {
-      spell: 'Entering the Fairy Kingdom!',
-      wand: '✨',
-      particles: ['✨','🌸','🦊','🦉','🍄','🌼','🦔','🌟'],
-      msgs: {
-        1: ['Opening a portal to the Fairy Kingdom...','Ancient trees are awakening around you...','A fox with knowing eyes watches from the shadows...','Bioluminescent moss begins to glow on the trunks...','Cherry blossom petals drift through the enchanted air...'],
-        2: ['Fairy companions are choosing their partners...','Glowing mushroom rings form fairy circles at your feet...','Golden pollen and luminous sprites fill the light rays...','An owl with golden spectacles surveys the magic...','Spider webs glitter with rainbow dewdrops...'],
-        3: ['The forest glade is alive with ancient magic...','Your fairy companion trails golden sparkle dust...','Hedgehogs don their tiny flower crowns...','The enchantment is nearly complete...','Welcome to the Fairy Kingdom!']}
-    };
-    _magicThemes.easter_egghunt = {
-      spell: 'Can You Find Them All?',
-      wand: '🔍',
-      particles: ['🔍','🌸','🦋','🌞','🌼','🌟','🐞','🌺'],
-      msgs: {
-        1: ['Painting the most beautiful spring day imaginable...','Cherry trees bursting into magnificent bloom...','Butterflies dancing between wildflowers...','Warm golden sunshine flooding the scene...','The perfect spring day is taking shape...'],
-        2: ['Now the sneaky part — hiding the eggs...','Camouflaging one among the flower petals...','Tucking another behind a tree trunk...','Blending one perfectly into the grass...','Can you spot the one on the windowsill?'],
-        3: ['All five eggs are cleverly hidden...','Even the butterflies cannot find them all...','Your spring scene with hidden surprises is almost ready...','Sharp eyes will be rewarded...','Happy hunting — can you find all five?']}
-    };
-  }
-  if(typeof _magicFacts !== 'undefined'){
-    _magicFacts.easter_enchanted = [
-      'In Celtic mythology, fairy rings of mushrooms were believed to be portals to the fairy realm where time moves differently.',
-      'Fireflies produce light with near-perfect efficiency — almost 100% of their energy becomes light, compared to just 10% for an incandescent bulb.',
-      'The oldest living tree on Earth is over 5,000 years old — a bristlecone pine named Methuselah, still standing in the White Mountains of California.',
-      'Spider silk is five times stronger than steel by weight — and morning dew on webs creates tiny prisms that split sunlight into rainbow spectrums.',
-      'Foxes have magnetic-field sensing abilities — they can literally feel the Earth magnetic field and use it to hunt with incredible precision.',
-      'Cherry blossoms bloom for only about two weeks each spring — in Japan, this fleeting beauty is called mono no aware, the bittersweet awareness of impermanence.'
-    ];
-    _magicFacts.easter_egghunt = [
-      'The human brain can spot a hidden object in a complex scene in under 200 milliseconds — faster than you can blink.',
-      'Chameleons do not actually change color to blend in — true camouflage masters are cuttlefish, which can match any pattern in 0.3 seconds.',
-      'Where is Waldo creator Martin Handford spends up to 8 weeks drawing a single page, hiding Waldo among hundreds of detailed characters and scenes.',
-      'Easter eggs in movies and video games got their name from Atari — a developer hid his name inside Adventure in 1980, creating the very first digital Easter egg.',
-      'The Faberge Imperial Easter Eggs are worth over $30 million each — originally crafted for Russian royalty, only 50 were ever made, and several are still missing.',
-      'Birds can see ultraviolet light, meaning they see patterns on flowers and eggs that are completely invisible to humans — a hidden world of color all around us.'
-    ];
-  }
-})();
 
-</script>
 
 
 <!-- ── Capacitor Native Bridge (auto-detects native vs web) ── -->
@@ -5701,8 +5633,6 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
-        easter_enchanted: { cls: 'style-loader--easter_enchanted', label: 'Enchanted Easter' },
-        easter_egghunt: { cls: 'style-loader--easter_egghunt', label: 'Easter Egg Hunt' }
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
