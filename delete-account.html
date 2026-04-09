@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Your Account — Toon It!</title>
+    <style>
+        :root {
+            --bg-light: #faf6f0;
+            --bg-white: #ffffff;
+            --bg-card: #fff8ee;
+            --primary: #d4a04a;
+            --secondary: #a06840;
+            --accent: #e8c078;
+            --text-main: #2a2015;
+            --text-muted: #8a7a60;
+            --border: #e0d4c0;
+            --danger: #dc3545;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+        .nav {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .nav-back {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: .95rem;
+            padding: .5rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all .2s;
+        }
+        .nav-back:hover {
+            background: var(--bg-card);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-light) 100%);
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+            padding: 3rem 2rem 2.5rem;
+        }
+        .hero h1 {
+            font-size: 2rem;
+            color: var(--danger);
+            margin-bottom: .5rem;
+        }
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+        .section {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .section h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        .section p, .section li { margin-bottom: .6rem; }
+        .section ul, .section ol { margin: .5rem 0 1rem 1.5rem; }
+        .step-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            margin: .8rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .step-num {
+            background: var(--primary);
+            color: #fff;
+            font-weight: bold;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: .9rem;
+        }
+        .callout {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 0 10px 10px 0;
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            font-size: .95rem;
+        }
+        .callout-danger {
+            background: #f8d7da;
+            border-left: 4px solid var(--danger);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .data-table th, .data-table td {
+            padding: .7rem 1rem;
+            border: 1px solid var(--border);
+            text-align: left;
+            font-size: .95rem;
+        }
+        .data-table th {
+            background: var(--bg-card);
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        .delete-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: .8rem;
+            font-weight: bold;
+        }
+        .badge-deleted { background: #d4edda; color: #155724; }
+        .badge-retained { background: #fff3cd; color: #856404; }
+        .cta-email {
+            display: inline-block;
+            background: var(--danger);
+            color: #fff;
+            text-decoration: none;
+            padding: 14px 35px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all .2s;
+        }
+        .cta-email:hover { opacity: .9; transform: translateY(-1px); }
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: .85rem;
+            border-top: 1px solid var(--border);
+        }
+        .footer a { color: var(--primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="nav-brand"><span>🎨</span> Toon It!</a>
+        <a href="/" class="nav-back">← Back to App</a>
+    </nav>
+
+    <div class="hero">
+        <h1>🗑️ Delete Your Account</h1>
+        <p class="subtitle">Toon It! — Bring Photos to Life</p>
+    </div>
+
+    <div class="container">
+        <section class="section">
+            <h2>How to Delete Your Toon It! Account</h2>
+            <p>We're sorry to see you go. Follow these steps to request complete deletion of your Toon It! account and associated data:</p>
+
+            <div class="step-box">
+                <div class="step-num">1</div>
+                <div>
+                    <strong>Send a deletion request email</strong><br>
+                    Email <a href="mailto:privacy@toonit.ai?subject=Account%20Deletion%20Request">privacy@toonit.ai</a> with the subject line <em>"Account Deletion Request"</em>.
+                </div>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">2</div>
+                <div>
+                    <strong>Include your account email</strong><br>
+                    In the body of the email, include the email address you used to sign up for Toon It! so we can locate your account.
+                </div>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">3</div>
+                <div>
+                    <strong>We verify and process</strong><br>
+                    We will verify your identity and process the deletion within <strong>30 days</strong> of receiving your request.
+                </div>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">4</div>
+                <div>
+                    <strong>Confirmation</strong><br>
+                    You will receive a confirmation email once your account and data have been deleted.
+                </div>
+            </div>
+
+            <div style="text-align:center; margin: 2rem 0;">
+                <a href="mailto:privacy@toonit.ai?subject=Account%20Deletion%20Request&body=Hi%2C%0A%0AI%20would%20like%20to%20request%20the%20deletion%20of%20my%20Toon%20It!%20account.%0A%0AMy%20account%20email%3A%20%5Byour%20email%20here%5D%0A%0AThank%20you." class="cta-email">📧 Request Account Deletion</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>What Data Is Deleted vs. Retained</h2>
+            <p>When your account is deleted, the following actions are taken:</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data Type</th>
+                        <th>Action</th>
+                        <th>Timeframe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Account profile &amp; email</td>
+                        <td><span class="delete-badge badge-deleted">DELETED</span></td>
+                        <td>Within 30 days</td>
+                    </tr>
+                    <tr>
+                        <td>Uploaded photos</td>
+                        <td><span class="delete-badge badge-deleted">DELETED</span></td>
+                        <td>Within 30 days</td>
+                    </tr>
+                    <tr>
+                        <td>Generated videos &amp; images</td>
+                        <td><span class="delete-badge badge-deleted">DELETED</span></td>
+                        <td>Within 30 days</td>
+                    </tr>
+                    <tr>
+                        <td>Credit balance</td>
+                        <td><span class="delete-badge badge-deleted">DELETED</span></td>
+                        <td>Within 30 days (non-refundable)</td>
+                    </tr>
+                    <tr>
+                        <td>Referral history</td>
+                        <td><span class="delete-badge badge-deleted">DELETED</span></td>
+                        <td>Within 30 days</td>
+                    </tr>
+                    <tr>
+                        <td>Analytics events</td>
+                        <td><span class="delete-badge badge-deleted">DELETED</span></td>
+                        <td>Within 30 days</td>
+                    </tr>
+                    <tr>
+                        <td>Purchase transaction records</td>
+                        <td><span class="delete-badge badge-retained">RETAINED</span></td>
+                        <td>Up to 7 years (tax &amp; legal compliance)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout">
+                <strong>⚠️ Note:</strong> Purchase transaction records are retained for up to 7 years as required by tax and legal regulations. These records are anonymized after account deletion.
+            </div>
+
+            <div class="callout callout-danger">
+                <strong>⚠️ This action is permanent.</strong> Once your account is deleted, your generated videos, remaining credits, and all associated data cannot be recovered.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Delete Data Without Deleting Your Account</h2>
+            <p>You can also request deletion of specific data while keeping your account active:</p>
+            <ul>
+                <li><strong>Individual videos:</strong> Delete specific videos from your <a href="/myvideos.html">My Videos</a> page.</li>
+                <li><strong>Specific data:</strong> Email <a href="mailto:privacy@toonit.ai">privacy@toonit.ai</a> to request deletion of specific data (e.g., analytics history, uploaded photos) while keeping your account.</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Contact</h2>
+            <p>For any questions about data deletion or privacy, contact us at:</p>
+            <p style="text-align:center;">
+                <strong>Privacy:</strong> <a href="mailto:privacy@toonit.ai">privacy@toonit.ai</a><br>
+                <strong>Support:</strong> <a href="mailto:support@toonit.ai">support@toonit.ai</a>
+            </p>
+            <p style="text-align:center; margin-top: 1rem;">
+                <a href="/privacy.html" style="color: var(--primary);">View full Privacy Policy →</a>
+            </p>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 <a href="/">Toon It!</a> — Toon It LLC. All rights reserved.</p>
+        <p><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></p>
+    </footer>
+</body>
+</html>
