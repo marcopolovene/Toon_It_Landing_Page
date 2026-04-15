@@ -659,6 +659,10 @@
         <!-- Status Section -->
         <div id="status" style="display:none;">
             <div id="statusText"></div>
+                <div class="style-card" data-style="renaissance" onclick="selectStyle(this)">
+                    <span class="style-icon">🖼️</span>
+                    <span class="style-name">Renaissance</span>
+                </div>
             <div id="styleLoaderHost"></div>
             <div id="statusFunFact" class="status-fact"></div>
             <div class="progress-steps" id="progressSteps">
@@ -3086,6 +3090,7 @@
                             }
                         } catch(e) { console.log('[POLL] Storage fallback skipped:', e.message); }
                     }
+                    }  // close if (supabaseClient)
 
                     // Visual progress handled by separate progressInterval
 
