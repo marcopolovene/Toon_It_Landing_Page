@@ -650,7 +650,10 @@
                     <span class="style-icon">🐼</span>
                     <span class="style-name">Chibi</span>
                 </div>
-            </div>
+                <div class="style-card" data-style="renaissance" onclick="selectStyle(this)">
+                    <span class="style-icon">🖼️</span>
+                    <span class="style-name">Renaissance</span>
+                </div></div>
             <button id="moreStylesBtn" class="style-toggle-btn"><span>All styles</span> <span class="tarrow">▼</span></button>
         </div>
 
@@ -659,6 +662,7 @@
         <!-- Status Section -->
         <div id="status" style="display:none;">
             <div id="statusText"></div>
+
             <div id="styleLoaderHost"></div>
             <div id="statusFunFact" class="status-fact"></div>
             <div class="progress-steps" id="progressSteps">
@@ -3027,32 +3031,40 @@
                             if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                             clearJob();
 
-                            // Detect content moderation block: failed with no error + no video
+                            // Detect failure type: content moderation, timeout, or generic
                             var _isContentBlock = (data.status === "failed" || data.status === "blocked") && !data.error_message && !data.video_url;
+                            var _isFailedGeneration = (data.status === "failed" || data.status === "blocked" || data.status === "error") && !data.video_url;
 
-                            // Refund credit for content moderation blocks
-                            if (_isContentBlock && supabaseClient && (window.currentUser || typeof currentUser !== "undefined")) {
+                            // Refund credit if one was deducted for this failed job (belt-and-suspenders)
+                            if (_isFailedGeneration && supabaseClient && (window.currentUser || typeof currentUser !== "undefined")) {
                                 var _refundUser = window.currentUser || currentUser;
-                                if (_refundUser && _refundUser.id) {
+                                if (_refundUser && _refundUser.id && creditDeducted) {
                                     supabaseClient.rpc("increment_credits", {
                                         user_id: _refundUser.id,
                                         amount: 1
                                     }).then(function() {
-                                        console.log("[REFUND] Credit refunded for content moderation block");
+                                        console.log("[REFUND] Credit refunded for failed generation");
+                                        creditDeducted = false;
                                         loadUserCredits();
                                     }).catch(function(e) { console.log("[REFUND] Error:", e); });
                                 }
                             }
                             if (statusText) {
-                                var _blockedMsg = 'Our AI provider flagged this photo with the selected style. Your credit has been refunded automatically. Please try a different photo or style.';
-                                var _genericFail = data.error_message || 'Video generation failed. Please try again.';
-                                var _finalMsg = _isContentBlock ? _blockedMsg : _genericFail;
+                                var _blockedMsg = 'Our AI provider flagged this photo with the selected style. Your credit has been refunded. Please try a different photo or style.';
+                                var _timeoutMsg = 'Video generation took too long. This sometimes happens during busy periods. Your credit was not charged — please try again.';
+                                var _genericFailMsg = data.error_message || 'Something went wrong. Your credit was not charged — please try again.';
+                                var _finalMsg;
+                                if (_isContentBlock) {
+                                    _finalMsg = _blockedMsg;
+                                } else if (data.error_message && data.error_message.toLowerCase().includes('timeout')) {
+                                    _finalMsg = _timeoutMsg;
+                                } else {
+                                    _finalMsg = _genericFailMsg;
+                                }
                                 statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _finalMsg + '</div>' +
                                     '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
             }
                             return;
-                        }// blocked_state_frontend_fix_20260311
-// multifix_download_android_20260311
                     }
 
                     // Fallback: check Supabase Storage directly after 30s
@@ -3078,6 +3090,7 @@
                             }
                         } catch(e) { console.log('[POLL] Storage fallback skipped:', e.message); }
                     }
+                    }  // close if (supabaseClient)
 
                     // Visual progress handled by separate progressInterval
 
@@ -4167,9 +4180,15 @@
                     clearJob();
                 } else if (data.status === 'failed' || data.status === 'expired' || data.status === 'blocked') {
                     clearJob();
-                    var _bMsg = 'The video provider blocked this request. Please try a different photo, crop, or style.';
+                    var _bMsg2 = 'Our AI provider flagged this photo with the selected style. Your credit has been refunded. Please try a different photo or style.';
+                    var _timeoutMsg2 = 'Video generation took too long. This sometimes happens during busy periods. Your credit was not charged — please try again.';
+                    var _genericFailMsg2 = data.error_message || 'Something went wrong. Your credit was not charged — please try again.';
+                    var _finalMsg2;
+                    if (data.status === 'blocked') { _finalMsg2 = data.error_message || _bMsg2; }
+                    else if (data.error_message && data.error_message.toLowerCase().includes('timeout')) { _finalMsg2 = data.error_message || _timeoutMsg2; }
+                    else { _finalMsg2 = _genericFailMsg2; }
                     var _st = document.getElementById('statusText');
-                    if (_st) _st.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + ((data.status === 'blocked') ? (data.error_message || _bMsg) : (data.error_message || 'Video generation failed. Please try again.')) + '</div>' + '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
+                    if (_st) _st.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _finalMsg2 + '</div>' + '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
                     resetForNew();
                 } else {
                     startPolling();
