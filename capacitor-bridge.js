@@ -846,8 +846,88 @@
   }, 1500);
 
   // ══════════════════════════════════════════════════════════════
+  //  APPLE SIGN IN — iOS Requirement (HIG Compliant)
+  // ══════════════════════════════════════════════════════════════
+  // Apple requires Sign In with Apple if any third-party sign-in is offered.
+  // HIG requirements:
+  //   - Must be displayed with equal or greater prominence than other sign-in options
+  //   - Must appear in BOTH login and signup contexts
+  //   - Button must use Apple's visual design (black background, white text, Apple logo)
+  //   - Account deletion must be available within the app (we have delete-account.html)
+  if (platform === 'ios') {
+    dbg('iOS detected — enabling Sign In with Apple requirement');
+    document.documentElement.classList.add('ios-apple-signin-required');
+    window.toonItIOSSignInRequired = true;
+
+    // Inject Apple Sign In button into a container (login or signup)
+    // Placed BEFORE Google button per HIG (equal or greater prominence)
+    function injectAppleSignIn(containerId, suffix) {
+      var container = document.getElementById(containerId);
+      if (!container) return false;
+      if (document.getElementById('apple-signin-btn-' + suffix)) return true; // Already injected
+
+      var googleBtn = container.querySelector('button');
+      if (!googleBtn) return false;
+
+      var appleBtn = document.createElement('button');
+      appleBtn.id = 'apple-signin-btn-' + suffix;
+      appleBtn.type = 'button';
+      // Style matches Apple HIG: black background, white text, left-aligned Apple logo
+      appleBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:320px;padding:10px 24px;background:#000;color:#fff;border:1px solid #000;border-radius:4px;font-size:14px;font-weight:500;cursor:pointer;margin:0 auto;transition:background 0.2s;';
+      appleBtn.onmouseenter = function() { appleBtn.style.background = '#333'; };
+      appleBtn.onmouseleave = function() { appleBtn.style.background = '#000'; };
+      appleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.58 9.05 7.28c1.36-.07 2.31.75 3.1.75.78 0 2.01-.82 3.39-.7 1.44.11 2.52.7 3.24 1.78-2.97 1.78-2.49 5.19.45 6.12-.53 1.61-1.24 3.18-2.18 4.56zM12.03 7.25c-.15-1.94 1.44-3.53 3.27-3.69.22 2.16-1.95 3.69-3.27 3.69z"/></svg> Sign in with Apple';
+      appleBtn.setAttribute('data-provider', 'apple');
+
+      // Use Supabase Auth's Apple provider for OAuth
+      appleBtn.addEventListener('click', function() {
+        dbg('Apple Sign In button clicked (' + suffix + ')');
+        try {
+          if (typeof window.supabase !== 'undefined' && window.supabase.auth) {
+            window.supabase.auth.signInWithOAuth({
+              provider: 'apple',
+              options: {
+                redirectTo: 'https://toonit.ai/'
+              }
+            });
+          } else if (typeof window.signInWithApple === 'function') {
+            window.signInWithApple();
+          } else {
+            dbg('ERROR: No Apple Sign In handler available');
+          }
+        } catch (e) {
+          dbg('Apple Sign In error: ' + e.message);
+        }
+      });
+
+      // Insert Apple button BEFORE Google button (HIG: equal or greater prominence)
+      container.insertBefore(appleBtn, googleBtn);
+      // Add spacing between Apple and Google buttons
+      var spacer = document.createElement('div');
+      spacer.style.cssText = 'height:8px;';
+      container.insertBefore(spacer, googleBtn);
+      dbg('Apple Sign In button injected in ' + containerId + ' (before Google)');
+      return true;
+    }
+
+    // Watch for login/signup modals and inject Apple Sign In buttons
+    function tryInjectAppleButtons() {
+      injectAppleSignIn('googleLoginContainer', 'login');
+      injectAppleSignIn('googleSignupContainer', 'signup');
+    }
+
+    var signinObs = new MutationObserver(function() {
+      setTimeout(tryInjectAppleButtons, 300);
+    });
+    setTimeout(function() {
+      if (document.body) signinObs.observe(document.body, { childList: true, subtree: true });
+      tryInjectAppleButtons();
+    }, 1000);
+  }
+
+  // ══════════════════════════════════════════════════════════════
   //  DONE
   // ══════════════════════════════════════════════════════════════
-  dbg('\u2705 Bridge v2.5-wp ready | ' + platform);
-  console.log('[ToonIt Bridge] \u2705 v2.5-wp initialized for ' + platform);
+  dbg('\u2705 Bridge v2.5-wp+apple ready | ' + platform);
+  console.log('[ToonIt Bridge] \u2705 v2.5-wp+apple initialized for ' + platform);
 })();
