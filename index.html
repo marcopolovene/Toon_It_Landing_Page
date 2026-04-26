@@ -193,7 +193,7 @@
         
         .style-loader--actionfigure .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6); box-shadow: 0 0 16px rgba(245,158,11,0.24); }
         .style-loader--renaissance .style-loader-fill { background-image: linear-gradient(90deg, #92400e, #fbbf24, #7c2d12); box-shadow: 0 0 16px rgba(146,64,14,0.24); }
-        .style-loader--cyberpunk .style-loader-fill { background-image: linear-gradient(90deg, #06b6d4, #ec4899, #8b5cf6); box-shadow: 0 0 16px rgba(6,182,212,0.24); }
+        .style-loader--mothers_day_queen .style-loader-fill { background-image: linear-gradient(90deg, #D4A373, #E8B4B8, #C9ADA7); box-shadow: 0 0 16px rgba(212,163,115,0.24); }
 
         /* TRANSFORM BUTTON */
         #transformBtn { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, #e09000 100%); color: #07070f; border: none; padding: 17px; border-radius: 14px; font-size: 1.12em; font-weight: 800; cursor: pointer; transition: all 0.25s; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(240,180,41,0.35); letter-spacing: 0.5px; }
@@ -653,7 +653,13 @@
                 <div class="style-card" data-style="renaissance" onclick="selectStyle(this)">
                     <span class="style-icon">🖼️</span>
                     <span class="style-name">Renaissance</span>
-                </div></div>
+                </div>
+                <div class="style-card" data-style="mothers_day_queen" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-today">👑 TODAY</span>
+                    <span class="style-icon">👑</span>
+                    <span class="style-name">Queen for a Day</span>
+                </div>
+            </div>
             <button id="moreStylesBtn" class="style-toggle-btn"><span>All styles</span> <span class="tarrow">▼</span></button>
         </div>
 
@@ -3209,6 +3215,7 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
             renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+            mothers_day_queen: { cls: 'style-loader--mothers_day_queen', label: 'Queen for a Day' },
         };
         return map[style] || map.storybook;
     }
@@ -5302,6 +5309,7 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+        mothers_day_queen: { cls: 'style-loader--mothers_day_queen', label: 'Queen for a Day' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5360,6 +5368,16 @@
         3: ['Fog machines at maximum \u2014 atmosphere is everything... \ud83c\udf2b\ufe0f','Neon reflections rippling in the puddles... \u2728','Your cyberpunk portrait is almost jacked in... \ud83d\udd0c','The city skyline glows behind you... \ud83c\udf03','Welcome to the future \u2014 you look incredible! \u26a1']
       }
     };
+    _magicThemes.mothers_day_queen = {
+      spell: 'Crowning Mom!',
+      wand: '\ud83d\udc51',
+      particles: ['\ud83d\udc51','\u2728','\ud83c\udf39','\ud83d\udc57','\ud83d\udd6f\ufe0f','\ud83c\udf1f','\u2219','\u00b7'],
+      msgs: {
+        1: ['Preparing the royal portrait studio... \ud83d\uddbc\ufe0f','Selecting the finest roses and peonies... \ud83c\udf39','Lighting the golden candles... \ud83d\udd6f\ufe0f','Velvet drapes falling into place... \ud83d\udc57','Golden hour light spilling through the window... \u2728'],
+        2: ['Weaving a crown of fresh roses... \ud83d\udc51','The ivory gown is taking shape... \ud83d\udc57','Rose gold silk shimmering in candlelight... \ud83d\udd6f\ufe0f','A maternal glow like no other... \u2728','The queen of the family realm emerges... \ud83c\udf1f'],
+        3: ['Mom is ready for her throne... \ud83d\udc51','The royal portrait is almost complete... \ud83d\uddbc\ufe0f','Floating rose petals settle gently... \ud83c\udf39','Candlelight dances across the canvas... \ud83d\udd6f\ufe0f','Happy Mother\'s Day, Your Majesty! \ud83c\udf1f']
+      }
+    };
   }
 
   /* Extended Fun Facts: Action Figure, Renaissance, Cyberpunk */
@@ -5387,6 +5405,15 @@
       'The rain-soaked neon aesthetic synonymous with cyberpunk was born from one Ridley Scott note: Hong Kong on a bad day.',
       'Cyberpunk predicted smartwatches, AR glasses, corporate mega-surveillance, and gig economies decades before they became reality.',
       'The first computer hack in history was in 1903 when a magician intercepted a wireless telegraph demo to send rude Morse code messages.'
+    ];
+    _magicFacts.mothers_day_queen = [
+      'Mother\'s Day was founded in 1908 by Anna Jarvis \u2014 who later campaigned against its commercialization, calling greeting cards a poor excuse for the letter you are too lazy to write.',
+      'The most popular Mother\'s Day gift worldwide is not flowers or chocolates \u2014 it is a phone call. More calls are made on Mother\'s Day than any other day of the year.',
+      'In Thailand, Mother\'s Day is celebrated in August on the birthday of Queen Sirikit, making it a literal day honoring a queen.',
+      'Pink carnations are the official Mother\'s Day flower \u2014 they symbolize a living mother. White carnations honor mothers who have passed.',
+      'The ancient Greeks held spring festivals honoring Rhea, the Titan mother of Zeus and all the Olympian gods \u2014 the original mother of all mothers.',
+      'In the former Yugoslavia, children would tie up their mothers on Mother\'s Day and only release them after giving her gifts and candy.',
+      'Mother\'s Day is celebrated on different dates in over 50 countries \u2014 but every single one chose a day in spring, because mothers represent renewal and life.'
     ];
   }
 
@@ -5657,6 +5684,7 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+        mothers_day_queen: { cls: 'style-loader--mothers_day_queen', label: 'Queen for a Day' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
