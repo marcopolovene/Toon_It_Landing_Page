@@ -34,6 +34,19 @@
     <loc>https://toonit.ai/blog/how-to-use-toon-it-for-the-first-time.html</loc>
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
+  </url>
+
+  <!-- New April 2026 posts -->
+  <url>
+    <loc>https://toonit.ai/blog/mothers-day-photo-cartoon-gift-2026.html</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://toonit.ai/blog/how-ai-photo-animation-works.html</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
