@@ -345,34 +345,39 @@
   }
 
   function overrideIndexButtons() {
-    // === DOWNLOAD BUTTON (index.html) ===
-    // NOT overridden — web code's downloadVideo() → burnWatermarkAndDownload() handles
-    // watermark logic, then creates blob → <a download> → Layer 1 intercepts for MediaSaver
-    // This preserves watermark on downloads across all platforms
-
-    // === SHARE BUTTON (index.html — inject if not found) ===
-    var shareBtn = document.getElementById('nativeShareBtn');
-    if (!shareBtn) {
-      var resultBtns = document.querySelector('.result-buttons');
-      var newBtnRef = document.getElementById('newBtn');
-      if (resultBtns) {
-        shareBtn = document.createElement('button');
-        shareBtn.type = 'button';
-        shareBtn.id = 'nativeShareBtn';
-        shareBtn.textContent = '📤 Share';
-        if (newBtnRef && newBtnRef.parentNode === resultBtns) {
-          resultBtns.insertBefore(shareBtn, newBtnRef);
-        } else {
-          resultBtns.appendChild(shareBtn);
-        }
-        dbg('LAYER3: injected nativeShareBtn');
+    // === DOWNLOAD BUTTON (index.html) — Android: bypass canvas-burn ===
+    // [v2.6] On Android the page's burnWatermarkAndDownload() can hang on the
+    // canvas-burn step (CORS-tainted Cloudinary video, video.onload never firing
+    // in WebView), leaving the button stuck on '✨ Preparing MP4...'. We bypass
+    // that and use saveOrShareVideo() directly with the watermark URL — Cloudinary
+    // already serves the watermark-baked WM URL via _wmState.currentWmUrl when WM
+    // is on, or currentCleanUrl when toggled off, so the watermark is preserved.
+    if (platform === 'android') {
+      var dlBtn = document.getElementById('downloadBtn');
+      if (dlBtn && !dlBtn._bridgeCapture) {
+        dlBtn._bridgeCapture = true;
+        dbg('LAYER3: overriding downloadBtn (Android direct path)');
+        dlBtn.addEventListener('click', function(e) {
+          e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+          var url = getVideoUrl();
+          if (!url) { dbg('L3 dl: no url'); return; }
+          dbg('L3 dl: ' + url.substring(0, 80));
+          saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
+        }, true);
       }
     }
+
+    // === SHARE BUTTON (index.html — capture existing #shareVideoBtn) ===
+    // [v2.6] Page already has #shareVideoBtn with onclick="shareResult()".
+    // Old code injected a duplicate #nativeShareBtn → two share buttons.
+    // Now we capture the existing button and override its onclick.
+    var shareBtn = document.getElementById('shareVideoBtn');
     if (shareBtn && !shareBtn._bridgeCapture) {
       shareBtn._bridgeCapture = true;
+      // Neutralise the page's broken onclick so it can't fire shareResult()
+      try { shareBtn.onclick = null; shareBtn.removeAttribute('onclick'); } catch(e) {}
       shareBtn.style.display = '';
-      dbg('LAYER3: overriding nativeShareBtn (capture)');
-
+      dbg('LAYER3: overriding shareVideoBtn (capture)');
       shareBtn.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         var url = getVideoUrl();
@@ -381,8 +386,14 @@
         shareVideoNative(url, shareBtn);
       }, true);
     }
-  }
 
+    // Clean up any stale duplicate Share button from earlier bridge versions
+    var stale = document.getElementById('nativeShareBtn');
+    if (stale && stale.parentNode) {
+      stale.parentNode.removeChild(stale);
+      dbg('LAYER3: removed stale nativeShareBtn duplicate');
+    }
+  }
   function overrideDashboardButtons() {
     // === DOWNLOAD BUTTON (myvideos.html modal) ===
     // NOT overridden — web code handles watermark logic, Layer 1 intercepts blob download
@@ -703,41 +714,55 @@
   // Track transforms and trigger review
   function observeResults() {
     var resultArea = document.getElementById('result');
+    var uploadArea = document.getElementById('uploadArea');
     if (!resultArea) { setTimeout(observeResults, 1000); return; }
 
+    function syncCameraVisibility() {
+      // [v2.6] Hide camera button while EITHER result is shown OR uploadArea is hidden
+      // (uploadArea is hidden during transformation, so camera should disappear too).
+      var camBtn = document.getElementById('nativeCameraBtn');
+      if (!camBtn) return;
+      var resultVisible  = resultArea  && resultArea.style.display  === 'block';
+      var uploadHidden   = uploadArea  && uploadArea.style.display  === 'none';
+      var shouldHide     = resultVisible || uploadHidden;
+      camBtn.style.display = shouldHide ? 'none' : 'block';
+    }
+
     var observer = new MutationObserver(function(mutations) {
+      var resultBecameVisible = false;
       mutations.forEach(function(m) {
-        if (m.target.id === 'result') {
-          var camBtn = document.getElementById('nativeCameraBtn');
-          if (m.target.style.display === 'block') {
-            // Hide camera button when result is shown
-            if (camBtn) camBtn.style.display = 'none';
-
-            var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
-            localStorage.setItem('toonit_transform_count', count.toString());
-            dbg('Transform #' + count + ' completed (camera hidden)');
-
-            // Re-run button overrides (result area just appeared)
-            setTimeout(runAllOverrides, 500);
-            setTimeout(runAllOverrides, 1500);
-
-            // Haptic celebration
-            try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
-
-            // Review after 2nd transform
-            if (count === 2) {
-              setTimeout(function() { window.toonItRequestReview(); }, 5000);
-            }
-          } else {
-            // Result hidden (Create Another) — restore camera button
-            if (camBtn) camBtn.style.display = 'block';
-            dbg('Result hidden — camera button restored');
-          }
+        if (m.target.id === 'result' && m.target.style.display === 'block') {
+          resultBecameVisible = true;
         }
       });
+
+      // Always sync camera visibility on any mutation
+      syncCameraVisibility();
+
+      if (resultBecameVisible) {
+        var count = parseInt(localStorage.getItem('toonit_transform_count') || '0') + 1;
+        localStorage.setItem('toonit_transform_count', count.toString());
+        dbg('Transform #' + count + ' completed');
+
+        // Re-run button overrides (result area just appeared)
+        setTimeout(runAllOverrides, 500);
+        setTimeout(runAllOverrides, 1500);
+
+        // Haptic celebration
+        try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
+
+        // Review after 2nd transform
+        if (count === 2) {
+          setTimeout(function() { window.toonItRequestReview(); }, 5000);
+        }
+      }
     });
     observer.observe(resultArea, { attributes: true, attributeFilter: ['style'] });
-    dbg('Result observer active');
+    if (uploadArea) {
+      observer.observe(uploadArea, { attributes: true, attributeFilter: ['style'] });
+    }
+    syncCameraVisibility(); // initial state
+    dbg('Result+Upload observer active');
   }
   observeResults();
 
