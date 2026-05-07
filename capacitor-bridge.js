@@ -146,16 +146,22 @@
         return true;
       }
 
-      // ─── iOS: Use navigator.share with file (saves directly) ───
-      // Or fallback to blob + <a download> which works in WKWebView
+      // ─── ANDROID + iOS: navigator.share({files}) — modern WebView path ───
+      // [v2.7] Works in Android Chrome 89+ WebView when triggered by user gesture.
+      // Native share sheet includes 'Save to Files', Drive, WhatsApp etc — covers
+      // both download and share. Uses File object (not data URI) so it bypasses
+      // Android Binder's 1MB IPC limit.
       var file = new File([blob], filename, { type: blob.type || 'video/mp4' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        dbg('iOS/fallback: navigator.share({files})');
+        dbg('navigator.share({files}) — modern path');
+        if (btnEl) { btnEl.textContent = '💾 Choose where to save...'; }
         await navigator.share({ files: [file], title: 'My ToonIt Video' });
+        if (btnEl) { btnEl.textContent = '✅ Done!'; }
+        try { if (CapHaptics) CapHaptics.impact({ style: 'MEDIUM' }); } catch(e) {}
         return true;
       }
 
-      // Last resort: open URL
+      // Last resort: open URL in browser (also handles iOS WKWebView old fallback)
       dbg('Last resort: window.open');
       window._origOpen.call(window, videoUrl, '_blank');
       return false;
@@ -345,45 +351,55 @@
   }
 
   function overrideIndexButtons() {
-    // === DOWNLOAD BUTTON (index.html) — Android: bypass canvas-burn ===
-    // [v2.6] On Android the page's burnWatermarkAndDownload() can hang on the
-    // canvas-burn step (CORS-tainted Cloudinary video, video.onload never firing
-    // in WebView), leaving the button stuck on '✨ Preparing MP4...'. We bypass
-    // that and use saveOrShareVideo() directly with the watermark URL — Cloudinary
-    // already serves the watermark-baked WM URL via _wmState.currentWmUrl when WM
-    // is on, or currentCleanUrl when toggled off, so the watermark is preserved.
+    // === DOWNLOAD BUTTON (index.html) ===
+    // [v2.7] On Android, HIDE the download button entirely. The page's
+    // burnWatermarkAndDownload() canvas-burn step hangs in WebView and the
+    // current AAB (v32/v33) has no MediaSaver/Filesystem plugin available
+    // for silent saves. Instead we route everything through ONE unified
+    // "Save / Share" button (relabeled #shareVideoBtn below) that uses
+    // navigator.share({files}) — Android's native share sheet covers BOTH
+    // download ("Save to Files", "Drive") and share (WhatsApp, etc.).
     if (platform === 'android') {
       var dlBtn = document.getElementById('downloadBtn');
-      if (dlBtn && !dlBtn._bridgeCapture) {
-        dlBtn._bridgeCapture = true;
-        dbg('LAYER3: overriding downloadBtn (Android direct path)');
-        dlBtn.addEventListener('click', function(e) {
-          e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-          var url = getVideoUrl();
-          if (!url) { dbg('L3 dl: no url'); return; }
-          dbg('L3 dl: ' + url.substring(0, 80));
-          saveOrShareVideo(url, 'toon-it-video.mp4', dlBtn);
-        }, true);
+      if (dlBtn) {
+        dlBtn.style.display = 'none';
+        dlBtn.setAttribute('aria-hidden', 'true');
+        if (!dlBtn._bridgeHidden) {
+          dbg('LAYER3: hid downloadBtn (Android, unified Save/Share)');
+          dlBtn._bridgeHidden = true;
+        }
       }
     }
 
-    // === SHARE BUTTON (index.html — capture existing #shareVideoBtn) ===
-    // [v2.6] Page already has #shareVideoBtn with onclick="shareResult()".
-    // Old code injected a duplicate #nativeShareBtn → two share buttons.
-    // Now we capture the existing button and override its onclick.
+    // === SAVE / SHARE BUTTON (index.html — capture existing #shareVideoBtn) ===
+    // [v2.7] Page has #shareVideoBtn with onclick="shareResult()".
+    // On Android we relabel it to "💾 Save / Share" so users understand
+    // it covers both download and share via the native share sheet.
     var shareBtn = document.getElementById('shareVideoBtn');
     if (shareBtn && !shareBtn._bridgeCapture) {
       shareBtn._bridgeCapture = true;
       // Neutralise the page's broken onclick so it can't fire shareResult()
       try { shareBtn.onclick = null; shareBtn.removeAttribute('onclick'); } catch(e) {}
       shareBtn.style.display = '';
-      dbg('LAYER3: overriding shareVideoBtn (capture)');
+      // Relabel on Android — single Save/Share button with download semantics
+      if (platform === 'android') {
+        shareBtn.textContent = '💾 Save / Share';
+        shareBtn.setAttribute('aria-label', 'Save or share video');
+      }
+      dbg('LAYER3: overriding shareVideoBtn (capture, label=' + shareBtn.textContent + ')');
       shareBtn.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         var url = getVideoUrl();
         if (!url) return;
-        dbg('L3 share: ' + url.substring(0, 60));
-        shareVideoNative(url, shareBtn);
+        dbg('L3 save/share: ' + url.substring(0, 60));
+        // [v2.7] On Android, route through saveOrShareVideo whose updated path
+        // tries navigator.share({files}) first — letting the user choose
+        // "Save to Files" / "Drive" / a chat app from one native sheet.
+        if (platform === 'android') {
+          saveOrShareVideo(url, 'toon-it-video.mp4', shareBtn);
+        } else {
+          shareVideoNative(url, shareBtn);
+        }
       }, true);
     }
 
