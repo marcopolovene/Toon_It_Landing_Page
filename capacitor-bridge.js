@@ -23,7 +23,7 @@
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge v2.5 (Watermark-Preserving Download)...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.8 (Watermark-Preserving Download)...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
   // [v2.5] Watermark-preserving: Let web code handle watermark burn, then Layer 1 intercepts blob <a download> for MediaSaver/share
@@ -34,7 +34,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.5-wp init | platform=' + platform);
+  dbg('Bridge v2.8-no-redirect init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -147,7 +147,7 @@
       }
 
       // ─── ANDROID + iOS: navigator.share({files}) — modern WebView path ───
-      // [v2.7] Works in Android Chrome 89+ WebView when triggered by user gesture.
+      // [v2.8] Works in Android Chrome 89+ WebView when triggered by user gesture.
       // Native share sheet includes 'Save to Files', Drive, WhatsApp etc — covers
       // both download and share. Uses File object (not data URI) so it bypasses
       // Android Binder's 1MB IPC limit.
@@ -161,17 +161,17 @@
         return true;
       }
 
-      // Last resort: open URL in browser (also handles iOS WKWebView old fallback)
-      dbg('Last resort: window.open');
-      window._origOpen.call(window, videoUrl, '_blank');
+      // [v2.8] No browser redirect fallback — bad UX, loses user from app
+      dbg('No native share available');
+      _showNativeToast('❌ Sharing not available. Please update your app.');
       return false;
 
     } catch (err) {
       if (err && err.name === 'AbortError') { dbg('User cancelled'); return false; }
       dbg('ERROR: ' + (err && err.message || err));
       console.error('[Bridge] saveOrShare error:', err);
-      _showNativeToast('❌ Download failed: ' + (err && err.message || 'Unknown error'));
-      try { window._origOpen.call(window, videoUrl, '_blank'); } catch(e) {}
+      _showNativeToast('❌ Could not save. Please try again.');
+      // [v2.8] NEVER redirect to browser — bad UX, loses user from app
       return false;
     } finally {
       setTimeout(function() {
@@ -305,11 +305,14 @@
             });
           }
 
-          return _origOpen.call(window, u, target, features);
+          // [v2.8] No browser redirect fallback
+          dbg('L2: No native share available');
+          _showNativeToast('❌ Sharing not available.');
+          return null;
         })
         .catch(function(e) {
           dbg('L2 error: ' + (e && e.message || e));
-          _origOpen.call(window, u, target, features);
+          _showNativeToast('❌ Could not share. Please try again.');
         });
       return null;
     }
@@ -352,7 +355,7 @@
 
   function overrideIndexButtons() {
     // === DOWNLOAD BUTTON (index.html) ===
-    // [v2.7] On Android, HIDE the download button entirely. The page's
+    // [v2.8] On Android, HIDE the download button entirely. The page's
     // burnWatermarkAndDownload() canvas-burn step hangs in WebView and the
     // current AAB (v32/v33) has no MediaSaver/Filesystem plugin available
     // for silent saves. Instead we route everything through ONE unified
@@ -372,7 +375,7 @@
     }
 
     // === SAVE / SHARE BUTTON (index.html — capture existing #shareVideoBtn) ===
-    // [v2.7] Page has #shareVideoBtn with onclick="shareResult()".
+    // [v2.8] Page has #shareVideoBtn with onclick="shareResult()".
     // On Android we relabel it to "💾 Save / Share" so users understand
     // it covers both download and share via the native share sheet.
     var shareBtn = document.getElementById('shareVideoBtn');
