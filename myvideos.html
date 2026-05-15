@@ -571,7 +571,7 @@
                             <div class="transaction-item">
                                 <div class="transaction-info">
                                     <div class="transaction-icon ${tx.type}">
-                                        ${tx.type === 'purchase' ? '💳' : tx.type === 'use' ? '🎬' : '🎁'}
+                                        ${tx.type === 'purchase' ? '💳' : tx.type === 'use' ? '🎬' : tx.type === 'feedback' ? '⭐' : '🎁'}
                                     </div>
                                     <div class="transaction-details">
                                         <div class="transaction-desc">${tx.description || tx.type}</div>
