@@ -76,8 +76,8 @@ self.addEventListener('push', event => {
   const title = data.title || 'Toon It!';
   const options = {
     body: data.body || 'Your magical transformation is ready! ✨',
-    icon: 'https://res.cloudinary.com/dzarqnick/image/upload/w_192,h_192,c_fill/toonit_favicon.png',
-    badge: 'https://res.cloudinary.com/dzarqnick/image/upload/w_96,h_96,c_fill/toonit_favicon.png',
+    icon: '/assets/icons/toonit-icon-192.png',
+    badge: '/assets/icons/toonit-icon-96.png',
     data: data.url || '/',
     actions: [
       { action: 'open', title: 'View Now ✨' },

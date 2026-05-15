@@ -1,5 +1,5 @@
 {
-  "name": "Toon It! \u2014 Bring Photos to Life",
+  "name": "Toon It! — Bring Photos to Life",
   "short_name": "Toon It!",
   "description": "Transform your photos into magical animated storybook videos with AI. The only app that brings your photos to life!",
   "start_url": "/",
@@ -19,55 +19,55 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_72,h_72,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-72.png",
       "sizes": "72x72",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_96,h_96,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_128,h_128,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-128.png",
       "sizes": "128x128",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_144,h_144,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_152,h_152,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-152.png",
       "sizes": "152x152",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_192,h_192,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_192,h_192,c_fill,r_max/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_384,h_384,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-384.png",
       "sizes": "384x384",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_512,h_512,c_fill/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_512,h_512,c_fill,r_max/toonit_favicon.png",
+      "src": "/assets/icons/toonit-icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -90,8 +90,9 @@
       "description": "Upload and transform a photo into animated art",
       "icons": [
         {
-          "src": "https://res.cloudinary.com/dzarqnick/image/upload/w_192,h_192,c_fill/toonit_favicon.png",
-          "sizes": "192x192"
+          "src": "/assets/icons/toonit-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
