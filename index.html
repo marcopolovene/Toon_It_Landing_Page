@@ -633,7 +633,7 @@
                 <div class="style-card" data-style="sidequest" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-new">NEW</span>
                     <span class="style-icon">🧭</span>
-                    <span class="style-name">Side Quest Mode</span>
+                    <span class="style-name">Side Quest</span>
                 </div>
                 <div class="style-card" data-style="chibi" onclick="selectStyle(this)">
                     <span class="style-icon">🐼</span>
@@ -5597,7 +5597,7 @@
     var _sidequestOrigGetStyleLoaderMeta = _getStyleLoaderMeta;
     _getStyleLoaderMeta = function() {
       var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
-      if (style === 'sidequest') return { cls: 'style-loader--sidequest', label: 'Side Quest Mode' };
+      if (style === 'sidequest') return { cls: 'style-loader--sidequest', label: 'Side Quest' };
       return _sidequestOrigGetStyleLoaderMeta();
     };
   }
