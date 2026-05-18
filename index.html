@@ -2643,6 +2643,27 @@
                 return;
             }
 
+            // MIN dim guard: Venice requires image >= 65,536 pixels (~256x256)
+            var _dimImg = new Image();
+            var _dimUrl = URL.createObjectURL(file);
+            _dimImg.onload = function() {
+                var w = _dimImg.naturalWidth || 0;
+                var h = _dimImg.naturalHeight || 0;
+                try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
+                if (w * h < 65536) {
+                    showToast('Image too small (' + w + '\u00d7' + h + '). Please use at least 256\u00d7256 pixels.', 'warning');
+                    return;
+                }
+                _handleFileAccepted(file);
+            };
+            _dimImg.onerror = function() {
+                try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
+                showToast('Could not read image. Please try another file.', 'warning');
+            };
+            _dimImg.src = _dimUrl;
+        }
+
+        function _handleFileAccepted(file) {
             selectedFile = file;
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -4612,6 +4633,27 @@
             showToast('Please select an image file', 'warning');
             return;
         }
+        // MIN dim guard: Venice requires image >= 65,536 pixels (~256x256)
+        var _dimImg = new Image();
+        var _dimUrl = URL.createObjectURL(file);
+        _dimImg.onload = function() {
+            var w = _dimImg.naturalWidth || 0;
+            var h = _dimImg.naturalHeight || 0;
+            try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
+            if (w * h < 65536) {
+                showToast('Image too small (' + w + '\u00d7' + h + '). Please use at least 256\u00d7256 pixels.', 'warning');
+                return;
+            }
+            _handleFileFallbackAccepted(file);
+        };
+        _dimImg.onerror = function() {
+            try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
+            showToast('Could not read image. Please try another file.', 'warning');
+        };
+        _dimImg.src = _dimUrl;
+    }
+
+    function _handleFileFallbackAccepted(file) {
         failsafeSelectedFile = file;
         try { selectedFile = file; } catch(e) {}
         var uploadArea = document.getElementById('uploadArea');
