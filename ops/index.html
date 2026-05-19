@@ -101,7 +101,7 @@
         .chart-card h3 { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem; }
         .chart-container { position: relative; height: 250px; }
         .tickets-section { margin-top: 2rem; }
-        .ticket-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .ticket-filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
         .filter-btn {
             background: var(--bg-secondary); border: 1px solid var(--border);
             color: var(--text-secondary); padding: 0.4rem 0.8rem; border-radius: 6px;
@@ -112,15 +112,15 @@
         .ticket-item {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: 1rem;
-            transition: all 0.2s;
+            transition: all 0.2s; flex-wrap: wrap;
         }
         .ticket-item:hover { background: var(--bg-card-hover); }
-        .ticket-severity { padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .ticket-severity { padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
         .ticket-severity.critical { background: var(--danger); color: white; }
         .ticket-severity.high { background: #f97316; color: white; }
         .ticket-severity.medium { background: var(--warning); color: #1a1a2e; }
         .ticket-severity.low { background: var(--info); color: white; }
-        .ticket-info { flex: 1; }
+        .ticket-info { flex: 1; min-width: 200px; }
         .ticket-title { color: var(--text-primary); font-weight: 500; }
         .ticket-meta { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem; }
         .ticket-actions { display: flex; gap: 0.5rem; }
@@ -146,9 +146,7 @@
         .bot-name { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.25rem; }
         .bot-status { font-weight: 600; font-size: 0.9rem; }
         .bot-status.running { color: var(--success); }
-        .bot-status.stopped { color: var(--text-muted); }
         .loading { text-align: center; color: var(--text-muted); padding: 2rem; }
-        .error-msg { color: var(--danger); font-size: 0.9rem; }
         @media (max-width: 768px) {
             .charts-grid { grid-template-columns: 1fr; }
             .stat-cards { grid-template-columns: repeat(2, 1fr); }
@@ -157,413 +155,266 @@
     </style>
 </head>
 <body>
-    <!-- Auth Overlay -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
-            <h2>🛡️ Ops Dashboard</h2>
+            <h2>Ops Dashboard</h2>
             <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">Owner access only</p>
-            <input type="email" id="authEmail" placeholder="Email" autocomplete="email">
-            <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+            <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')handleLogin()">
             <button onclick="handleLogin()">Sign In</button>
             <div class="auth-error" id="authError"></div>
         </div>
     </div>
 
-    <!-- Dashboard -->
     <div class="dashboard" id="dashboard">
         <div class="header">
             <div>
-                <h1>🎮 Toon It Ops Dashboard</h1>
+                <h1>Toon It Ops Dashboard</h1>
                 <div class="last-updated" id="lastUpdated">Loading...</div>
             </div>
             <div class="header-right">
-                <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh</button>
+                <button class="refresh-btn" onclick="refreshAll()">Refresh</button>
                 <button class="logout-btn" onclick="handleLogout()">Logout</button>
             </div>
         </div>
 
-        <!-- Pipeline Health -->
         <div class="pipeline-status" id="pipelineStatus">
             <div class="status-dot" id="statusDot"></div>
             <span id="statusText">Loading pipeline status...</span>
         </div>
 
-        <!-- Stat Cards -->
         <div class="stat-cards" id="statCards">
-            <div class="stat-card">
-                <div class="stat-label">Total Users</div>
-                <div class="stat-value" id="totalUsers">—</div>
-                <div class="stat-change" id="newToday"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Generations (24h)</div>
-                <div class="stat-value" id="gen24h">—</div>
-                <div class="stat-change" id="genSuccess"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Error Rate</div>
-                <div class="stat-value" id="errorRate">—</div>
-                <div class="stat-change" id="errorTrend"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Avg Rating</div>
-                <div class="stat-value" id="avgRating">—</div>
-                <div class="stat-change" id="ratingCount"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Open Tickets</div>
-                <div class="stat-value" id="openTickets">—</div>
-                <div class="stat-change" id="ticketTrend"></div>
-            </div>
+            <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="totalUsers">—</div><div class="stat-change" id="newToday"></div></div>
+            <div class="stat-card"><div class="stat-label">Generations (24h)</div><div class="stat-value" id="gen24h">—</div><div class="stat-change" id="genSuccess"></div></div>
+            <div class="stat-card"><div class="stat-label">Error Rate</div><div class="stat-value" id="errorRate">—</div><div class="stat-change" id="errorTrend"></div></div>
+            <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="avgRating">—</div><div class="stat-change" id="ratingCount"></div></div>
+            <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-value" id="openTickets">—</div><div class="stat-change" id="ticketSeverity"></div></div>
         </div>
 
-        <!-- Charts -->
         <div class="section">
-            <div class="section-header">
-                <div class="section-title">📈 Metrics</div>
-            </div>
+            <div class="section-header"><div class="section-title">Metrics</div></div>
             <div class="charts-grid">
-                <div class="chart-card">
-                    <h3>Daily Generations (7 days)</h3>
-                    <div class="chart-container"><canvas id="genChart"></canvas></div>
-                </div>
-                <div class="chart-card">
-                    <h3>Daily Signups (7 days)</h3>
-                    <div class="chart-container"><canvas id="signupChart"></canvas></div>
-                </div>
-                <div class="chart-card">
-                    <h3>Generation Error Rate (24h)</h3>
-                    <div class="chart-container"><canvas id="errorChart"></canvas></div>
-                </div>
-                <div class="chart-card">
-                    <h3>Style Popularity (7 days)</h3>
-                    <div class="chart-container"><canvas id="styleChart"></canvas></div>
-                </div>
+                <div class="chart-card"><h3>Daily Generations (7 days)</h3><div class="chart-container"><canvas id="genChart"></canvas></div></div>
+                <div class="chart-card"><h3>Daily Signups (7 days)</h3><div class="chart-container"><canvas id="signupChart"></canvas></div></div>
+                <div class="chart-card"><h3>Error Rate Trend (7 days)</h3><div class="chart-container"><canvas id="errorChart"></canvas></div></div>
+                <div class="chart-card"><h3>Style Popularity</h3><div class="chart-container"><canvas id="styleChart"></canvas></div></div>
             </div>
         </div>
 
-        <!-- Bot Status -->
         <div class="section">
-            <div class="section-header">
-                <div class="section-title">🤖 Bot Status</div>
-            </div>
+            <div class="section-header"><div class="section-title">Bot Status</div></div>
             <div class="bot-status-grid" id="botStatus"></div>
         </div>
 
-        <!-- Tickets -->
         <div class="section tickets-section">
             <div class="section-header">
-                <div class="section-title">🎫 Tickets (<span id="ticketCount">0</span>)</div>
-                <button class="refresh-btn" onclick="refreshTickets()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Refresh</button>
+                <div class="section-title">Tickets (<span id="ticketCount">0</span>)</div>
             </div>
             <div class="ticket-filters">
-                <button class="filter-btn active" onclick="filterTickets('all')All</button>
-                <button class="filter-btn" onclick="filterTickets('open')">Open</button>
-                <button class="filter-btn" onclick="filterTickets('investigating')">Investigating</button>
-                <button class="filter-btn" onclick="filterTickets('resolved')">Resolved</button>
-                <button class="filter-btn" onclick="filterTickets('critical')">Critical</button>
-                <button class="filter-btn" onclick="filterTickets('high')">High</button>
+                <button class="filter-btn active" onclick="filterTickets('all',this)">All</button>
+                <button class="filter-btn" onclick="filterTickets('open',this)">Open</button>
+                <button class="filter-btn" onclick="filterTickets('investigating',this)">Investigating</button>
+                <button class="filter-btn" onclick="filterTickets('resolved',this)">Resolved</button>
             </div>
-            <div class="tickets-list" id="ticketsList">
-                <div class="loading">Loading tickets...</div>
-            </div>
+            <div class="tickets-list" id="ticketsList"><div class="loading">Loading tickets...</div></div>
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    <script>
+    var OPS_PW = 'toonit2026ops';
+    var SB_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+    var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_Jbaod-sXFO7WABnmuPGtFPGGMNFXpA';
+    var headers = {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json'};
+    var allTickets = [];
+    var currentFilter = 'all';
+    var charts = {};
 
-        const SB_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
-        const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_Jbaod-sXFO7WABnmuPGtFPGGMNFXpA';
-        const sb = createClient(SB_URL, SB_ANON);
-
-        let allTickets = [];
-        let currentFilter = 'all';
-        let charts = {};
-
-        // Auth
-        window.handleLogin = async () => {
-            const email = document.getElementById('authEmail').value;
-            const password = document.getElementById('authPassword').value;
-            const errEl = document.getElementById('authError');
-            errEl.textContent = '';
-            try {
-                const { data, error } = await sb.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                localStorage.setItem('ops_session', JSON.stringify(data.session));
-                showDashboard();
-            } catch (e) {
-                errEl.textContent = e.message || 'Login failed';
-            }
-        };
-
-        window.handleLogout = async () => {
-            await sb.auth.signOut();
-            localStorage.removeItem('ops_session');
-            document.getElementById('dashboard').classList.remove('active');
-            document.getElementById('authOverlay').style.display = 'flex';
-        };
-
-        async function checkAuth() {
-            const stored = localStorage.getItem('ops_session');
-            if (stored) {
-                try {
-                    const session = JSON.parse(stored);
-                    const { data } = await sb.auth.setSession(session);
-                    if (data.user) { showDashboard(); return; }
-                } catch(e) { localStorage.removeItem('ops_session'); }
-            }
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-
-        function showDashboard() {
+    function handleLogin() {
+        var pw = document.getElementById('authPassword').value;
+        if (pw === OPS_PW) {
+            sessionStorage.setItem('ops_auth', '1');
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             refreshAll();
+        } else {
+            document.getElementById('authError').textContent = 'Invalid password';
         }
+    }
+    function handleLogout() {
+        sessionStorage.removeItem('ops_auth');
+        document.getElementById('dashboard').classList.remove('active');
+        document.getElementById('authOverlay').style.display = 'flex';
+        document.getElementById('authPassword').value = '';
+    }
+    if (sessionStorage.getItem('ops_auth') === '1') {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+    }
 
-        async function apiFetch(table, query = '') {
-            const { data: { session } } = await sb.auth.getSession();
-            const res = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
-                headers: {
-                    'apikey': SB_ANON,
-                    'Authorization': `Bearer ${session?.access_token || SB_ANON}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            return res.json();
-        }
+    function apiGet(path) {
+        return fetch(SB_URL + '/rest/v1/' + path, {headers: headers}).then(function(r) { return r.json(); }).catch(function(e) { console.error('API error:', e); return []; });
+    }
+    function apiPatch(table, id, data) {
+        return fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+            method: 'PATCH', headers: Object.assign({}, headers, {'Prefer': 'return=minimal'}), body: JSON.stringify(data)
+        }).then(function(r) { return r.ok; }).catch(function(e) { console.error('API error:', e); return false; });
+    }
 
-        async function apiPatch(table, id, updates) {
-            const { data: { session } } = await sb.auth.getSession();
-            const res = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': SB_ANON,
-                    'Authorization': `Bearer ${session?.access_token || SB_ANON}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(updates)
-            });
-            return res.ok;
-        }
+    function refreshAll() {
+        document.getElementById('lastUpdated').textContent = 'Refreshing...';
+        Promise.all([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadBotStatus()]).then(function() {
+            document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        }).catch(function(e) { document.getElementById('lastUpdated').textContent = 'Error: ' + e.message; });
+    }
 
-        window.refreshAll = async () => {
-            document.getElementById('lastUpdated').textContent = 'Refreshing...';
-            try {
-                await Promise.all([
-                    loadStats(),
-                    loadCharts(),
-                    refreshTickets(),
-                    loadPipelineStatus(),
-                    loadBotStatus()
-                ]);
-                document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-            } catch(e) {
-                document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
-            }
-        };
-
-        async function loadStats() {
-            const profiles = await apiFetch('profiles', 'select=id,created_at&limit=5000&order=created_at.desc');
-            const totalUsers = profiles.length;
-            const now = new Date();
-            const dayAgo = new Date(now - 86400000).toISOString();
-            const newToday = profiles.filter(p => p.created_at >= dayAgo).length;
+    function loadStats() {
+        return Promise.all([
+            apiGet('profiles?select=id,created_at&limit=5000&order=created_at.desc'),
+            apiGet('generations?select=status,style,created_at&limit=5000&order=created_at.desc'),
+            apiGet('feedback?select=rating&limit=500')
+        ]).then(function(data) {
+            var profiles = data[0], gens = data[1], feedback = data[2];
+            var now = new Date();
+            var dayAgo = new Date(now - 86400000).toISOString();
+            var twoDaysAgo = new Date(now - 172800000).toISOString();
+            var totalUsers = profiles.length;
+            var newToday = profiles.filter(function(p) { return p.created_at >= dayAgo; }).length;
             document.getElementById('totalUsers').textContent = totalUsers;
-            document.getElementById('newToday').textContent = `+${newToday} today`;
+            document.getElementById('newToday').textContent = '+' + newToday + ' today';
             document.getElementById('newToday').className = 'stat-change positive';
 
-            const gens = await apiFetch('generations', 'select=status,style,created_at&limit=5000&order=created_at.desc');
-            const gen24h = gens.filter(g => g.created_at >= dayAgo);
-            const complete = gen24h.filter(g => g.status === 'complete').length;
-            const failed = gen24h.filter(g => g.status === 'failed').length;
-            const total = gen24h.length;
+            var gen24h = gens.filter(function(g) { return g.created_at >= dayAgo; });
+            var complete = gen24h.filter(function(g) { return g.status === 'complete'; }).length;
+            var failed = gen24h.filter(function(g) { return g.status === 'failed'; }).length;
+            var total = gen24h.length;
             document.getElementById('gen24h').textContent = total;
-            document.getElementById('genSuccess').textContent = `${complete} complete, ${failed} failed`;
-            document.getElementById('genSuccess').className = `stat-change ${failed > complete ? 'negative' : 'positive'}`;
+            document.getElementById('genSuccess').textContent = complete + ' ok, ' + failed + ' fail';
+            document.getElementById('genSuccess').className = 'stat-change ' + (failed > complete ? 'negative' : 'positive');
 
-            const errorRate = total > 0 ? ((failed / total) * 100).toFixed(1) : '0.0';
+            var errorRate = total > 0 ? ((failed / total) * 100).toFixed(1) : '0.0';
             document.getElementById('errorRate').textContent = errorRate + '%';
             document.getElementById('errorRate').style.color = parseFloat(errorRate) > 20 ? 'var(--danger)' : 'var(--success)';
 
-            const feedback = await apiFetch('feedback', 'select=rating&limit=500');
-            const rated = feedback.filter(f => f.rating);
+            var prevGen = gens.filter(function(g) { return g.created_at >= twoDaysAgo && g.created_at < dayAgo; });
+            var prevFailed = prevGen.filter(function(g) { return g.status === 'failed'; }).length;
+            var prevTotal = prevGen.length;
+            var prevRate = prevTotal > 0 ? ((prevFailed / prevTotal) * 100).toFixed(1) : '0';
+            var diff = (parseFloat(errorRate) - parseFloat(prevRate)).toFixed(1);
+            document.getElementById('errorTrend').textContent = (diff > 0 ? '+' : '') + diff + '% vs prev day';
+            document.getElementById('errorTrend').className = 'stat-change ' + (diff > 0 ? 'negative' : 'positive');
+
+            var rated = feedback.filter(function(f) { return f.rating; });
             if (rated.length > 0) {
-                const avg = (rated.reduce((s, f) => s + f.rating, 0) / rated.length).toFixed(1);
-                document.getElementById('avgRating').textContent = avg;
-                document.getElementById('ratingCount').textContent = `${rated.length} ratings`;
+                var avg = (rated.reduce(function(s, f) { return s + f.rating; }, 0) / rated.length).toFixed(1);
+                document.getElementById('avgRating').textContent = avg + ' / 5';
+                document.getElementById('ratingCount').textContent = rated.length + ' ratings';
             }
-        }
+        });
+    }
 
-        async function loadCharts() {
-            const gens = await apiFetch('mv_daily_metrics', 'select=*&order=date.desc&limit=7');
-            const signups = await apiFetch('mv_daily_signups', 'select=*&order=date.desc&limit=7');
-            const styleData = await apiFetch('generations', 'select=style&limit=5000');
+    function loadCharts() {
+        return Promise.all([
+            apiGet('mv_daily_metrics?select=*&order=date.desc&limit=7'),
+            apiGet('mv_daily_signups?select=*&order=date.desc&limit=7'),
+            apiGet('generations?select=style&limit=5000')
+        ]).then(function(data) {
+            var metrics = data[0], signups = data[1], styleData = data[2];
+            var dayLabels = metrics.map(function(r) { return (r.date || '').slice(5); }).reverse();
+            var successData = metrics.map(function(r) { return r.transformations_success || 0; }).reverse();
+            var errorData = metrics.map(function(r) { return r.transformations_error || 0; }).reverse();
+            var signupData = signups.map(function(r) { return r.new_signups || 0; }).reverse();
+            var errorRates = metrics.map(function(r) { return r.transformations_total > 0 ? ((r.transformations_error / r.transformations_total) * 100) : 0; }).reverse();
 
-            const dayLabels = gens.map(r => r.date?.slice(5) || '').reverse();
-            const successData = gens.map(r => r.transformations_success || 0).reverse();
-            const errorData = gens.map(r => r.transformations_error || 0).reverse();
-            const signupData = signups.map(r => r.new_signups || 0).reverse();
+            var co = {responsive: true, maintainAspectRatio: false, plugins: {legend: {labels: {color: '#a0a0b0'}}}, scales: {x: {ticks: {color: '#6a6a80'}, grid: {color: '#1a1a2e'}}, y: {ticks: {color: '#6a6a80'}, grid: {color: '#2a2a40'}}}};
 
-            // Generations Chart
             if (charts.gen) charts.gen.destroy();
-            charts.gen = new Chart(document.getElementById('genChart'), {
-                type: 'bar',
-                data: {
-                    labels: dayLabels,
-                    datasets: [
-                        { label: 'Success', data: successData, backgroundColor: '#10b981' },
-                        { label: 'Error', data: errorData, backgroundColor: '#ef4444' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#a0a0b0' } } }, scales: { x: { ticks: { color: '#6a6a80' } }, y: { ticks: { color: '#6a6a80' }, grid: { color: '#2a2a40' } } } }
-            });
+            charts.gen = new Chart(document.getElementById('genChart'), {type:'bar',data:{labels:dayLabels,datasets:[{label:'Success',data:successData,backgroundColor:'#10b981'},{label:'Error',data:errorData,backgroundColor:'#ef4444'}]},options:co});
 
-            // Signups Chart
             if (charts.signup) charts.signup.destroy();
-            charts.signup = new Chart(document.getElementById('signupChart'), {
-                type: 'line',
-                data: { labels: dayLabels, datasets: [{ label: 'New Signups', data: signupData, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.1)', fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#a0a0b0' } } }, scales: { x: { ticks: { color: '#6a6a80' } }, y: { ticks: { color: '#6a6a80' }, grid: { color: '#2a2a40' } } } }
-            });
+            charts.signup = new Chart(document.getElementById('signupChart'), {type:'line',data:{labels:dayLabels,datasets:[{label:'New Signups',data:signupData,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,0.1)',fill:true}]},options:co});
 
-            // Error Rate Chart
-            const errorRates = gens.map(r => r.transformations_total > 0 ? ((r.transformations_error / r.transformations_total) * 100) : 0).reverse();
             if (charts.error) charts.error.destroy();
-            charts.error = new Chart(document.getElementById('errorChart'), {
-                type: 'line',
-                data: { labels: dayLabels, datasets: [{ label: 'Error Rate %', data: errorRates, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#a0a0b0' } } }, scales: { x: { ticks: { color: '#6a6a80' } }, y: { ticks: { color: '#6a6a80' }, grid: { color: '#2a2a40' }, min: 0, max: 100 } } }
-            });
+            charts.error = new Chart(document.getElementById('errorChart'), {type:'line',data:{labels:dayLabels,datasets:[{label:'Error Rate %',data:errorRates,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',fill:true}]},options:co});
 
-            // Style Popularity Chart
-            const styleCounts = {};
-            styleData.forEach(g => { styleCounts[g.style] = (styleCounts[g.style] || 0) + 1; });
-            const sortedStyles = Object.entries(styleCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-            const styleColors = ['#a78bfa', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6', '#8b5cf6'];
+            var sc = {};
+            styleData.forEach(function(g) { sc[g.style] = (sc[g.style] || 0) + 1; });
+            var sorted = Object.entries(sc).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
+            var colors = ['#a78bfa','#10b981','#3b82f6','#f59e0b','#ef4444','#ec4899','#14b8a6','#8b5cf6'];
             if (charts.style) charts.style.destroy();
-            charts.style = new Chart(document.getElementById('styleChart'), {
-                type: 'doughnut',
-                data: { labels: sortedStyles.map(s => s[0]), datasets: [{ data: sortedStyles.map(s => s[1]), backgroundColor: styleColors }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#a0a0b0' } } } }
-            });
-        }
+            charts.style = new Chart(document.getElementById('styleChart'), {type:'doughnut',data:{labels:sorted.map(function(s){return s[0];}),datasets:[{data:sorted.map(function(s){return s[1];}),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#a0a0b0'}}}}});
+        });
+    }
 
-        async function loadPipelineStatus() {
-            try {
-                const metrics = await apiFetch('ops_metrics', 'select=*&metric_type=eq.pipeline&order=recorded_at.desc&limit=1');
-                if (metrics.length > 0) {
-                    const m = metrics[0];
-                    const errorRate = m.metric_name === 'generation_error_rate_pct' ? m.metric_value : null;
-                    const dot = document.getElementById('statusDot');
-                    const text = document.getElementById('statusText');
-                    if (errorRate !== null) {
-                        if (errorRate > 30) { dot.className = 'status-dot critical'; text.textContent = `Pipeline CRITICAL — ${errorRate.toFixed(1)}% error rate`; text.style.color = 'var(--danger)'; }
-                        else if (errorRate > 20) { dot.className = 'status-dot warning'; text.textContent = `Pipeline WARNING — ${errorRate.toFixed(1)}% error rate`; text.style.color = 'var(--warning)'; }
-                        else { dot.className = 'status-dot healthy'; text.textContent = `Pipeline HEALTHY — ${errorRate.toFixed(1)}% error rate`; text.style.color = 'var(--success)'; }
-                    } else { text.textContent = 'Pipeline status: ' + (m.metric_name || 'unknown'); }
-                } else {
-                    document.getElementById('statusText').textContent = 'Pipeline status: awaiting data (first run pending)';
-                }
-            } catch(e) {
-                document.getElementById('statusText').textContent = 'Pipeline status: data unavailable';
-            }
-        }
+    function loadPipelineStatus() {
+        return apiGet('ops_metrics?select=*&metric_type=eq.pipeline&order=recorded_at.desc&limit=1').then(function(metrics) {
+            var dot = document.getElementById('statusDot');
+            var text = document.getElementById('statusText');
+            if (metrics.length > 0) {
+                var rate = metrics[0].metric_value;
+                if (rate > 30) { dot.className = 'status-dot critical'; text.textContent = 'Pipeline CRITICAL - ' + rate.toFixed(1) + '% error rate'; text.style.color = 'var(--danger)'; }
+                else if (rate > 20) { dot.className = 'status-dot warning'; text.textContent = 'Pipeline WARNING - ' + rate.toFixed(1) + '% error rate'; text.style.color = 'var(--warning)'; }
+                else { dot.className = 'status-dot healthy'; text.textContent = 'Pipeline HEALTHY - ' + rate.toFixed(1) + '% error rate'; text.style.color = 'var(--success)'; }
+            } else { text.textContent = 'Pipeline: awaiting data'; }
+        }).catch(function() { document.getElementById('statusText').textContent = 'Pipeline: data unavailable'; });
+    }
 
-        async function loadBotStatus() {
-            const bots = [
-                { name: 'Marketing', schedule: '1x/day' },
-                { name: 'Engagement', schedule: '3x/day' },
-                { name: 'Likes', schedule: '2x/day' },
-                { name: 'IG Growth', schedule: '3x/day' },
-                { name: 'TikTok', schedule: '1x/day' },
-                { name: 'Orchestrator', schedule: '1x/day' },
-                { name: 'Metrics', schedule: '4x/hour' },
-                { name: 'Monitor', schedule: '1x/day' }
-            ];
-            const container = document.getElementById('botStatus');
-            container.innerHTML = bots.map(b => `
-                <div class="bot-card">
-                    <div class="bot-name">${b.name}</div>
-                    <div class="bot-status running">● Scheduled (${b.schedule})</div>
-                </div>
-            `).join('');
-        }
+    function loadBotStatus() {
+        var bots = [{name:'Marketing',s:'1x/day'},{name:'Engagement',s:'3x/day'},{name:'Likes',s:'2x/day'},{name:'IG Growth',s:'3x/day'},{name:'TikTok',s:'1x/day'},{name:'Orchestrator',s:'1x/day'},{name:'Metrics',s:'4x/hour'},{name:'Monitor',s:'1x/day'}];
+        document.getElementById('botStatus').innerHTML = bots.map(function(b) { return '<div class="bot-card"><div class="bot-name">' + b.name + '</div><div class="bot-status running">Scheduled (' + b.s + ')</div></div>'; }).join('');
+        return Promise.resolve();
+    }
 
-        window.refreshTickets = async () => {
-            try {
-                allTickets = await apiFetch('ops_tickets', 'select=*&order=created_at.desc&limit=50');
-                renderTickets();
-            } catch(e) {
-                document.getElementById('ticketsList').innerHTML = '<div class="error-msg">Failed to load tickets</div>';
-            }
-        };
-
-        function renderTickets() {
-            document.getElementById('ticketCount').textContent = allTickets.filter(t => t.status !== 'resolved').length;
-            let filtered = allTickets;
-            if (currentFilter === 'open') filtered = allTickets.filter(t => t.status === 'open');
-            else if (currentFilter === 'investigating') filtered = allTickets.filter(t => t.status === 'investigating');
-            else if (currentFilter === 'resolved') filtered = allTickets.filter(t => t.status === 'resolved');
-            else if (currentFilter === 'critical') filtered = allTickets.filter(t => t.severity === 'critical');
-            else if (currentFilter === 'high') filtered = allTickets.filter(t => t.severity === 'high');
-
-            if (filtered.length === 0) {
-                document.getElementById('ticketsList').innerHTML = '<div class="no-tickets">No tickets found</div>';
-                return;
-            }
-
-            document.getElementById('ticketsList').innerHTML = filtered.map(t => {
-                const timeAgo = getTimeAgo(new Date(t.created_at));
-                return `
-                <div class="ticket-item">
-                    <span class="ticket-severity ${t.severity}">${t.severity}</span>
-                    <div class="ticket-info">
-                        <div class="ticket-title">${t.title}</div>
-                        <div class="ticket-meta">${t.source} · ${t.status} · ${timeAgo}</div>
-                    </div>
-                    <div class="ticket-actions">
-                        ${t.status !== 'resolved' ? `<button class="ticket-btn resolve" onclick="resolveTicket(${t.id})">Resolve</button>` : ''}
-                        ${t.status === 'open' ? `<button class="ticket-btn" onclick="updateTicket(${t.id}, 'investigating')">Investigate</button>` : ''}
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return seconds + 's ago';
-            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
-            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
-            return Math.floor(seconds / 86400) + 'd ago';
-        }
-
-        window.filterTickets = (filter) => {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+    function refreshTickets() {
+        return apiGet('ops_tickets?select=*&order=created_at.desc&limit=50').then(function(tickets) {
+            allTickets = tickets;
             renderTickets();
-        };
+        }).catch(function() { document.getElementById('ticketsList').innerHTML = '<div style="color:var(--danger);text-align:center;padding:2rem;">Failed to load tickets</div>'; });
+    }
 
-        window.resolveTicket = async (id) => {
-            await apiPatch('ops_tickets', id, { status: 'resolved', resolved_at: new Date().toISOString() });
-            await refreshTickets();
-        };
+    function renderTickets() {
+        var open = allTickets.filter(function(t) { return t.status !== 'resolved' && t.status !== 'closed'; }).length;
+        document.getElementById('ticketCount').textContent = open;
+        var crit = allTickets.filter(function(t) { return t.severity === 'critical' && t.status !== 'resolved'; }).length;
+        document.getElementById('ticketSeverity').textContent = crit > 0 ? crit + ' critical' : 'No critical';
+        document.getElementById('ticketSeverity').className = 'stat-change ' + (crit > 0 ? 'negative' : 'positive');
 
-        window.updateTicket = async (id, status) => {
-            await apiPatch('ops_tickets', id, { status });
-            await refreshTickets();
-        };
+        var filtered = allTickets;
+        if (currentFilter === 'open') filtered = allTickets.filter(function(t) { return t.status === 'open'; });
+        else if (currentFilter === 'investigating') filtered = allTickets.filter(function(t) { return t.status === 'investigating'; });
+        else if (currentFilter === 'resolved') filtered = allTickets.filter(function(t) { return t.status === 'resolved'; });
 
-        // Auto-refresh every 60 seconds
-        setInterval(() => {
-            if (document.getElementById('dashboard').classList.contains('active')) refreshAll();
-        }, 60000);
+        if (filtered.length === 0) { document.getElementById('ticketsList').innerHTML = '<div class="no-tickets">No tickets found</div>'; return; }
 
-        // Init
-        checkAuth();
+        document.getElementById('ticketsList').innerHTML = filtered.map(function(t) {
+            var ago = timeAgo(new Date(t.created_at));
+            var actions = '';
+            if (t.status === 'open') actions += '<button class="ticket-btn" onclick="updateTicket(' + t.id + ',\x27investigating\x27)">Investigate</button>';
+            if (t.status !== 'resolved' && t.status !== 'closed') actions += '<button class="ticket-btn resolve" onclick="resolveTicket(' + t.id + ')">Resolve</button>';
+            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span><div class="ticket-info"><div class="ticket-title">' + t.title + '</div><div class="ticket-meta">' + t.source + ' &middot; ' + t.status + ' &middot; ' + ago + '</div></div><div class="ticket-actions">' + actions + '</div></div>';
+        }).join('');
+    }
+
+    function timeAgo(date) {
+        var s = Math.floor((new Date() - date) / 1000);
+        if (s < 60) return s + 's ago';
+        if (s < 3600) return Math.floor(s / 60) + 'm ago';
+        if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+        return Math.floor(s / 86400) + 'd ago';
+    }
+
+    function filterTickets(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        if (btn) btn.classList.add('active');
+        renderTickets();
+    }
+
+    function resolveTicket(id) { apiPatch('ops_tickets', id, {status: 'resolved', resolved_at: new Date().toISOString()}).then(function() { refreshTickets(); }); }
+    function updateTicket(id, status) { apiPatch('ops_tickets', id, {status: status}).then(function() { refreshTickets(); }); }
+
+    // Auto-refresh every 60s
+    setInterval(function() { if (sessionStorage.getItem('ops_auth') === '1') refreshAll(); }, 60000);
+    // Auto-load if already authenticated
+    if (sessionStorage.getItem('ops_auth') === '1') setTimeout(refreshAll, 500);
     </script>
 </body>
 </html>
