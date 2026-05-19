@@ -251,7 +251,10 @@
     }
 
     function apiGet(path) {
-        return fetch(SB_URL + '/rest/v1/' + path, {headers: headers}).then(function(r) { return r.json(); }).catch(function(e) { console.error('API error:', e); return []; });
+        return fetch(SB_URL + '/rest/v1/' + path, {headers: headers})
+            .then(function(r) { return r.json(); })
+            .then(function(data) { return Array.isArray(data) ? data : []; })
+            .catch(function(e) { console.error('API error:', e); return []; });
     }
     function apiPatch(table, id, data) {
         return fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
@@ -261,9 +264,9 @@
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.all([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadBotStatus()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadBotStatus()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-        }).catch(function(e) { document.getElementById('lastUpdated').textContent = 'Error: ' + e.message; });
+        });
     }
 
     function loadStats() {
