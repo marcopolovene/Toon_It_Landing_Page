@@ -361,9 +361,41 @@
     }
 
     function loadBotStatus() {
-        var bots = [{name:'Marketing',s:'1x/day'},{name:'Engagement',s:'3x/day'},{name:'Likes',s:'2x/day'},{name:'IG Growth',s:'3x/day'},{name:'TikTok',s:'1x/day'},{name:'Orchestrator',s:'1x/day'},{name:'Metrics',s:'4x/hour'},{name:'Monitor',s:'1x/day'}];
-        document.getElementById('botStatus').innerHTML = bots.map(function(b) { return '<div class="bot-card"><div class="bot-name">' + b.name + '</div><div class="bot-status running">Scheduled (' + b.s + ')</div></div>'; }).join('');
-        return Promise.resolve();
+        return apiGet('ops_metrics?select=metric_name,metric_value,metadata,recorded_at&metric_type=eq.bot_activity&order=recorded_at.desc&limit=50').then(function(rows) {
+            // Keep latest entry per bot only
+            var latest = {};
+            rows.forEach(function(r) {
+                var md = r.metadata || {};
+                var key = md.bot || r.metric_name;
+                if (!latest[key]) latest[key] = { value: r.metric_value, recorded_at: r.recorded_at, metadata: md };
+            });
+            var bots = Object.values(latest);
+            if (bots.length === 0) {
+                document.getElementById('botStatus').innerHTML = '<div class="no-tickets">No bot activity data yet. Will populate within 15 minutes.</div>';
+                return;
+            }
+            // Sort: critical first, then stale, then healthy
+            var order = { critical: 0, stale: 1, no_log: 2, healthy: 3 };
+            bots.sort(function(a, b) { return (order[a.metadata.health] || 9) - (order[b.metadata.health] || 9); });
+            document.getElementById('botStatus').innerHTML = bots.map(function(b) {
+                var md = b.metadata;
+                var health = md.health || 'unknown';
+                var color = health === 'healthy' ? '#10b981' : (health === 'stale' ? '#f59e0b' : (health === 'critical' ? '#ef4444' : '#6a6a80'));
+                var icon = health === 'healthy' ? '✓' : (health === 'stale' ? '⚠' : (health === 'critical' ? '✗' : '?'));
+                var age = (md.age_hours || 0).toFixed(1) + 'h ago';
+                var schedule = md.schedule || '';
+                var lastSuccess = md.last_success || '(no recent success)';
+                if (lastSuccess.length > 90) lastSuccess = lastSuccess.slice(0, 90) + '...';
+                return '<div class="bot-card" style="text-align:left;border-left:3px solid ' + color + ';">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;"><div class="bot-name" style="font-weight:600;color:var(--text-primary);font-size:0.9rem;">' + (md.display_name || md.bot || '?') + '</div>' +
+                    '<span style="color:' + color + ';font-size:0.75rem;font-weight:600;text-transform:uppercase;">' + icon + ' ' + health + '</span></div>' +
+                    '<div style="color:var(--text-muted);font-size:0.75rem;margin:0.25rem 0;">' + schedule + ' &middot; last ' + age + '</div>' +
+                    '<div style="color:var(--text-secondary);font-size:0.75rem;font-style:italic;margin-top:0.4rem;line-height:1.3;" title="' + (md.last_success || '').replace(/"/g,'') + '">' + lastSuccess + '</div>' +
+                    '</div>';
+            }).join('');
+        }).catch(function(e) {
+            document.getElementById('botStatus').innerHTML = '<div class="no-tickets">Failed to load bot activity</div>';
+        });
     }
 
     function refreshTickets() {
