@@ -335,7 +335,15 @@
             var dayLabels = metrics.map(function(r) { return (r.date || '').slice(5); }).reverse();
             var successData = metrics.map(function(r) { return r.transformations_success || 0; }).reverse();
             var errorData = metrics.map(function(r) { return r.transformations_error || 0; }).reverse();
-            var signupData = signups.map(function(r) { return r.new_signups || 0; }).reverse();
+            // Build date-keyed lookup for signups to align with metrics dates
+            var signupMap = {};
+            signups.forEach(function(r) { signupMap[r.date] = r.new_signups || 0; });
+            var signupData = dayLabels.map(function(label) {
+                // Reconstruct full date from label (MM-DD → YYYY-MM-DD using metrics dates)
+                var metric = metrics.find(function(m) { return (m.date || '').slice(5) === label; });
+                if (metric) { return signupMap[metric.date] || 0; }
+                return 0;
+            });
             var errorRates = metrics.map(function(r) { return r.transformations_total > 0 ? ((r.transformations_error / r.transformations_total) * 100) : 0; }).reverse();
 
             var co = {responsive: true, maintainAspectRatio: false, plugins: {legend: {labels: {color: '#a0a0b0'}}}, scales: {x: {ticks: {color: '#6a6a80'}, grid: {color: '#1a1a2e'}}, y: {ticks: {color: '#6a6a80'}, grid: {color: '#2a2a40'}}}};
@@ -436,8 +444,8 @@
             var actions = '';
             var diagnosis = '';
             // Show diagnosis findings if available
-            if (t.metadata && t.metadata.diagnosis) {
-                var d = t.metadata.diagnosis;
+            if (t.metadata && t.source_data.diagnosis) {
+                var d = t.source_data.diagnosis;
                 diagnosis = '<div class="ticket-diagnosis">' +
                     '<div class="diag-summary">' + escHtml(d.summary || '') + '</div>' +
                     '<div class="diag-rec">Recommendation: ' + escHtml(d.recommendation || '') + '</div>' +
