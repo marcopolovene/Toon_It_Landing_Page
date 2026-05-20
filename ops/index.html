@@ -207,7 +207,7 @@
                 <div class="chart-card"><h3>Daily Generations (7 days)</h3><div class="chart-container"><canvas id="genChart"></canvas></div></div>
                 <div class="chart-card"><h3>Daily Signups (7 days)</h3><div class="chart-container"><canvas id="signupChart"></canvas></div></div>
                 <div class="chart-card"><h3>Error Rate Trend (7 days)</h3><div class="chart-container"><canvas id="errorChart"></canvas></div></div>
-                <div class="chart-card"><h3>Style Popularity</h3><div class="chart-container"><canvas id="styleChart"></canvas></div></div>
+                <div class="chart-card"><h3>Style Popularity (7 days)</h3><div class="chart-container"><canvas id="styleChart"></canvas></div></div>
             </div>
         </div>
 
@@ -328,7 +328,7 @@
         return Promise.all([
             apiGet('mv_daily_metrics?select=*&order=date.desc&limit=7'),
             apiGet('mv_daily_signups?select=*&order=date.desc&limit=7'),
-            apiGet('generations?select=style&limit=5000')
+            apiGet('generations?select=style,created_at&created_at=gte.' + new Date(Date.now() - 7*86400000).toISOString() + '&limit=5000')
         ]).then(function(data) {
             var metrics = data[0], signups = data[1], styleData = data[2];
             var dayLabels = metrics.map(function(r) { return (r.date || '').slice(5); }).reverse();
