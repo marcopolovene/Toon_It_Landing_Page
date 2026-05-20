@@ -221,8 +221,8 @@
                 <div class="section-title">Tickets (<span id="ticketCount">0</span>)</div>
             </div>
             <div class="ticket-filters">
-                <button class="filter-btn active" onclick="filterTickets('all',this)">All</button>
-                <button class="filter-btn" onclick="filterTickets('open',this)">Open</button>
+                <button class="filter-btn" onclick="filterTickets('all',this)">All</button>
+                <button class="filter-btn active" onclick="filterTickets('open',this)">Open</button>
                 <button class="filter-btn" onclick="filterTickets('investigating',this)">Investigating</button>
                 <button class="filter-btn" onclick="filterTickets('diagnosed',this)">Diagnosed</button>
                 <button class="filter-btn" onclick="filterTickets('resolved',this)">Resolved</button>
@@ -234,9 +234,8 @@
     var OPS_PW = 'toonit2026ops';
     var SB_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
     var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
-    var headers = {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json'};
+    var currentFilter = 'open';
     var allTickets = [];
-    var currentFilter = 'all';
     var charts = {};
 
     function handleLogin() {
@@ -444,7 +443,7 @@
             var actions = '';
             var diagnosis = '';
             // Show diagnosis findings if available
-            if (t.metadata && t.source_data.diagnosis) {
+            if (t.source_data && t.source_data.diagnosis) {
                 var d = t.source_data.diagnosis;
                 diagnosis = '<div class="ticket-diagnosis">' +
                     '<div class="diag-summary">' + escHtml(d.summary || '') + '</div>' +
