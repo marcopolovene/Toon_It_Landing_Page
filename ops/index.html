@@ -132,6 +132,17 @@
         .ticket-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
         .ticket-btn.resolve { border-color: var(--success); color: var(--success); }
         .ticket-btn.resolve:hover { background: var(--success); color: white; }
+        .ticket-btn.investigate { border-color: var(--accent); color: var(--accent); }
+        .ticket-btn.investigate:hover { background: var(--accent); color: white; }
+        .ticket-diagnosis { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; font-size: 0.8rem; }
+        .diag-summary { color: var(--text-primary); font-weight: 500; margin-bottom: 0.25rem; }
+        .diag-rec { color: var(--accent-light); font-style: italic; }
+        .ticket-status { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; margin-left: 0.5rem; }
+        .ticket-status.open { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .ticket-status.investigating { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .ticket-status.diagnosed { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .ticket-status.deep_investigate { background: rgba(167,139,250,0.15); color: #a78bfa; }
+        .ticket-status.resolved { background: rgba(16,185,129,0.15); color: #10b981; }
         .no-tickets { color: var(--text-muted); text-align: center; padding: 2rem; }
         .pipeline-status { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
         .status-dot { width: 12px; height: 12px; border-radius: 50%; }
@@ -213,8 +224,8 @@
                 <button class="filter-btn active" onclick="filterTickets('all',this)">All</button>
                 <button class="filter-btn" onclick="filterTickets('open',this)">Open</button>
                 <button class="filter-btn" onclick="filterTickets('investigating',this)">Investigating</button>
+                <button class="filter-btn" onclick="filterTickets('diagnosed',this)">Diagnosed</button>
                 <button class="filter-btn" onclick="filterTickets('resolved',this)">Resolved</button>
-            </div>
             <div class="tickets-list" id="ticketsList"><div class="loading">Loading tickets...</div></div>
         </div>
     </div>
@@ -415,6 +426,7 @@
         var filtered = allTickets;
         if (currentFilter === 'open') filtered = allTickets.filter(function(t) { return t.status === 'open'; });
         else if (currentFilter === 'investigating') filtered = allTickets.filter(function(t) { return t.status === 'investigating'; });
+        else if (currentFilter === 'diagnosed') filtered = allTickets.filter(function(t) { return t.status === 'diagnosed'; });
         else if (currentFilter === 'resolved') filtered = allTickets.filter(function(t) { return t.status === 'resolved'; });
 
         if (filtered.length === 0) { document.getElementById('ticketsList').innerHTML = '<div class="no-tickets">No tickets found</div>'; return; }
@@ -422,9 +434,27 @@
         document.getElementById('ticketsList').innerHTML = filtered.map(function(t) {
             var ago = timeAgo(new Date(t.created_at));
             var actions = '';
-            if (t.status === 'open') actions += '<button class="ticket-btn" onclick="updateTicket(' + t.id + ',\x27investigating\x27)">Investigate</button>';
-            if (t.status !== 'resolved' && t.status !== 'closed') actions += '<button class="ticket-btn resolve" onclick="resolveTicket(' + t.id + ')">Resolve</button>';
-            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span><div class="ticket-info"><div class="ticket-title">' + t.title + '</div><div class="ticket-meta">' + t.source + ' &middot; ' + t.status + ' &middot; ' + ago + '</div></div><div class="ticket-actions">' + actions + '</div></div>';
+            var diagnosis = '';
+            // Show diagnosis findings if available
+            if (t.metadata && t.metadata.diagnosis) {
+                var d = t.metadata.diagnosis;
+                diagnosis = '<div class="ticket-diagnosis">' +
+                    '<div class="diag-summary">' + escHtml(d.summary || '') + '</div>' +
+                    '<div class="diag-rec">Recommendation: ' + escHtml(d.recommendation || '') + '</div>' +
+                    '</div>';
+            }
+            // Actions based on status
+            if (t.status === 'open' || t.status === 'investigating') {
+                actions += '<button class="ticket-btn" onclick="updateTicket(' + t.id + ',\x27diagnosed\x27)">Diagnose</button>';
+            }
+            if (t.status === 'open' || t.status === 'investigating' || t.status === 'diagnosed') {
+                actions += '<button class="ticket-btn investigate" onclick="deepInvestigate(' + t.id + ')">Deep Investigate</button>';
+            }
+            if (t.status !== 'resolved' && t.status !== 'closed') {
+                actions += '<button class="ticket-btn resolve" onclick="resolveTicket(' + t.id + ')">Resolve</button>';
+            }
+            var statusBadge = '<span class="ticket-status ' + t.status + '">' + t.status + '</span>';
+            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span>' + statusBadge + '<div class="ticket-info"><div class="ticket-title">' + escHtml(t.title) + '</div><div class="ticket-meta">' + escHtml(t.source || '') + ' &middot; ' + ago + '</div>' + diagnosis + '</div><div class="ticket-actions">' + actions + '</div></div>';
         }).join('');
     }
 
@@ -445,6 +475,12 @@
 
     function resolveTicket(id) { apiPatch('ops_tickets', id, {status: 'resolved', resolved_at: new Date().toISOString()}).then(function() { refreshTickets(); }); }
     function updateTicket(id, status) { apiPatch('ops_tickets', id, {status: status}).then(function() { refreshTickets(); }); }
+    function deepInvestigate(id) {
+        if (!confirm('This will create a new Agent Zero investigation chat. Continue?')) return;
+        updateTicket(id, 'deep_investigate');
+        alert('Investigation requested! Agent Zero will pick this up within 5 minutes and create a new chat under the Toon_It_v2 project. Check back for findings.');
+    }
+    function escHtml(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
     // Auto-refresh every 60s
     setInterval(function() { if (sessionStorage.getItem('ops_auth') === '1') refreshAll(); }, 60000);
