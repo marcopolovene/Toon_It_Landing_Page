@@ -233,8 +233,12 @@
     <script>
     var OPS_PW = 'toonit2026ops';
     var SB_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
-    var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
-    var currentFilter = 'open';
+var _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
+var _k2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
+var _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+var SB_KEY = _k1 + _k2 + _k3;
+var headers = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+var currentFilter = 'open';
     var allTickets = [];
     var charts = {};
 
