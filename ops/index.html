@@ -182,6 +182,15 @@
         .bot-status { font-weight: 600; font-size: 0.9rem; }
         .bot-status.running { color: var(--success); }
         .loading { text-align: center; color: var(--text-muted); padding: 2rem; }
+        .feedback-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 380px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+        .feedback-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.9rem; display: flex; align-items: flex-start; gap: 0.7rem; flex-wrap: wrap; }
+        .feedback-item:hover { background: var(--bg-card-hover); }
+        .feedback-stars { font-size: 1.05rem; min-width: 85px; white-space: nowrap; }
+        .feedback-tag { background: rgba(167,139,250,0.15); color: var(--accent-light); padding: 0.05rem 0.45rem; border-radius: 999px; font-size: 0.68rem; font-weight: 600; }
+        .feedback-comment { flex: 1; font-style: italic; color: var(--text-primary); font-size: 0.82rem; min-width: 180px; }
+        .feedback-meta { color: var(--text-muted); font-size: 0.68rem; white-space: nowrap; }
+        .feedback-style { color: var(--accent); font-size: 0.68rem; }
+        .no-feedback { color: var(--text-muted); text-align: center; padding: 1.5rem; font-size: 0.85rem; }
         @media (max-width: 768px) {
             .charts-grid { grid-template-columns: 1fr; }
             .stat-cards { grid-template-columns: repeat(2, 1fr); }
@@ -241,7 +250,7 @@
             <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="totalUsers">—</div><div class="stat-change" id="newToday"></div></div>
             <div class="stat-card"><div class="stat-label">Generations (24h)</div><div class="stat-value" id="gen24h">—</div><div class="stat-change" id="genSuccess"></div></div>
             <div class="stat-card"><div class="stat-label">Error Rate</div><div class="stat-value" id="errorRate">—</div><div class="stat-change" id="errorTrend"></div></div>
-            <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="avgRating">—</div><div class="stat-change" id="ratingCount"></div></div>
+            <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="avgRating">—</div><div class="stat-change" id="ratingCount"></div><a href="#" onclick="var el=document.getElementById('feedbackSection'); if(el){el.scrollIntoView({behavior:'smooth', block:'start'});} return false;" style="font-size:0.68rem;color:var(--accent);text-decoration:none;display:block;margin-top:3px;opacity:0.9;">Dig Deeper →</a></div>
             <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-value" id="openTickets">—</div><div class="stat-change" id="ticketSeverity"></div></div>
         </div>
 
@@ -272,9 +281,22 @@
                 <button class="filter-btn" onclick="filterTickets('resolved',this)">Resolved</button>
             <div class="tickets-list" id="ticketsList"><div class="loading">Loading tickets...</div></div>
         </div>
-    </div>
+     </div>
 
-    <script>
+     <!-- User Feedback Section (added to let founder dig into actual ratings + written comments) -->
+     <div class="section" id="feedbackSection" style="margin-top:1.5rem;">
+         <div class="section-header">
+             <div class="section-title">User Feedback <span id="feedbackCount" style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">(—)</span></div>
+         </div>
+         <div class="feedback-list" id="feedbackList"><div class="loading">Loading feedback...</div></div>
+         <div id="feedbackRlsNote" style="display:none;margin-top:0.5rem;font-size:0.72rem;color:var(--text-muted);background:rgba(167,139,250,0.08);padding:0.5rem;border-radius:6px;">
+             No rows returned (likely RLS on the feedback table). Run this once in the Supabase SQL editor to allow the ops dashboard to read all feedback:<br>
+             <code style="font-size:0.65rem;background:#111120;padding:2px 4px;border-radius:3px;">CREATE POLICY "Ops can read all feedback" ON public.feedback FOR SELECT USING (true);</code>
+             <button onclick="navigator.clipboard.writeText('CREATE POLICY \"Ops can read all feedback\" ON public.feedback FOR SELECT USING (true);'); this.textContent='Copied!'; setTimeout(()=>{this.textContent='Copy SQL'},1500);" style="margin-left:6px;font-size:0.65rem;padding:1px 6px;">Copy SQL</button>
+         </div>
+     </div>
+
+     <script>
     var OPS_PW = 'toonit2026ops';
     var SB_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
 var _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
@@ -343,7 +365,7 @@ var currentFilter = 'open';
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadBotStatus()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadBotStatus(), loadFeedback()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
@@ -620,6 +642,53 @@ var currentFilter = 'open';
     }
     function escHtml(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
+    function loadFeedback() {
+        var container = document.getElementById('feedbackList');
+        var countEl = document.getElementById('feedbackCount');
+        var rlsNote = document.getElementById('feedbackRlsNote');
+        if (!container) return Promise.resolve();
+        container.innerHTML = '<div class="loading">Loading feedback...</div>';
+        if (rlsNote) rlsNote.style.display = 'none';
+
+        return apiGet('feedback?select=*&order=created_at.desc&limit=30').then(function(rows) {
+            var testPatterns = /loadtest|marcop|firedog|agent.zero|security.test|internal.test/i;
+            var filtered = rows.filter(function(r) {
+                if (includeTestData) return true;
+                var uid = (r.user_id || '').toLowerCase();
+                return !testPatterns.test(uid);
+            });
+
+            if (!filtered.length) {
+                container.innerHTML = '<div class="no-feedback">No feedback rows returned yet (or filtered out).</div>';
+                if (countEl) countEl.textContent = '(0)';
+                if (rlsNote) rlsNote.style.display = 'block';
+                return;
+            }
+
+            if (countEl) countEl.textContent = '(' + filtered.length + (filtered.length === 30 ? '+' : '') + ')';
+
+            container.innerHTML = filtered.map(function(f) {
+                var stars = '★'.repeat(Math.max(1, Math.min(5, f.rating || 0))) + '☆'.repeat(5 - Math.max(1, Math.min(5, f.rating || 0)));
+                var tag = f.subject_tag ? '<span class="feedback-tag">' + escHtml(f.subject_tag) + '</span>' : '';
+                var comment = f.comment ? '<div class="feedback-comment">' + escHtml(f.comment) + '</div>' : '';
+                var style = f.style_used ? '<span class="feedback-style">' + escHtml(f.style_used) + '</span>' : '';
+                var when = f.created_at ? timeAgo(new Date(f.created_at)) : '';
+                var user = f.user_id ? f.user_id.substring(0, 8) + '…' : 'anon';
+                return '<div class="feedback-item">' +
+                    '<div class="feedback-stars">' + stars + '</div>' +
+                    '<div style="flex:1;min-width:180px;">' + tag + comment + '</div>' +
+                    '<div class="feedback-meta">' + when + '<br>' + user + ' ' + style + '</div>' +
+                    '</div>';
+            }).join('');
+        }).catch(function(e) {
+            console.error('Feedback load error:', e);
+            container.innerHTML = '<div class="no-feedback">Could not load feedback (check console).</div>';
+        });
+    }
+
+    function renderFeedback() { /* alias for clarity */ loadFeedback(); }
+
+    // Auto-refresh every 60s
     // Auto-refresh every 60s
     setInterval(function() { if (sessionStorage.getItem('ops_auth') === '1') refreshAll(); }, 60000);
     // Auto-load if already authenticated
