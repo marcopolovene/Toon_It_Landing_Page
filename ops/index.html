@@ -332,7 +332,9 @@ var currentFilter = 'open';
         return Promise.all([
             apiGet('mv_daily_metrics?select=*&order=date.desc&limit=7'),
             apiGet('mv_daily_signups?select=*&order=date.desc&limit=7'),
-            apiGet('generations?select=style,created_at&created_at=gte.' + new Date(Date.now() - 7*86400000).toISOString() + '&limit=5000')
+            // Use aggregate-only view so ops chart is not undercounted by raw generations RLS.
+            // ops_style_counts_7d returns trailing-7-day totals from the service-side source of truth.
+            apiGet('ops_style_counts_7d?select=style,transformations_total,transformations_complete,transformations_failed&order=transformations_total.desc&limit=8')
         ]).then(function(data) {
             var metrics = data[0], signups = data[1], styleData = data[2];
             var dayLabels = metrics.map(function(r) { return (r.date || '').slice(5); }).reverse();
@@ -360,12 +362,17 @@ var currentFilter = 'open';
             if (charts.error) charts.error.destroy();
             charts.error = new Chart(document.getElementById('errorChart'), {type:'line',data:{labels:dayLabels,datasets:[{label:'Error Rate %',data:errorRates,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',fill:true}]},options:co});
 
-            var sc = {};
-            styleData.forEach(function(g) { sc[g.style] = (sc[g.style] || 0) + 1; });
-            var sorted = Object.entries(sc).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
+            var sorted = (styleData || []).map(function(r) {
+                return {
+                    style: r.style || 'unknown',
+                    total: Number(r.transformations_total || 0),
+                    complete: Number(r.transformations_complete || 0),
+                    failed: Number(r.transformations_failed || 0)
+                };
+            }).filter(function(r) { return r.total > 0; });
             var colors = ['#a78bfa','#10b981','#3b82f6','#f59e0b','#ef4444','#ec4899','#14b8a6','#8b5cf6'];
             if (charts.style) charts.style.destroy();
-            charts.style = new Chart(document.getElementById('styleChart'), {type:'doughnut',data:{labels:sorted.map(function(s){return s[0];}),datasets:[{data:sorted.map(function(s){return s[1];}),backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#a0a0b0'}}}}});
+            charts.style = new Chart(document.getElementById('styleChart'), {type:'doughnut',data:{labels:sorted.map(function(s){return s.style;}),datasets:[{data:sorted.map(function(s){return s.total;}),backgroundColor:colors,completeData:sorted.map(function(s){return s.complete;}),failedData:sorted.map(function(s){return s.failed;})}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#a0a0b0'}},tooltip:{callbacks:{label:function(ctx){var ds=ctx.dataset||{};var i=ctx.dataIndex;var label=ctx.label||'unknown';var total=ctx.parsed||0;var complete=(ds.completeData&&ds.completeData[i])||0;var failed=(ds.failedData&&ds.failedData[i])||0;return label + ': ' + total + ' total (' + complete + ' complete, ' + failed + ' failed)';}}}}}});
         });
     }
 
