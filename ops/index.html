@@ -76,6 +76,19 @@
         .last-updated { color: var(--text-muted); font-size: 0.85rem; }
         .logout-btn { background: none; border: 1px solid var(--danger); color: var(--danger);
             padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .data-filter-bar {
+            background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.28);
+            border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 1.2rem;
+            display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
+        }
+        .data-filter-title { color: var(--accent-light); font-weight: 700; font-size: 0.95rem; }
+        .data-filter-mode { color: var(--text-primary); font-size: 0.9rem; margin-left: 0.5rem; }
+        .data-filter-note { color: var(--text-muted); font-size: 0.78rem; margin-top: 0.25rem; }
+        .test-filter-btn {
+            background: var(--success); color: #07150f; border: 1px solid var(--success);
+            padding: 0.55rem 0.9rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700;
+        }
+        .test-filter-btn.including { background: var(--warning); border-color: var(--warning); color: #1a1a2e; }
         .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
         .stat-card {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -193,6 +206,15 @@
             <span id="statusText">Loading pipeline status...</span>
         </div>
 
+        <div class="data-filter-bar" id="testDataFilterBar">
+            <div>
+                <span class="data-filter-title">Test User Filter</span>
+                <span class="data-filter-mode" id="testFilterMode">Excluding test/internal users</span>
+                <div class="data-filter-note" id="testFilterNote">Filters known load-test, security-test, Marco, Firedog, and internal Agent Zero test patterns.</div>
+            </div>
+            <button class="test-filter-btn" id="testFilterToggle" onclick="toggleTestDataFilter()">Show test data</button>
+        </div>
+
         <div class="stat-cards" id="statCards">
             <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="totalUsers">—</div><div class="stat-change" id="newToday"></div></div>
             <div class="stat-card"><div class="stat-label">Generations (24h)</div><div class="stat-value" id="gen24h">—</div><div class="stat-change" id="genSuccess"></div></div>
@@ -239,6 +261,7 @@ var _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF
 var SB_KEY = _k1 + _k2 + _k3;
 var headers = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 var currentFilter = 'open';
+    var includeTestData = sessionStorage.getItem('ops_include_test_data') === '1';
     var allTickets = [];
     var charts = {};
 
@@ -276,33 +299,50 @@ var currentFilter = 'open';
         }).then(function(r) { return r.ok; }).catch(function(e) { console.error('API error:', e); return false; });
     }
 
+    function filterParam() { return '&include_test_data=eq.' + (includeTestData ? 'true' : 'false'); }
+    function updateTestFilterUi(summaryRows) {
+        var btn = document.getElementById('testFilterToggle');
+        var mode = document.getElementById('testFilterMode');
+        var note = document.getElementById('testFilterNote');
+        if (!btn || !mode || !note) return;
+        btn.className = 'test-filter-btn' + (includeTestData ? ' including' : '');
+        btn.textContent = includeTestData ? 'Hide test data' : 'Show test data';
+        mode.textContent = includeTestData ? 'Including test/internal users' : 'Excluding test/internal users';
+        var inclusive = (summaryRows || []).find(function(r) { return r.include_test_data === true; });
+        var hiddenUsers = inclusive ? Number(inclusive.test_users_total || 0) : 0;
+        var hiddenGens = inclusive ? Number(inclusive.test_generations_7d || 0) : 0;
+        note.textContent = (includeTestData ? 'Showing' : 'Hiding') + ' known load-test, security-test, Marco, Firedog, and Agent Zero/internal test patterns. ' + hiddenUsers + ' test users / ' + hiddenGens + ' 7-day test generations tracked.';
+    }
+    function toggleTestDataFilter() {
+        includeTestData = !includeTestData;
+        sessionStorage.setItem('ops_include_test_data', includeTestData ? '1' : '0');
+        refreshAll();
+    }
+
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
         Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadBotStatus()]).then(function() {
-            document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+            document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
 
     function loadStats() {
         return Promise.all([
-            apiGet('profiles?select=id,created_at&limit=5000&order=created_at.desc'),
-            apiGet('generations?select=status,style,created_at&limit=5000&order=created_at.desc'),
-            apiGet('feedback?select=rating&limit=500')
+            apiGet('ops_dashboard_summary_filtered?select=*&order=include_test_data.asc'),
+            apiGet('ops_dashboard_summary_filtered?select=*&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&limit=1')
         ]).then(function(data) {
-            var profiles = data[0], gens = data[1], feedback = data[2];
-            var now = new Date();
-            var dayAgo = new Date(now - 86400000).toISOString();
-            var twoDaysAgo = new Date(now - 172800000).toISOString();
-            var totalUsers = profiles.length;
-            var newToday = profiles.filter(function(p) { return p.created_at >= dayAgo; }).length;
+            var allSummaries = data[0] || [];
+            var summary = (data[1] && data[1][0]) || allSummaries.find(function(r) { return r.include_test_data === includeTestData; }) || {};
+            updateTestFilterUi(allSummaries);
+            var totalUsers = Number(summary.total_users || 0);
+            var newToday = Number(summary.new_users_24h || 0);
             document.getElementById('totalUsers').textContent = totalUsers;
             document.getElementById('newToday').textContent = '+' + newToday + ' today';
             document.getElementById('newToday').className = 'stat-change positive';
 
-            var gen24h = gens.filter(function(g) { return g.created_at >= dayAgo; });
-            var complete = gen24h.filter(function(g) { return g.status === 'complete'; }).length;
-            var failed = gen24h.filter(function(g) { return g.status === 'failed'; }).length;
-            var total = gen24h.length;
+            var complete = Number(summary.generations_24h_complete || 0);
+            var failed = Number(summary.generations_24h_failed || 0);
+            var total = Number(summary.generations_24h_total || 0);
             document.getElementById('gen24h').textContent = total;
             document.getElementById('genSuccess').textContent = complete + ' ok, ' + failed + ' fail';
             document.getElementById('genSuccess').className = 'stat-change ' + (failed > complete ? 'negative' : 'positive');
@@ -311,30 +351,30 @@ var currentFilter = 'open';
             document.getElementById('errorRate').textContent = errorRate + '%';
             document.getElementById('errorRate').style.color = parseFloat(errorRate) > 20 ? 'var(--danger)' : 'var(--success)';
 
-            var prevGen = gens.filter(function(g) { return g.created_at >= twoDaysAgo && g.created_at < dayAgo; });
-            var prevFailed = prevGen.filter(function(g) { return g.status === 'failed'; }).length;
-            var prevTotal = prevGen.length;
+            var prevFailed = Number(summary.generations_prev24h_failed || 0);
+            var prevTotal = Number(summary.generations_prev24h_total || 0);
             var prevRate = prevTotal > 0 ? ((prevFailed / prevTotal) * 100).toFixed(1) : '0';
             var diff = (parseFloat(errorRate) - parseFloat(prevRate)).toFixed(1);
             document.getElementById('errorTrend').textContent = (diff > 0 ? '+' : '') + diff + '% vs prev day';
             document.getElementById('errorTrend').className = 'stat-change ' + (diff > 0 ? 'negative' : 'positive');
 
-            var rated = feedback.filter(function(f) { return f.rating; });
-            if (rated.length > 0) {
-                var avg = (rated.reduce(function(s, f) { return s + f.rating; }, 0) / rated.length).toFixed(1);
-                document.getElementById('avgRating').textContent = avg + ' / 5';
-                document.getElementById('ratingCount').textContent = rated.length + ' ratings';
+            var rated = Number(summary.rating_count || 0);
+            if (rated > 0) {
+                document.getElementById('avgRating').textContent = Number(summary.avg_rating || 0).toFixed(1) + ' / 5';
+                document.getElementById('ratingCount').textContent = rated + ' ratings';
+            } else {
+                document.getElementById('avgRating').textContent = '—';
+                document.getElementById('ratingCount').textContent = '0 ratings';
             }
         });
     }
 
     function loadCharts() {
         return Promise.all([
-            apiGet('mv_daily_metrics?select=*&order=date.desc&limit=7'),
-            apiGet('mv_daily_signups?select=*&order=date.desc&limit=7'),
-            // Use aggregate-only view so ops chart is not undercounted by raw generations RLS.
-            // ops_style_counts_7d returns trailing-7-day totals from the service-side source of truth.
-            apiGet('ops_style_counts_7d?select=style,transformations_total,transformations_complete,transformations_failed&order=transformations_total.desc&limit=8')
+            apiGet('ops_daily_metrics_filtered_7d?select=*&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&order=date.desc&limit=7'),
+            apiGet('ops_daily_signups_filtered_7d?select=*&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&order=date.desc&limit=7'),
+            // Use aggregate-only filtered view so ops chart is not undercounted by raw generations RLS.
+            apiGet('ops_style_counts_filtered_7d?select=style,transformations_total,transformations_complete,transformations_failed&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&order=transformations_total.desc&limit=8')
         ]).then(function(data) {
             var metrics = data[0], signups = data[1], styleData = data[2];
             var dayLabels = metrics.map(function(r) { return (r.date || '').slice(5); }).reverse();
