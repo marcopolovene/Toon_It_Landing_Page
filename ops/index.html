@@ -158,6 +158,17 @@
         .ticket-status.resolved { background: rgba(16,185,129,0.15); color: #10b981; }
         .no-tickets { color: var(--text-muted); text-align: center; padding: 2rem; }
         .pipeline-status { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .service-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-bottom: 1.2rem; }
+        .service-status-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; }
+        .service-status-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.45rem; }
+        .service-status-title { display: flex; align-items: center; gap: 0.55rem; color: var(--text-primary); font-weight: 700; }
+        .service-status-pill { font-size: 0.7rem; padding: 0.18rem 0.5rem; border-radius: 999px; font-weight: 800; text-transform: uppercase; }
+        .service-status-pill.healthy { background: rgba(16,185,129,0.15); color: var(--success); }
+        .service-status-pill.warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .service-status-pill.critical { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .service-status-pill.unknown { background: rgba(106,106,128,0.2); color: var(--text-muted); }
+        .service-status-main { color: var(--text-secondary); font-size: 0.84rem; line-height: 1.4; }
+        .service-status-meta { color: var(--text-muted); font-size: 0.74rem; margin-top: 0.45rem; line-height: 1.35; }
         .status-dot { width: 12px; height: 12px; border-radius: 50%; }
         .status-dot.healthy { background: var(--success); }
         .status-dot.warning { background: var(--warning); }
@@ -204,6 +215,17 @@
         <div class="pipeline-status" id="pipelineStatus">
             <div class="status-dot" id="statusDot"></div>
             <span id="statusText">Loading pipeline status...</span>
+        </div>
+
+        <div class="service-status-grid">
+            <div class="service-status-card" id="stripeStatusCard">
+                <div class="service-status-head">
+                    <div class="service-status-title"><span class="status-dot" id="stripeStatusDot"></span><span>Stripe Status</span></div>
+                    <span class="service-status-pill unknown" id="stripeStatusPill">Loading</span>
+                </div>
+                <div class="service-status-main" id="stripeStatusMain">Checking Stripe health...</div>
+                <div class="service-status-meta" id="stripeStatusMeta">Awaiting latest metrics collector result.</div>
+            </div>
         </div>
 
         <div class="data-filter-bar" id="testDataFilterBar">
@@ -321,7 +343,7 @@ var currentFilter = 'open';
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadBotStatus()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadBotStatus()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
@@ -427,6 +449,64 @@ var currentFilter = 'open';
                 else { dot.className = 'status-dot healthy'; text.textContent = 'Pipeline HEALTHY - ' + rate.toFixed(1) + '% error rate'; text.style.color = 'var(--success)'; }
             } else { text.textContent = 'Pipeline: awaiting data'; }
         }).catch(function() { document.getElementById('statusText').textContent = 'Pipeline: data unavailable'; });
+    }
+
+    function formatAge(recordedAt) {
+        if (!recordedAt) return 'unknown age';
+        var ms = Date.now() - new Date(recordedAt).getTime();
+        if (!isFinite(ms) || ms < 0) return 'just now';
+        var mins = Math.round(ms / 60000);
+        if (mins < 2) return 'just now';
+        if (mins < 60) return mins + 'm ago';
+        return (mins / 60).toFixed(1) + 'h ago';
+    }
+
+    function loadStripeStatus() {
+        return apiGet('ops_metrics?select=metric_name,metric_value,metadata,recorded_at&metric_type=eq.stripe_health&order=recorded_at.desc&limit=1').then(function(rows) {
+            var dot = document.getElementById('stripeStatusDot');
+            var pill = document.getElementById('stripeStatusPill');
+            var main = document.getElementById('stripeStatusMain');
+            var meta = document.getElementById('stripeStatusMeta');
+            if (!dot || !pill || !main || !meta) return;
+            if (!rows.length) {
+                dot.className = 'status-dot warning';
+                pill.className = 'service-status-pill warning';
+                pill.textContent = 'No data';
+                main.textContent = 'Stripe health has not reported yet.';
+                meta.textContent = 'Metrics collector will populate this on its next run.';
+                return;
+            }
+            var row = rows[0];
+            var md = row.metadata || {};
+            var health = md.health || (row.metric_value >= 1 ? 'healthy' : (row.metric_value > 0 ? 'warning' : 'critical'));
+            var ageText = formatAge(row.recorded_at);
+            var stale = (Date.now() - new Date(row.recorded_at).getTime()) > 60 * 60 * 1000;
+            if (stale && health === 'healthy') health = 'warning';
+            dot.className = 'status-dot ' + (health === 'healthy' ? 'healthy' : (health === 'warning' ? 'warning' : 'critical'));
+            pill.className = 'service-status-pill ' + health;
+            pill.textContent = stale ? 'Stale' : health;
+            main.textContent = md.summary || (health === 'healthy' ? 'Stripe OK' : 'Stripe issue detected');
+            var checks = md.checks || {};
+            var checkoutEvents = checks.checkout_completed_events_7d || {};
+            var failedEvents = checks.payment_failed_events_7d || {};
+            var parts = [];
+            parts.push('Checked ' + ageText);
+            if (md.max_latency_ms != null) parts.push('API latency ' + md.max_latency_ms + 'ms');
+            parts.push('Checkout workflow ' + (md.checkout_workflow_active ? 'active' : 'inactive'));
+            parts.push('Payment handler ' + (md.payment_handler_workflow_active ? 'active' : 'inactive'));
+            if (checkoutEvents.latest_age_hours != null) parts.push('Last checkout ' + checkoutEvents.latest_age_hours + 'h ago');
+            if (failedEvents.count_seen != null) parts.push('Failed payments 7d: ' + failedEvents.count_seen);
+            meta.textContent = parts.join(' · ');
+        }).catch(function() {
+            var dot = document.getElementById('stripeStatusDot');
+            var pill = document.getElementById('stripeStatusPill');
+            var main = document.getElementById('stripeStatusMain');
+            var meta = document.getElementById('stripeStatusMeta');
+            if (dot) dot.className = 'status-dot critical';
+            if (pill) { pill.className = 'service-status-pill critical'; pill.textContent = 'Error'; }
+            if (main) main.textContent = 'Failed to load Stripe health.';
+            if (meta) meta.textContent = 'Check Supabase ops_metrics access.';
+        });
     }
 
     function loadBotStatus() {
