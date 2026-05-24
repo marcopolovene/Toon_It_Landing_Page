@@ -638,8 +638,45 @@ var currentFilter = 'open';
     function updateTicket(id, status) { apiPatch('ops_tickets', id, {status: status}).then(function() { refreshTickets(); }); }
     function deepInvestigate(id) {
         if (!confirm('This will create a new Agent Zero investigation chat. Continue?')) return;
+        // Find ticket data for GitHub workflow dispatch
+        var ticket = allTickets.find(function(t) { return t.id === id; });
+        var title = ticket ? (ticket.title || 'Unknown') : 'Unknown';
+        var desc = ticket ? (ticket.description || '') : '';
+
+        // 1. Update ticket status in Supabase
         updateTicket(id, 'deep_investigate');
-        alert('Investigation requested! Agent Zero will pick this up within 5 minutes and create a new chat under the Toon_It_v2 project. Check back for findings.');
+
+        // 2. Trigger GitHub Actions workflow
+        var ghToken = '§§secret(GITHUB_API_KEY)';
+        var ghRepo = 'marcopolovene/toon-it-project';
+        var ghUrl = 'https://api.github.com/repos/' + ghRepo + '/actions/workflows/deep_investigate.yml/dispatches';
+        fetch(ghUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + ghToken,
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ref: 'main',
+                inputs: {
+                    ticket_id: String(id),
+                    ticket_title: title,
+                    ticket_description: desc
+                }
+            })
+        }).then(function(r) {
+            if (r.status === 204 || r.ok) {
+                console.log('GitHub workflow dispatched successfully');
+            } else {
+                console.error('GitHub workflow dispatch failed:', r.status);
+            }
+        }).catch(function(e) {
+            console.error('GitHub workflow dispatch error:', e);
+        });
+
+        alert('Investigation requested! GitHub workflow triggered — Agent Zero will pick this up within 5 minutes and create a new chat under the Toon_It_v2 project.');
     }
     function escHtml(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
