@@ -374,10 +374,12 @@ var currentFilter = 'open';
     function loadStats() {
         return Promise.all([
             apiGet('ops_dashboard_summary_filtered?select=*&order=include_test_data.asc'),
-            apiGet('ops_dashboard_summary_filtered?select=*&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&limit=1')
+            apiGet('ops_dashboard_summary_filtered?select=*&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&limit=1'),
+            apiGet('rpc/count_anonymous_generations')
         ]).then(function(data) {
             var allSummaries = data[0] || [];
             var summary = (data[1] && data[1][0]) || allSummaries.find(function(r) { return r.include_test_data === includeTestData; }) || {};
+            var anonData = (data[2] && data[2][0]) || data[2] || {};
             updateTestFilterUi(allSummaries);
             var totalUsers = Number(summary.total_users || 0);
             var newToday = Number(summary.new_users_24h || 0);
@@ -411,6 +413,14 @@ var currentFilter = 'open';
                 document.getElementById('avgRating').textContent = '—';
                 document.getElementById('ratingCount').textContent = '0 ratings';
             }
+            
+            // Anonymous generations
+            var anon24h = Number(anonData.anon_24h || 0);
+            var anonTotal = Number(anonData.anon_total || 0);
+            document.getElementById('anonGens24h').textContent = anon24h;
+            document.getElementById('anonGens24h').style.color = anon24h > 0 ? 'var(--warning)' : 'var(--text-primary)';
+            document.getElementById('anonGensTotal').textContent = anonTotal + ' all time';
+            document.getElementById('anonGensTotal').className = 'stat-change ' + (anon24h > 0 ? 'negative' : 'positive');
         });
     }
 
