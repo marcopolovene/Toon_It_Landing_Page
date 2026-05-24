@@ -615,7 +615,7 @@ var currentFilter = 'open';
                 actions += '<button class="ticket-btn resolve" onclick="resolveTicket(' + t.id + ')">Resolve</button>';
             }
             var statusBadge = '<span class="ticket-status ' + t.status + '">' + t.status + '</span>';
-            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span>' + statusBadge + '<div class="ticket-info"><div class="ticket-title">' + escHtml(t.title) + '</div><div class="ticket-meta">' + escHtml(t.source || '') + ' &middot; ' + ago + '</div>' + diagnosis + '</div><div class="ticket-actions">' + actions + '</div></div>';
+            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span>' + statusBadge + '<div class="ticket-info"><div class="ticket-title">#' + t.id + ' — ' + escHtml(t.title) + '</div><div class="ticket-meta">' + escHtml(t.source || '') + ' &middot; ' + ago + '</div>' + diagnosis + '</div><div class="ticket-actions">' + actions + '</div></div>';
         }).join('');
     }
 
