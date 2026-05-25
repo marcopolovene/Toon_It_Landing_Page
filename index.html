@@ -563,7 +563,7 @@
         </div>
 
         <!-- ANDROID PROMO CAPSULE (Option 1) -->
-        <div id="android-play-banner" class="android-promo-capsule" style="display: none;">
+        <div id="android-play-banner" class="android-promo-capsule" style="display: none !important;">
             <div class="brand-icon">🤖</div>
             <div class="banner-content">
                 <p class="banner-title">Toon It! on Google Play</p>
@@ -5781,7 +5781,7 @@
 <!-- STANDALONE SCRIPT FOR SELECTIVE ANDROID APP PROMOTION -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        initAndroidPromo();
+        // initAndroidPromo(); // Disabled: App promotion hidden for now
     });
 
     function initAndroidPromo() {
