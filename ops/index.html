@@ -344,6 +344,24 @@ var currentFilter = 'open';
         }).then(function(r) { return r.ok; }).catch(function(e) { console.error('API error:', e); return false; });
     }
 
+    function apiRpc(fn, payload) {
+        return fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+            method: 'POST',
+            headers: Object.assign({}, headers, {'Content-Type': 'application/json'}),
+            body: JSON.stringify(payload || {})
+        }).then(function(r) {
+            return r.text().then(function(txt) {
+                var data = null;
+                try { data = txt ? JSON.parse(txt) : null; } catch(e) { data = txt; }
+                if (!r.ok) {
+                    var msg = (data && data.message) ? data.message : (txt || ('RPC failed with HTTP ' + r.status));
+                    throw new Error(msg);
+                }
+                return data;
+            });
+        }).catch(function(e) { console.error('RPC error:', e); throw e; });
+    }
+
     function filterParam() { return '&include_test_data=eq.' + (includeTestData ? 'true' : 'false'); }
     function updateTestFilterUi(summaryRows) {
         var btn = document.getElementById('testFilterToggle');
@@ -616,7 +634,7 @@ var currentFilter = 'open';
             }
             // Actions based on status
             if (t.status === 'open' || t.status === 'investigating') {
-                actions += '<button class="ticket-btn" onclick="updateTicket(' + t.id + ',\x27diagnosed\x27)">Diagnose</button>';
+                actions += '<button class="ticket-btn" onclick="diagnoseTicket(' + t.id + ')">Diagnose</button>';
             }
             if (t.status === 'open' || t.status === 'investigating' || t.status === 'diagnosed') {
                 actions += '<button class="ticket-btn investigate" onclick="deepInvestigate(' + t.id + ')">Deep Investigate</button>';
@@ -646,6 +664,20 @@ var currentFilter = 'open';
 
     function resolveTicket(id) { apiPatch('ops_tickets', id, {status: 'resolved', resolved_at: new Date().toISOString()}).then(function() { refreshTickets(); }); }
     function updateTicket(id, status) { apiPatch('ops_tickets', id, {status: status}).then(function() { refreshTickets(); }); }
+    function diagnoseTicket(id) {
+        document.getElementById('lastUpdated').textContent = 'Running RCCA for ticket #' + id + '...';
+        return apiRpc('diagnose_ops_ticket', {p_ticket_id: id}).then(function(result) {
+            return refreshTickets().then(function() {
+                var summary = result && result.diagnosis ? result.diagnosis.summary : 'Ticket diagnosed.';
+                document.getElementById('lastUpdated').textContent = 'RCCA complete for ticket #' + id;
+                alert('RCCA complete for ticket #' + id + ':\n\n' + summary);
+            });
+        }).catch(function(e) {
+            document.getElementById('lastUpdated').textContent = 'RCCA failed for ticket #' + id;
+            alert('RCCA failed for ticket #' + id + ': ' + e.message);
+            return refreshTickets();
+        });
+    }
     function deepInvestigate(id) {
         if (!confirm('This will create a new Agent Zero investigation chat. Continue?')) return;
         // Find ticket data for GitHub workflow dispatch
