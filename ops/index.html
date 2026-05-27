@@ -157,6 +157,16 @@
         .ticket-status.deep_investigate { background: rgba(167,139,250,0.15); color: #a78bfa; }
         .ticket-status.resolved { background: rgba(16,185,129,0.15); color: #10b981; }
         .no-tickets { color: var(--text-muted); text-align: center; padding: 2rem; }
+        .ticket-thread { margin-top: 0.75rem; border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; background: rgba(10,10,26,0.5); }
+        .thread-title { color: var(--accent-light); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+        .thread-entry { padding: 0.4rem 0.5rem; border-radius: 6px; margin-bottom: 0.35rem; font-size: 0.78rem; line-height: 1.35; }
+        .thread-entry.thread-user { background: rgba(59,130,246,0.1); border-left: 3px solid #3b82f6; }
+        .thread-entry.thread-agent { background: rgba(16,185,129,0.1); border-left: 3px solid #10b981; }
+        .thread-meta { color: var(--text-muted); font-size: 0.65rem; margin-bottom: 0.15rem; }
+        .thread-body { color: var(--text-primary); }
+        .thread-actions { color: var(--accent-light); font-style: italic; margin-top: 0.2rem; font-size: 0.7rem; }
+        .pipeline-status { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .no-tickets { color: var(--text-muted); text-align: center; padding: 2rem; }
         .pipeline-status { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
         .service-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-bottom: 1.2rem; }
         .service-status-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; }
@@ -631,19 +641,38 @@ var currentFilter = 'open';
                     '<div class="diag-summary">' + escHtml(d.summary || '') + '</div>' +
                     '<div class="diag-rec">Recommendation: ' + escHtml(d.recommendation || '') + '</div>' +
                     '</div>';
+            // Show investigation thread if available
+            var threadHtml = '';
+            if (t.source_data && t.source_data.investigation_thread && t.source_data.investigation_thread.length > 0) {
+                var entries = t.source_data.investigation_thread.map(function(entry) {
+                    return '<div class="thread-entry ' + cssClass + '">' +
+                        '<div class="thread-meta">' + escHtml(entry.author || '') + ' · ' + ts + '</div>' +
+                        '<div class="thread-body">' + escHtml(entry.message || '') + '</div>' + actions +
+                        '</div>';
+                }).join('');
+                threadHtml = '<div class="ticket-thread"><div class="thread-title">Investigation Thread</div>' + entries + '</div>';
             }
-            // Actions based on status
+            // Status-specific messaging and actions
+            var statusNote = '';
+            if (t.status === 'deep_investigate') {
+                statusNote = '<div class="ticket-status-note">Investigation queued — Agent Zero will create a chat within 5 minutes</div>';
+            } else if (t.status === 'investigating' && t.source_data && t.source_data.a0_chat_url) {
+                statusNote = '<div class="ticket-status-note"><a href="' + escHtml(t.source_data.a0_chat_url) + '" target="_blank" rel="noopener noreferrer" class="ticket-btn investigate">View Investigation</a></div>';
+            }
             if (t.status === 'open' || t.status === 'investigating') {
                 actions += '<button class="ticket-btn" onclick="diagnoseTicket(' + t.id + ')">Diagnose</button>';
             }
-            if (t.status === 'open' || t.status === 'investigating' || t.status === 'diagnosed') {
+            if (t.status === 'open' || t.status === 'diagnosed') {
                 actions += '<button class="ticket-btn investigate" onclick="deepInvestigate(' + t.id + ')">Deep Investigate</button>';
+            }
+            if (t.status === 'investigating') {
+                actions += '<button class="ticket-btn" onclick="addInvestigationReply(' + t.id + ')">Reply</button>';
             }
             if (t.status !== 'resolved' && t.status !== 'closed') {
                 actions += '<button class="ticket-btn resolve" onclick="resolveTicket(' + t.id + ')">Resolve</button>';
             }
             var statusBadge = '<span class="ticket-status ' + t.status + '">' + t.status + '</span>';
-            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span>' + statusBadge + '<div class="ticket-info"><div class="ticket-title">#' + t.id + ' — ' + escHtml(t.title) + '</div><div class="ticket-meta">' + escHtml(t.source || '') + ' &middot; ' + ago + '</div>' + diagnosis + '</div><div class="ticket-actions">' + actions + '</div></div>';
+            return '<div class="ticket-item"><span class="ticket-severity ' + t.severity + '">' + t.severity + '</span>' + statusBadge + '<div class="ticket-info"><div class="ticket-title">#' + t.id + ' — ' + escHtml(t.title) + '</div><div class="ticket-meta">' + escHtml(t.source || '') + ' &middot; ' + ago + '</div>' + diagnosis + threadHtml + statusNote + '</div><div class="ticket-actions">' + actions + '</div></div>';
         }).join('');
     }
 
@@ -679,46 +708,20 @@ var currentFilter = 'open';
         });
     }
     function deepInvestigate(id) {
-        if (!confirm('This will create a new Agent Zero investigation chat. Continue?')) return;
-        // Find ticket data for GitHub workflow dispatch
-        var ticket = allTickets.find(function(t) { return t.id === id; });
-        var title = ticket ? (ticket.title || 'Unknown') : 'Unknown';
-        var desc = ticket ? (ticket.description || '') : '';
-
-        // 1. Update ticket status in Supabase
+        if (!confirm('This will start a deep investigation with Agent Zero. Continue?')) return;
+        document.getElementById('lastUpdated').textContent = 'Queueing investigation for ticket #' + id + '...';
+        // 1. Set status for cron pickup
         updateTicket(id, 'deep_investigate');
-
-        // 2. Trigger GitHub Actions workflow
-        var ghToken = '§§secret(GITHUB_API_KEY)';
-        var ghRepo = 'marcopolovene/toon-it-project';
-        var ghUrl = 'https://api.github.com/repos/' + ghRepo + '/actions/workflows/deep_investigate.yml/dispatches';
-        fetch(ghUrl, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + ghToken,
-                'Accept': 'application/vnd.github+json',
-                'X-GitHub-Api-Version': '2022-11-28',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ref: 'main',
-                inputs: {
-                    ticket_id: String(id),
-                    ticket_title: title,
-                    ticket_description: desc
-                }
-            })
-        }).then(function(r) {
-            if (r.status === 204 || r.ok) {
-                console.log('GitHub workflow dispatched successfully');
-            } else {
-                console.error('GitHub workflow dispatch failed:', r.status);
-            }
+        // 2. Initialize investigation thread
+        apiRpc('add_investigation_reply', {p_ticket_id: id, p_author: 'marco', p_message: 'Deep investigation requested from Ops Dashboard'}).then(function() {
+            return refreshTickets().then(function() {
+                document.getElementById('lastUpdated').textContent = 'Investigation queued for ticket #' + id;
+                alert('Investigation queued! Agent Zero will create a chat within 5 minutes. Check back shortly for the View Investigation link.');
+            });
         }).catch(function(e) {
-            console.error('GitHub workflow dispatch error:', e);
+            console.error('Thread init error:', e);
+            refreshTickets();
         });
-
-        alert('Investigation requested! GitHub workflow triggered — Agent Zero will pick this up within 5 minutes and create a new chat under the Toon_It_v2 project.');
     }
     function escHtml(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
