@@ -3339,9 +3339,6 @@
                         maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character Mode' },
             chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin Mode' },
         
-                        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character Mode' },
-            chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin Mode' },
-        
         };
         return map[style] || map.storybook;
     }
@@ -5597,22 +5594,22 @@
   if(typeof _magicThemes !== 'undefined'){
     _magicThemes.maincharacter = {
       spell: 'Cue the Spotlight!',
-      wand: '🌟',
-      particles: ['🌟','✨','🎬','💫','🏆','⭐','🎉','✦'],
+      wand: '*',
+      particles: ['*','+','x','~','^','*','!','o'],
       msgs: {
-        1: ['Finding your good lighting... 🌟','Warming up the wind machine... 🎬','Scanning for main character energy... ✨','Calling the tiny spotlight crew... 💫','Preparing your dramatic entrance... ⭐'],
-        2: ['Turning ordinary into iconic... 🎬','Adding unnecessary drama... 🌟','Cueing the confetti breeze... 🎉','Polishing your hero glow... ✨','Making the moment way too epic... 💫'],
-        3: ['Sweeping the spotlight... 🌟','Finalizing your big reveal... 🎬','Charging the cinematic aura... ✨','Adding one last sparkle... ⭐','Your main character moment is close... 💫']
+        1: ['Finding your good lighting...','Warming up the wind machine...','Scanning for main character energy...','Calling the tiny spotlight crew...','Preparing your dramatic entrance...'],
+        2: ['Turning ordinary into iconic...','Adding unnecessary drama...','Cueing the confetti breeze...','Polishing your hero glow...','Making the moment way too epic...'],
+        3: ['Sweeping the spotlight...','Finalizing your big reveal...','Charging the cinematic aura...','Adding one last sparkle...','Your main character moment is close...']
       }
     };
     _magicThemes.chaosgremlin = {
       spell: 'Release the Sparkles!',
-      wand: '😈',
-      particles: ['😈','✨','🎉','💥','⭐','💫','🌀','✦'],
+      wand: '~',
+      particles: ['~','+','!','*','^','x','@','o'],
       msgs: {
-        1: ['Locating the chaos sparkle... 😈','Securing the glitter cannons... ✨','Measuring mischief levels... 🌀','Checking for harmless mayhem... 🎉','Warming up the wobble machine... ⭐'],
-        2: ['Unleashing cute chaos... 😈','Bouncing the tiny props... 💫','Adding sparkle-based nonsense... ✨','Launching confetti safely... 🎉','Making mischief adorable... ⭐'],
-        3: ['Sweeping up extra glitter... ✨','Taming the final wobble... 🌀','Polishing the chaos burst... 😈','Adding one last boing... ⭐','Your gremlin reveal is ready soon... 🎬']
+        1: ['Locating the chaos sparkle...','Securing the glitter cannons...','Measuring mischief levels...','Checking for harmless mayhem...','Warming up the wobble machine...'],
+        2: ['Unleashing cute chaos...','Bouncing the tiny props...','Adding sparkle-based nonsense...','Launching confetti safely...','Making mischief adorable...'],
+        3: ['Sweeping up extra glitter...','Taming the final wobble...','Polishing the chaos burst...','Adding one last boing...','Your gremlin reveal is ready soon...']
       }
     };
   }
@@ -5631,7 +5628,7 @@
       'Rounded shapes usually feel friendlier than sharp shapes, which is why cute chaos should stay soft and bouncy.',
       'A tiny camera shake can make a cartoon moment feel funnier because it exaggerates impact without changing the character.',
       'Bright complementary colors make playful scenes feel more energetic because they create strong visual contrast.',
-      'Mischief is funniest when it feels harmless — the viewer gets chaos energy without any real danger.'
+      'Mischief is funniest when it feels harmless - the viewer gets chaos energy without any real danger.'
     ];
   }
 })();
