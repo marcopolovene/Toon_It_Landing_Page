@@ -222,6 +222,8 @@
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
 
         .style-loader--princessify .style-loader-fill { background-image: linear-gradient(90deg, #f472b6, #facc15, #c084fc); box-shadow: 0 0 16px rgba(244,114,182,0.26); }
+        .style-loader--maincharacter .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ec4899, #8b5cf6); box-shadow: 0 0 16px rgba(245,158,11,0.26); }
+        .style-loader--chaosgremlin .style-loader-fill { background-image: linear-gradient(90deg, #a855f7, #ec4899, #22d3ee); box-shadow: 0 0 16px rgba(168,85,247,0.26); }
 @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -722,6 +724,16 @@
                     <span class="sbadge sbadge-new">NEW</span>
                     <span class="style-icon">👑</span>
                     <span class="style-name">Princessify Me</span>
+                </div>
+                <div class="style-card" data-style="maincharacter" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-new">NEW</span>
+                    <span class="style-icon">🌟</span>
+                    <span class="style-name">Main Character Mode</span>
+                </div>
+                <div class="style-card" data-style="chaosgremlin" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-new">NEW</span>
+                    <span class="style-icon">😈</span>
+                    <span class="style-name">Chaos Gremlin Mode</span>
                 </div>
 <div class="style-card" data-style="chibi" onclick="selectStyle(this)">
                     <span class="style-icon">🐼</span>
@@ -3324,6 +3336,12 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
             renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+                        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character Mode' },
+            chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin Mode' },
+        
+                        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character Mode' },
+            chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin Mode' },
+        
         };
         return map[style] || map.storybook;
     }
@@ -5438,6 +5456,8 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character Mode' },
+        chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin Mode' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5566,6 +5586,52 @@
       'The oversized eyes in chibi art aren’t just cute — they’re placed LOW on the face to create a massive forehead, which amplifies the baby-like cuteness.',
       'Chibi hands are deliberately simplified into "mitten" shapes — detailed fingers on a tiny chibi body creates an uncanny valley effect that breaks the magic.',
       'The 2025 viral chibi trend of characters inside transparent toy capsules comes directly from Japanese gashapon vending machine culture.'
+    ];
+  }
+})();
+</script>
+
+<script>
+// === MAINCHARACTER + CHAOSGREMLIN STYLE EXTENSION ===
+(function(){
+  if(typeof _magicThemes !== 'undefined'){
+    _magicThemes.maincharacter = {
+      spell: 'Cue the Spotlight!',
+      wand: '🌟',
+      particles: ['🌟','✨','🎬','💫','🏆','⭐','🎉','✦'],
+      msgs: {
+        1: ['Finding your good lighting... 🌟','Warming up the wind machine... 🎬','Scanning for main character energy... ✨','Calling the tiny spotlight crew... 💫','Preparing your dramatic entrance... ⭐'],
+        2: ['Turning ordinary into iconic... 🎬','Adding unnecessary drama... 🌟','Cueing the confetti breeze... 🎉','Polishing your hero glow... ✨','Making the moment way too epic... 💫'],
+        3: ['Sweeping the spotlight... 🌟','Finalizing your big reveal... 🎬','Charging the cinematic aura... ✨','Adding one last sparkle... ⭐','Your main character moment is close... 💫']
+      }
+    };
+    _magicThemes.chaosgremlin = {
+      spell: 'Release the Sparkles!',
+      wand: '😈',
+      particles: ['😈','✨','🎉','💥','⭐','💫','🌀','✦'],
+      msgs: {
+        1: ['Locating the chaos sparkle... 😈','Securing the glitter cannons... ✨','Measuring mischief levels... 🌀','Checking for harmless mayhem... 🎉','Warming up the wobble machine... ⭐'],
+        2: ['Unleashing cute chaos... 😈','Bouncing the tiny props... 💫','Adding sparkle-based nonsense... ✨','Launching confetti safely... 🎉','Making mischief adorable... ⭐'],
+        3: ['Sweeping up extra glitter... ✨','Taming the final wobble... 🌀','Polishing the chaos burst... 😈','Adding one last boing... ⭐','Your gremlin reveal is ready soon... 🎬']
+      }
+    };
+  }
+  if(typeof _magicFacts !== 'undefined'){
+    _magicFacts.maincharacter = [
+      'A slow camera push-in makes a moment feel more important because it guides the viewer directly toward the subject.',
+      'Backlighting and rim light are classic cinematic tricks for making characters feel heroic and larger than life.',
+      'Confetti became a visual shorthand for celebration because it adds instant movement, color, and joy to a scene.',
+      'The main character meme is funny because it treats ordinary life like an epic movie scene.',
+      'Stage spotlights were originally used to isolate performers from the background and make audiences focus emotionally.',
+      'Cinematic haze makes light beams visible, which is why dramatic scenes often feel glowy and magical.'
+    ];
+    _magicFacts.chaosgremlin = [
+      'Squash-and-stretch is an animation principle that makes playful motion feel bouncy, funny, and full of energy.',
+      'Confetti and sparkles create instant visual chaos without making a scene feel scary or messy.',
+      'Rounded shapes usually feel friendlier than sharp shapes, which is why cute chaos should stay soft and bouncy.',
+      'A tiny camera shake can make a cartoon moment feel funnier because it exaggerates impact without changing the character.',
+      'Bright complementary colors make playful scenes feel more energetic because they create strong visual contrast.',
+      'Mischief is funniest when it feels harmless — the viewer gets chaos energy without any real danger.'
     ];
   }
 })();
@@ -5888,6 +5954,8 @@
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
         renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
+        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character Mode' },
+        chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin Mode' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
