@@ -262,7 +262,9 @@
             <div class="stat-card"><div class="stat-label">Error Rate</div><div class="stat-value" id="errorRate">—</div><div class="stat-change" id="errorTrend"></div></div>
             <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="avgRating">—</div><div class="stat-change" id="ratingCount"></div><a href="#" onclick="var el=document.getElementById('feedbackSection'); if(el){el.scrollIntoView({behavior:'smooth', block:'start'});} return false;" style="font-size:0.68rem;color:var(--accent);text-decoration:none;display:block;margin-top:3px;opacity:0.9;">Dig Deeper →</a></div>
             <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-value" id="openTickets">—</div><div class="stat-change" id="ticketSeverity"></div></div>
+            <div class="stat-card"><div class="stat-label">Anon Gens (24h)</div><div class="stat-value" id="anonGens24h">—</div><div class="stat-change" id="anonGensTotal"></div></div>
         </div>
+
 
         <div class="section">
             <div class="section-header"><div class="section-title">Metrics</div></div>
@@ -641,13 +643,17 @@ var currentFilter = 'open';
                     '<div class="diag-summary">' + escHtml(d.summary || '') + '</div>' +
                     '<div class="diag-rec">Recommendation: ' + escHtml(d.recommendation || '') + '</div>' +
                     '</div>';
+            }
             // Show investigation thread if available
             var threadHtml = '';
             if (t.source_data && t.source_data.investigation_thread && t.source_data.investigation_thread.length > 0) {
                 var entries = t.source_data.investigation_thread.map(function(entry) {
+                    var cssClass = (entry.author || '').toLowerCase() === 'marco' ? 'thread-user' : 'thread-agent';
+                    var ts = entry.created_at ? timeAgo(new Date(entry.created_at)) : '';
+                    var entryActions = entry.actions_taken ? '<div class="thread-actions">Actions: ' + escHtml(entry.actions_taken) + '</div>' : '';
                     return '<div class="thread-entry ' + cssClass + '">' +
                         '<div class="thread-meta">' + escHtml(entry.author || '') + ' · ' + ts + '</div>' +
-                        '<div class="thread-body">' + escHtml(entry.message || '') + '</div>' + actions +
+                        '<div class="thread-body">' + escHtml(entry.message || '') + '</div>' + entryActions +
                         '</div>';
                 }).join('');
                 threadHtml = '<div class="ticket-thread"><div class="thread-title">Investigation Thread</div>' + entries + '</div>';
@@ -721,6 +727,19 @@ var currentFilter = 'open';
         }).catch(function(e) {
             console.error('Thread init error:', e);
             refreshTickets();
+        });
+    }
+    function addInvestigationReply(id) {
+        var msg = prompt('Enter your reply for ticket #' + id + ':');
+        if (!msg) return;
+        document.getElementById('lastUpdated').textContent = 'Adding reply to ticket #' + id + '...';
+        apiRpc('add_investigation_reply', {p_ticket_id: id, p_author: 'marco', p_message: msg}).then(function() {
+            document.getElementById('lastUpdated').textContent = 'Reply added to ticket #' + id;
+            refreshTickets();
+        }).catch(function(e) {
+            console.error('Reply error:', e);
+            document.getElementById('lastUpdated').textContent = 'Failed to add reply to ticket #' + id;
+            alert('Failed to add reply: ' + e.message);
         });
     }
     function escHtml(str) { var d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
