@@ -388,7 +388,7 @@ var _sk1 = 'sb_secret_-D0';
 var _sk2 = '2ShEpQLF_McHcm';
 var _sk3 = 'J_4nQ_VxHQMT5X';
 var SERVICE_KEY = _sk1 + _sk2 + _sk3;
-var serviceHeaders = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+var headers = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 var currentFilter = 'open';
     var includeTestData = sessionStorage.getItem('ops_include_test_data') === '1';
     var allTickets = [];
