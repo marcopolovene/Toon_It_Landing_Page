@@ -902,27 +902,33 @@ var currentFilter = 'open';
     }
     function resolveTicket(id) {
         document.getElementById('lastUpdated').textContent = 'Resolving ticket #' + id + '...';
-        proxyPost('/update-ticket', {id: id, status: 'resolved', resolved_at: new Date().toISOString()})
-            .then(function(data) {
-                document.getElementById('lastUpdated').textContent = 'Ticket #' + id + ' resolved';
-                return refreshTickets();
-            })
-            .catch(function(e) {
-                document.getElementById('lastUpdated').textContent = 'Failed to resolve ticket #' + id;
-                alert('Failed to resolve ticket #' + id + ': ' + e.message);
-            });
+        fetch(SB_URL + '/rest/v1/ops_tickets?id=eq.' + id, {
+            method: 'PATCH',
+            headers: serviceHeaders,
+            body: JSON.stringify({status: 'resolved', resolved_at: new Date().toISOString()})
+        }).then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            document.getElementById('lastUpdated').textContent = 'Ticket #' + id + ' resolved';
+            return refreshTickets();
+        }).catch(function(e) {
+            document.getElementById('lastUpdated').textContent = 'Failed to resolve ticket #' + id;
+            alert('Failed to resolve ticket #' + id + ': ' + e.message);
+        });
     }
     function updateTicket(id, status) {
         document.getElementById('lastUpdated').textContent = 'Updating ticket #' + id + '...';
-        proxyPost('/update-ticket', {id: id, status: status})
-            .then(function(data) {
-                document.getElementById('lastUpdated').textContent = 'Ticket #' + id + ' updated';
-                return refreshTickets();
-            })
-            .catch(function(e) {
-                document.getElementById('lastUpdated').textContent = 'Failed to update ticket #' + id;
-                alert('Failed to update ticket #' + id + ': ' + e.message);
-            });
+        fetch(SB_URL + '/rest/v1/ops_tickets?id=eq.' + id, {
+            method: 'PATCH',
+            headers: serviceHeaders,
+            body: JSON.stringify({status: status})
+        }).then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            document.getElementById('lastUpdated').textContent = 'Ticket #' + id + ' updated';
+            return refreshTickets();
+        }).catch(function(e) {
+            document.getElementById('lastUpdated').textContent = 'Failed to update ticket #' + id;
+            alert('Failed to update ticket #' + id + ': ' + e.message);
+        });
     }
     function diagnoseTicket(id) {
         document.getElementById('lastUpdated').textContent = 'Running RCCA for ticket #' + id + '...';
