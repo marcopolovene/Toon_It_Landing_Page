@@ -1327,5 +1327,37 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
+
+<!-- ============================================================ -->
+<!-- COMPLIANCE: Report Button for My Videos (Blocker 1)           -->
+<!-- ============================================================ -->
+<script>
+(function() {
+    // Add report button to video modal if not already present
+    var origShowVideo = window.showVideoModal;
+    if (origShowVideo) {
+        window.showVideoModal = function(id) {
+            origShowVideo(id);
+            setTimeout(function() {
+                var content = document.querySelector('.video-modal-content');
+                if (!content) return;
+                // Remove existing report button to avoid duplicates
+                var existing = content.querySelector('.mv-report-btn');
+                if (existing) existing.remove();
+                var btn = document.createElement('button');
+                btn.className = 'mv-report-btn';
+                btn.innerHTML = '&#9873; Report Content';
+                btn.style.cssText = 'display:block;width:100%;margin-top:12px;padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.85em;cursor:pointer;transition:all 0.2s;';
+                btn.onmouseenter = function() { this.style.borderColor = 'var(--error)'; this.style.color = 'var(--error)'; };
+                btn.onmouseleave = function() { this.style.borderColor = 'var(--border)'; this.style.color = 'var(--text-muted)'; };
+                btn.onclick = function() { if (window.openReportModal) window.openReportModal(id); };
+                var wm = content.querySelector('.dash-wm-banner');
+                if (wm) wm.after(btn); else content.appendChild(btn);
+            }, 50);
+        };
+    }
+})();
+</script>
+
 </body>
 </html>
