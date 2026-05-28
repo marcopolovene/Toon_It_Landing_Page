@@ -593,11 +593,10 @@ var currentFilter = 'open';
         return Promise.all([
             apiGet('ops_dashboard_summary_filtered?select=*&order=include_test_data.asc'),
             apiGet('ops_dashboard_summary_filtered?select=*&include_test_data=eq.' + (includeTestData ? 'true' : 'false') + '&limit=1'),
-            apiGet('rpc/count_anonymous_generations')
+            apiRpc('count_anonymous_generations', {})
         ]).then(function(data) {
             var allSummaries = data[0] || [];
             var summary = (data[1] && data[1][0]) || allSummaries.find(function(r) { return r.include_test_data === includeTestData; }) || {};
-            var anonData = (data[2] && data[2][0]) || data[2] || {};
             updateTestFilterUi(allSummaries);
             var totalUsers = Number(summary.total_users || 0);
             var newToday = Number(summary.new_users_24h || 0);
@@ -885,8 +884,43 @@ var currentFilter = 'open';
         renderTickets();
     }
 
-    function resolveTicket(id) { apiPatch('ops_tickets', id, {status: 'resolved', resolved_at: new Date().toISOString()}).then(function() { refreshTickets(); }); }
-    function updateTicket(id, status) { apiPatch('ops_tickets', id, {status: status}).then(function() { refreshTickets(); }); }
+    function proxyPost(path, body) {
+        var proxyUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/ops-proxy' + path + '?pw=toonit2026ops';
+        return fetch(proxyUrl, {
+            method: 'POST',
+            headers: Object.assign({}, headers, {'Content-Type': 'application/json', 'x-ops-pw': 'toonit2026ops'}),
+            body: JSON.stringify(body)
+        }).then(function(r) {
+            return r.json().then(function(data) {
+                if (!r.ok || data.error) throw new Error(data.error || 'HTTP ' + r.status);
+                return data;
+            });
+        });
+    }
+    function resolveTicket(id) {
+        document.getElementById('lastUpdated').textContent = 'Resolving ticket #' + id + '...';
+        proxyPost('/update-ticket', {id: id, status: 'resolved', resolved_at: new Date().toISOString()})
+            .then(function(data) {
+                document.getElementById('lastUpdated').textContent = 'Ticket #' + id + ' resolved';
+                return refreshTickets();
+            })
+            .catch(function(e) {
+                document.getElementById('lastUpdated').textContent = 'Failed to resolve ticket #' + id;
+                alert('Failed to resolve ticket #' + id + ': ' + e.message);
+            });
+    }
+    function updateTicket(id, status) {
+        document.getElementById('lastUpdated').textContent = 'Updating ticket #' + id + '...';
+        proxyPost('/update-ticket', {id: id, status: status})
+            .then(function(data) {
+                document.getElementById('lastUpdated').textContent = 'Ticket #' + id + ' updated';
+                return refreshTickets();
+            })
+            .catch(function(e) {
+                document.getElementById('lastUpdated').textContent = 'Failed to update ticket #' + id;
+                alert('Failed to update ticket #' + id + ': ' + e.message);
+            });
+    }
     function diagnoseTicket(id) {
         document.getElementById('lastUpdated').textContent = 'Running RCCA for ticket #' + id + '...';
         return apiRpc('diagnose_ops_ticket', {p_ticket_id: id}).then(function(result) {
