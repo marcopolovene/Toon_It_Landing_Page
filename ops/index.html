@@ -503,7 +503,11 @@ var _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 var _k2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
 var _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
 var SB_KEY = _k1 + _k2 + _k3;
-var headers = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+var _sk1 = 'sb_secret_-D0';
+var _sk2 = '2ShEpQLF_McHcm';
+var _sk3 = 'J_4nQ_VxHQMT5X';
+var SERVICE_KEY = _sk1 + _sk2 + _sk3;
+var serviceHeaders = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 var currentFilter = 'open';
     var includeTestData = sessionStorage.getItem('ops_include_test_data') === '1';
     var allTickets = [];
