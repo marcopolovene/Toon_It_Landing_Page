@@ -1079,6 +1079,14 @@ var currentFilter = 'open';
 (function() {
     'use strict';
 
+    // ── App-Only Gate: Compliance enforced ONLY in Capacitor/Android app ──
+    var IS_APP = !!(window.Capacitor || window.CapacitorNative || window.AndroidBridge);
+    if (!IS_APP) {
+        console.log('Compliance: Web mode — gates disabled');
+    } else {
+        console.log('Compliance: App mode — gates enabled');
+    }
+
     const CURRENT_TERMS_VERSION = '2026-05-28-v1';
     const COMPLIANCE_NS = 'toonit_compliance_';
 
@@ -1102,6 +1110,7 @@ var currentFilter = 'open';
     window.complianceShowToast = showToast;
 
     async function checkTermsAcceptance() {
+        if (!IS_APP) return true; // No terms gate on web
         var accepted = localStorage.getItem(COMPLIANCE_NS + 'terms_accepted');
         var version = localStorage.getItem(COMPLIANCE_NS + 'terms_version');
         if (accepted === 'true' && version === CURRENT_TERMS_VERSION) {
@@ -1144,6 +1153,7 @@ var currentFilter = 'open';
     }
 
     async function checkPhotoDisclosure() {
+        if (!IS_APP) return true; // No photo gate on web
         var disclosed = localStorage.getItem(COMPLIANCE_NS + 'photo_disclosed');
         if (disclosed === 'true') return true;
         return new Promise(function(resolve) {
@@ -1181,6 +1191,7 @@ var currentFilter = 'open';
     }
 
     function hookUploadFlow() {
+        if (!IS_APP) return; // Skip upload gates on web
         var uploadArea = document.getElementById('uploadArea');
         if (!uploadArea) {
             setTimeout(hookUploadFlow, 500);
