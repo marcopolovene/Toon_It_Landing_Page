@@ -330,7 +330,7 @@
             <div class="stat-card"><div class="stat-label">Generations (24h)</div><div class="stat-value" id="gen24h">—</div><div class="stat-change" id="genSuccess"></div></div>
             <div class="stat-card"><div class="stat-label">Error Rate</div><div class="stat-value" id="errorRate">—</div><div class="stat-change" id="errorTrend"></div></div>
             <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="avgRating">—</div><div class="stat-change" id="ratingCount"></div><a href="#" onclick="var el=document.getElementById('feedbackSection'); if(el){el.scrollIntoView({behavior:'smooth', block:'start'});} return false;" style="font-size:0.68rem;color:var(--accent);text-decoration:none;display:block;margin-top:3px;opacity:0.9;">Dig Deeper →</a></div>
-            <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-value" id="openTickets">—</div><div class="stat-change" id="ticketSeverity"></div></div>
+            <div class="stat-card"><div class="stat-label">Needs Attention</div><div class="stat-value" id="openTickets">—</div><div class="stat-change" id="ticketSeverity"></div></div>
             <div class="stat-card"><div class="stat-label">Anon Gens (24h)</div><div class="stat-value" id="anonGens24h">—</div><div class="stat-change" id="anonGensTotal"></div></div>
         </div>
 
@@ -481,6 +481,7 @@ var currentFilter = 'open';
         ]).then(function(data) {
             var allSummaries = data[0] || [];
             var summary = (data[1] && data[1][0]) || allSummaries.find(function(r) { return r.include_test_data === includeTestData; }) || {};
+            var anonData = data[2] || {};
             updateTestFilterUi(allSummaries);
             var totalUsers = Number(summary.total_users || 0);
             var newToday = Number(summary.new_users_24h || 0);
@@ -689,9 +690,9 @@ var currentFilter = 'open';
     }
 
     function renderTickets() {
-        var open = allTickets.filter(function(t) { return t.status !== 'resolved' && t.status !== 'closed'; }).length;
+        var open = allTickets.filter(function(t) { return t.status === 'diagnosed' || t.status === 'investigating'; }).length;
         document.getElementById('ticketCount').textContent = open;
-        var crit = allTickets.filter(function(t) { return t.severity === 'critical' && t.status !== 'resolved'; }).length;
+        var crit = allTickets.filter(function(t) { return t.severity === 'critical' && (t.status === 'diagnosed' || t.status === 'investigating'); }).length;
         document.getElementById('ticketSeverity').textContent = crit > 0 ? crit + ' critical' : 'No critical';
         document.getElementById('ticketSeverity').className = 'stat-change ' + (crit > 0 ? 'negative' : 'positive');
 
