@@ -785,7 +785,7 @@ var currentFilter = 'open';
         document.getElementById('lastUpdated').textContent = 'Resolving ticket #' + id + '...';
         fetch(SB_URL + '/rest/v1/ops_tickets?id=eq.' + id, {
             method: 'PATCH',
-            headers: serviceHeaders,
+            headers: headers,
             body: JSON.stringify({status: 'resolved', resolved_at: new Date().toISOString()})
         }).then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -800,7 +800,7 @@ var currentFilter = 'open';
         document.getElementById('lastUpdated').textContent = 'Updating ticket #' + id + '...';
         fetch(SB_URL + '/rest/v1/ops_tickets?id=eq.' + id, {
             method: 'PATCH',
-            headers: serviceHeaders,
+            headers: headers,
             body: JSON.stringify({status: status})
         }).then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
