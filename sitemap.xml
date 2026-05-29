@@ -9,6 +9,14 @@
     <priority>1.0</priority>
   </url>
 
+  <!-- Gallery — Community creations -->
+  <url>
+    <loc>https://toonit.ai/gallery.html</loc>
+    <lastmod>2026-05-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Blog index -->
   <url>
     <loc>https://toonit.ai/blog/</loc>
