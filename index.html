@@ -705,7 +705,8 @@
         <a class="hero-cta" onclick="document.getElementById('uploadArea').scrollIntoView({behavior:'smooth'}); return false;" href="#">
             📸 Transform a Photo Free
         </a>
-        <p class="hero-free-note">✨ Try it now — no signup needed! 🎁 Sign up for 3 free credits</p>
+        <p class="hero-free-note">&#10024; Try it now &mdash; no signup needed! &#127873; Sign up for 3 free credits</p>
+        <p class="hero-free-note" style="opacity:0.85;margin-top:6px;">&#11088; No credit card &middot; Results in ~60s &middot; Share to unlock more</p>
     </section>
 
 
@@ -2314,25 +2315,27 @@
             var videoUrl = _getVideoUrl();
             if (!videoUrl) return;
             var btn = document.getElementById('shareVideoBtn');
+            var _afterShare = function() { if (typeof grantShareUnlock === 'function') grantShareUnlock(); };
             if (navigator.share) {
                 fetch(videoUrl).then(function(r) { return r.blob(); }).then(function(blob) {
                     var file = new File([blob], 'toonit_creation.mp4', { type: 'video/mp4' });
-                    var shareData = { title: 'My Toon It! Creation', text: '✨ Check out my magical transformation! Try it free at toonit.ai', files: [file] };
+                    var shareData = { title: 'My Toon It! Creation', text: '\u2728 Check out my magical transformation! Try it free at toonit.ai', files: [file] };
                     if (navigator.canShare && navigator.canShare(shareData)) {
-                        navigator.share(shareData).catch(function(){});
+                        navigator.share(shareData).then(_afterShare).catch(function(){});
                         trackEvent('share_native_file');
                     } else {
-                        navigator.share({ title: 'My Toon It! Creation', text: '✨ Check out my magical transformation! Try it free at toonit.ai', url: videoUrl }).catch(function(){});
+                        navigator.share({ title: 'My Toon It! Creation', text: '\u2728 Check out my magical transformation! Try it free at toonit.ai', url: videoUrl }).then(_afterShare).catch(function(){});
                         trackEvent('share_native_url');
                     }
                 }).catch(function() {
-                    navigator.share({ title: 'My Toon It! Creation', text: '✨ Check out my magical transformation! Try it free at toonit.ai', url: videoUrl }).catch(function(){});
+                    navigator.share({ title: 'My Toon It! Creation', text: '\u2728 Check out my magical transformation! Try it free at toonit.ai', url: videoUrl }).then(_afterShare).catch(function(){});
                     trackEvent('share_native_fallback');
                 });
             } else {
                 navigator.clipboard.writeText(videoUrl).then(function() {
-                    if (btn) { btn.textContent = '✅ Link Copied!'; setTimeout(function() { btn.textContent = '📤 Share'; }, 2000); }
+                    if (btn) { btn.textContent = '\u2705 Link Copied!'; setTimeout(function() { btn.textContent = '\uD83D\uDCE4 Share'; }, 2000); }
                     trackEvent('share_copy_link');
+                    _afterShare();
                 }).catch(function() { prompt('Copy this link:', videoUrl); });
             }
         }
@@ -2942,6 +2945,34 @@
             document.cookie = 'toonit_free=1; max-age=2592000; path=/; SameSite=Lax';
         }
 
+        // PHASE 2 GROWTH: share-to-unlock ONE extra free transform (anon only, not farmable)
+        function grantShareUnlock() {
+            if (!isAnonymousUser()) return false;
+            if (localStorage.getItem('toonit_share_unlock_used')) return false;
+            localStorage.removeItem('toonit_free_used');
+            document.cookie = 'toonit_free=; max-age=0; path=/; SameSite=Lax';
+            localStorage.setItem('toonit_share_unlock_used', String(Date.now()));
+            showToonToast('\uD83C\uDF81 Thanks for sharing! You unlocked 1 more free transform.');
+            var newBtn = document.getElementById('newBtn');
+            if (newBtn) {
+                newBtn.textContent = '\uD83D\uDD04 Create Another (Free)';
+                newBtn.onclick = function() {
+                    if (window.resetForNewFallbackLocal) { window.resetForNewFallbackLocal(); }
+                    else if (window.resetForNew) { window.resetForNew(); }
+                    return false;
+                };
+            }
+            return true;
+        }
+
+        function showToonToast(msg) {
+            var t = document.createElement('div');
+            t.textContent = msg;
+            t.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1a1408;color:#f0b429;border:1px solid rgba(240,180,41,0.5);padding:12px 20px;border-radius:24px;font-weight:700;font-size:0.9em;z-index:99999;box-shadow:0 6px 30px rgba(0,0,0,0.5);max-width:90%;text-align:center;';
+            document.body.appendChild(t);
+            setTimeout(function() { t.style.transition = 'opacity 0.5s'; t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 500); }, 3500);
+        }
+
         function isAnonymousUser() {
             var user = currentUser || window.currentUser;
             return !user || !user.id;
@@ -2962,7 +2993,7 @@
                 '<button class="asb-cta" onclick="showModal(\x27signup\x27)">Sign Up Free &#8212; Get 2 Credits</button>' +
                 '<p class="asb-note">No credit card needed</p>' +
                 '</div>';
-            result.parentNode.insertBefore(banner, result);
+            result.appendChild(banner);
         }
 
         function gateControlsForAnon() {
@@ -2985,6 +3016,11 @@
                     showModal('signup');
                     return false;
                 };
+            }
+            var shareBtn = document.getElementById('shareVideoBtn');
+            if (shareBtn) {
+                shareBtn.classList.add('asb-cta');
+                shareBtn.textContent = '\uD83D\uDCE4 Share & Unlock Another Free One';
             }
         }
 
