@@ -314,6 +314,14 @@
                 <div class="service-status-main" id="stripeStatusMain">Checking Stripe health...</div>
                 <div class="service-status-meta" id="stripeStatusMeta">Awaiting latest metrics collector result.</div>
             </div>
+            <div class="service-status-card" id="healthSuiteCard">
+                <div class="service-status-head">
+                    <div class="service-status-title"><span class="status-dot" id="healthSuiteDot"></span><span>Daily Health Suite</span></div>
+                    <span class="service-status-pill unknown" id="healthSuitePill">Loading</span>
+                </div>
+                <div class="service-status-main" id="healthSuiteMain">Checking signup / transform / anon health...</div>
+                <div class="service-status-meta" id="healthSuiteMeta">Awaiting latest daily health run.</div>
+            </div>
         </div>
 
         <div class="data-filter-bar" id="testDataFilterBar">
@@ -468,7 +476,7 @@ var currentFilter = 'open';
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadBotStatus(), loadFeedback()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadBotStatus(), loadFeedback()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
@@ -640,6 +648,58 @@ var currentFilter = 'open';
             if (dot) dot.className = 'status-dot critical';
             if (pill) { pill.className = 'service-status-pill critical'; pill.textContent = 'Error'; }
             if (main) main.textContent = 'Failed to load Stripe health.';
+            if (meta) meta.textContent = 'Check Supabase ops_metrics access.';
+        });
+    }
+
+    function loadHealthSuite() {
+        return apiGet('ops_metrics?select=metric_name,metric_value,metadata,recorded_at&metric_type=eq.health_check&order=recorded_at.desc&limit=20').then(function(rows) {
+            var dot = document.getElementById('healthSuiteDot');
+            var pill = document.getElementById('healthSuitePill');
+            var main = document.getElementById('healthSuiteMain');
+            var meta = document.getElementById('healthSuiteMeta');
+            if (!dot || !pill || !main || !meta) return;
+            if (!rows.length) {
+                dot.className = 'status-dot warning';
+                pill.className = 'service-status-pill warning';
+                pill.textContent = 'No data';
+                main.textContent = 'Daily health suite has not run yet.';
+                meta.textContent = 'Scheduled daily at 11:30 UTC (signup + transform + anon).';
+                return;
+            }
+            // Keep latest entry per check name
+            var latest = {};
+            rows.forEach(function(r) { if (!latest[r.metric_name]) latest[r.metric_name] = r; });
+            var checks = ['signup', 'auth_transform', 'anon_transform'];
+            var newest = rows[0];
+            var ageText = formatAge(newest.recorded_at);
+            var stale = (Date.now() - new Date(newest.recorded_at).getTime()) > 26 * 60 * 60 * 1000;
+            var failed = checks.filter(function(c) { return latest[c] && latest[c].metric_value < 1; });
+            var missing = checks.filter(function(c) { return !latest[c]; });
+            var health = (failed.length || (stale)) ? (failed.length ? 'critical' : 'warning') : 'healthy';
+            dot.className = 'status-dot ' + health;
+            pill.className = 'service-status-pill ' + health;
+            pill.textContent = stale ? 'Stale' : (failed.length ? failed.length + ' failing' : 'healthy');
+            var passCount = checks.filter(function(c) { return latest[c] && latest[c].metric_value >= 1; }).length;
+            main.textContent = failed.length
+                ? ('FAILING: ' + failed.join(', '))
+                : (passCount + '/' + checks.length + ' checks passing');
+            var parts = ['Checked ' + ageText];
+            checks.forEach(function(c) {
+                var r = latest[c];
+                var label = c === 'auth_transform' ? 'transform' : c;
+                if (!r) { parts.push(label + ': n/a'); }
+                else { parts.push(label + ': ' + (r.metric_value >= 1 ? '\u2713' : '\u2717') + (r.metadata && r.metadata.style ? ' (' + r.metadata.style + ')' : '')); }
+            });
+            meta.textContent = parts.join(' \u00b7 ');
+        }).catch(function() {
+            var dot = document.getElementById('healthSuiteDot');
+            var pill = document.getElementById('healthSuitePill');
+            var main = document.getElementById('healthSuiteMain');
+            var meta = document.getElementById('healthSuiteMeta');
+            if (dot) dot.className = 'status-dot critical';
+            if (pill) { pill.className = 'service-status-pill critical'; pill.textContent = 'Error'; }
+            if (main) main.textContent = 'Failed to load health suite status.';
             if (meta) meta.textContent = 'Check Supabase ops_metrics access.';
         });
     }
