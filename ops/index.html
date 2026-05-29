@@ -322,6 +322,46 @@
                 <div class="service-status-main" id="healthSuiteMain">Checking signup / transform / anon health...</div>
                 <div class="service-status-meta" id="healthSuiteMeta">Awaiting latest daily health run.</div>
             </div>
+            <div class="service-status-card" id="veniceCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="veniceDot"></span><span>Venice AI</span></div><span class="service-status-pill unknown" id="venicePill">Loading</span></div>
+                <div class="service-status-main" id="veniceMain">Checking Venice health...</div>
+                <div class="service-status-meta" id="veniceMeta">Awaiting metrics collector.</div>
+            </div>
+            <div class="service-status-card" id="n8nExecCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="n8nExecDot"></span><span>n8n Execution Health</span></div><span class="service-status-pill unknown" id="n8nExecPill">Loading</span></div>
+                <div class="service-status-main" id="n8nExecMain">Checking workflow executions...</div>
+                <div class="service-status-meta" id="n8nExecMeta">Per-workflow error rates (24h).</div>
+            </div>
+            <div class="service-status-card" id="stuckCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="stuckDot"></span><span>Stuck Generations</span></div><span class="service-status-pill unknown" id="stuckPill">Loading</span></div>
+                <div class="service-status-main" id="stuckMain">Checking for stuck jobs...</div>
+                <div class="service-status-meta" id="stuckMeta">Processing >15min = silent failure.</div>
+            </div>
+            <div class="service-status-card" id="n8nCostCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="n8nCostDot"></span><span>n8n Usage / Cost</span></div><span class="service-status-pill unknown" id="n8nCostPill">Loading</span></div>
+                <div class="service-status-main" id="n8nCostMain">Checking execution volume...</div>
+                <div class="service-status-meta" id="n8nCostMeta">Projected monthly vs plan.</div>
+            </div>
+            <div class="service-status-card" id="funnelCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="funnelDot"></span><span>Conversion Funnel</span></div><span class="service-status-pill unknown" id="funnelPill">Loading</span></div>
+                <div class="service-status-main" id="funnelMain">Loading funnel...</div>
+                <div class="service-status-meta" id="funnelMeta">Signup → transform → paid (30d).</div>
+            </div>
+            <div class="service-status-card" id="anonAuthCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="anonAuthDot"></span><span>Anon vs Auth</span></div><span class="service-status-pill unknown" id="anonAuthPill">Loading</span></div>
+                <div class="service-status-main" id="anonAuthMain">Loading split...</div>
+                <div class="service-status-meta" id="anonAuthMeta">Success rate by user type (24h).</div>
+            </div>
+            <div class="service-status-card" id="latencyCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="latencyDot"></span><span>Transform Latency</span></div><span class="service-status-pill unknown" id="latencyPill">Loading</span></div>
+                <div class="service-status-main" id="latencyMain">Loading latency...</div>
+                <div class="service-status-meta" id="latencyMeta">p50 / p95 / max (24h).</div>
+            </div>
+            <div class="service-status-card" id="styleMatrixCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="styleMatrixDot"></span><span>Style Success Matrix</span></div><span class="service-status-pill unknown" id="styleMatrixPill">Loading</span></div>
+                <div class="service-status-main" id="styleMatrixMain">Loading styles...</div>
+                <div class="service-status-meta" id="styleMatrixMeta">Success rate per style (7d).</div>
+            </div>
         </div>
 
         <div class="data-filter-bar" id="testDataFilterBar">
@@ -476,7 +516,7 @@ var currentFilter = 'open';
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadBotStatus(), loadFeedback()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadVeniceHealth(), loadN8nExecHealth(), loadStuckGenerations(), loadN8nCost(), loadFunnel(), loadAnonAuth(), loadLatency(), loadStyleMatrix(), loadBotStatus(), loadFeedback()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
@@ -702,6 +742,112 @@ var currentFilter = 'open';
             if (main) main.textContent = 'Failed to load health suite status.';
             if (meta) meta.textContent = 'Check Supabase ops_metrics access.';
         });
+    }
+
+    function _hsSet(prefix, health, pill, mainTxt, metaTxt) {
+        var dot = document.getElementById(prefix + 'Dot');
+        var pl = document.getElementById(prefix + 'Pill');
+        var mn = document.getElementById(prefix + 'Main');
+        var mt = document.getElementById(prefix + 'Meta');
+        if (!dot || !pl || !mn || !mt) return;
+        var cls = (health === 'healthy') ? 'healthy' : (health === 'warning' ? 'warning' : 'critical');
+        dot.className = 'status-dot ' + cls;
+        pl.className = 'service-status-pill ' + cls;
+        pl.textContent = pill;
+        mn.textContent = mainTxt;
+        mt.textContent = metaTxt;
+    }
+
+    function _hsLatest(metricType) {
+        return apiGet('ops_metrics?select=metric_value,metadata,recorded_at&metric_type=eq.' + metricType + '&order=recorded_at.desc&limit=1').then(function(rows) {
+            return rows && rows.length ? rows[0] : null;
+        });
+    }
+
+    function _hsStaleHrs(row, hrs) {
+        return (Date.now() - new Date(row.recorded_at).getTime()) > hrs * 3600 * 1000;
+    }
+
+    function loadVeniceHealth() {
+        return _hsLatest('venice_health').then(function(row) {
+            if (!row) return _hsSet('venice', 'warning', 'No data', 'Venice not reported yet.', 'Collector runs every 15 min.');
+            var md = row.metadata || {};
+            var h = md.health || (row.metric_value >= 1 ? 'healthy' : 'critical');
+            if (_hsStaleHrs(row, 1) && h === 'healthy') h = 'warning';
+            _hsSet('venice', h, h === 'healthy' ? 'healthy' : (h === 'warning' ? 'stale' : 'down'),
+                md.summary || 'Venice', 'Checked ' + formatAge(row.recorded_at) + (md.latency_ms != null ? ' \u00b7 ' + md.latency_ms + 'ms' : ''));
+        }).catch(function() { _hsSet('venice', 'critical', 'Error', 'Failed to load Venice health.', ''); });
+    }
+
+    function loadN8nExecHealth() {
+        return _hsLatest('n8n_exec_health').then(function(row) {
+            if (!row) return _hsSet('n8nExec', 'warning', 'No data', 'No execution data yet.', '');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            if (_hsStaleHrs(row, 1) && h === 'healthy') h = 'warning';
+            var wfs = md.workflows || [];
+            var detail = wfs.slice(0, 4).map(function(w) { return w.name + ' ' + w.error_rate + '%'; }).join(' \u00b7 ');
+            _hsSet('n8nExec', h, h === 'healthy' ? 'healthy' : h, md.summary || '\u2014', detail || ('Checked ' + formatAge(row.recorded_at)));
+        }).catch(function() { _hsSet('n8nExec', 'critical', 'Error', 'Failed to load n8n health.', ''); });
+    }
+
+    function loadStuckGenerations() {
+        return _hsLatest('stuck_generations').then(function(row) {
+            if (!row) return _hsSet('stuck', 'warning', 'No data', 'Not reported yet.', '');
+            var md = row.metadata || {};
+            var h = md.health || (row.metric_value >= 3 ? 'critical' : (row.metric_value >= 1 ? 'warning' : 'healthy'));
+            _hsSet('stuck', h, h === 'healthy' ? 'clear' : (row.metric_value + ' stuck'), md.summary || '\u2014', 'Checked ' + formatAge(row.recorded_at));
+        }).catch(function() { _hsSet('stuck', 'critical', 'Error', 'Failed to load stuck jobs.', ''); });
+    }
+
+    function loadN8nCost() {
+        return _hsLatest('n8n_cost').then(function(row) {
+            if (!row) return _hsSet('n8nCost', 'warning', 'No data', 'Not reported yet.', '');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            _hsSet('n8nCost', h, (md.pct_of_plan != null ? md.pct_of_plan + '%' : 'usage'), md.summary || '\u2014',
+                'Plan ' + (md.plan_monthly_execs || '?') + ' execs/mo \u00b7 $' + (md.plan_monthly_usd || '?') + ' \u00b7 ' + formatAge(row.recorded_at));
+        }).catch(function() { _hsSet('n8nCost', 'critical', 'Error', 'Failed to load n8n usage.', ''); });
+    }
+
+    function loadFunnel() {
+        return _hsLatest('conversion_funnel').then(function(row) {
+            if (!row) return _hsSet('funnel', 'warning', 'No data', 'Not reported yet.', '');
+            var md = row.metadata || {};
+            _hsSet('funnel', 'healthy', (md.paid_rate != null ? md.paid_rate + '% paid' : 'funnel'), md.summary || '\u2014',
+                'Last 30d \u00b7 ' + formatAge(row.recorded_at));
+        }).catch(function() { _hsSet('funnel', 'critical', 'Error', 'Failed to load funnel.', ''); });
+    }
+
+    function loadAnonAuth() {
+        return _hsLatest('anon_vs_auth').then(function(row) {
+            if (!row) return _hsSet('anonAuth', 'warning', 'No data', 'Not reported yet.', '');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            if (_hsStaleHrs(row, 2) && h === 'healthy') h = 'warning';
+            _hsSet('anonAuth', h, h === 'healthy' ? 'healthy' : h, md.summary || '\u2014', 'Last 24h \u00b7 ' + formatAge(row.recorded_at));
+        }).catch(function() { _hsSet('anonAuth', 'critical', 'Error', 'Failed to load split.', ''); });
+    }
+
+    function loadLatency() {
+        return _hsLatest('transform_latency').then(function(row) {
+            if (!row) return _hsSet('latency', 'warning', 'No data', 'Not reported yet.', '');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            _hsSet('latency', h, (md.p95_s != null ? 'p95 ' + md.p95_s + 's' : 'latency'), md.summary || '\u2014',
+                (md.sample_count != null ? md.sample_count + ' runs \u00b7 ' : '') + formatAge(row.recorded_at));
+        }).catch(function() { _hsSet('latency', 'critical', 'Error', 'Failed to load latency.', ''); });
+    }
+
+    function loadStyleMatrix() {
+        return _hsLatest('style_matrix').then(function(row) {
+            if (!row) return _hsSet('styleMatrix', 'warning', 'No data', 'Not reported yet.', '');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            var styles = md.styles || [];
+            var worst = styles.slice(0, 3).map(function(s) { return s.style + ' ' + s.success_rate + '%'; }).join(' \u00b7 ');
+            _hsSet('styleMatrix', h, h === 'healthy' ? 'healthy' : h, md.summary || '\u2014', worst || ('Checked ' + formatAge(row.recorded_at)));
+        }).catch(function() { _hsSet('styleMatrix', 'critical', 'Error', 'Failed to load styles.', ''); });
     }
 
     function loadBotStatus() {
