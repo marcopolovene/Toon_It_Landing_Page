@@ -367,6 +367,11 @@
                 <div class="service-status-main" id="shareConvMain">Loading share loop...</div>
                 <div class="service-status-meta" id="shareConvMeta">Anon share-to-unlock rate (7d).</div>
             </div>
+            <div class="service-status-card" id="contentInvCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="contentInvDot"></span><span>Fresh Social Content</span></div><span class="service-status-pill unknown" id="contentInvPill">Loading</span></div>
+                <div class="service-status-main" id="contentInvMain">Loading content inventory...</div>
+                <div class="service-status-meta" id="contentInvMeta">Unposted content ready per platform.</div>
+            </div>
         </div>
 
         <div class="data-filter-bar" id="testDataFilterBar">
@@ -521,7 +526,7 @@ var currentFilter = 'open';
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadVeniceHealth(), loadN8nExecHealth(), loadStuckGenerations(), loadN8nCost(), loadFunnel(), loadAnonAuth(), loadLatency(), loadStyleMatrix(), loadShareConv(), loadBotStatus(), loadFeedback()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadVeniceHealth(), loadN8nExecHealth(), loadStuckGenerations(), loadN8nCost(), loadFunnel(), loadAnonAuth(), loadLatency(), loadStyleMatrix(), loadShareConv(), loadContentInventory(), loadBotStatus(), loadFeedback()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
@@ -863,6 +868,30 @@ var currentFilter = 'open';
             _hsSet('shareConv', h, (md.unlock_rate != null ? md.unlock_rate + '%' : 'share loop'), md.summary || '\u2014',
                 (md.share_events != null ? md.share_events + ' share events \u00b7 ' : '') + 'Last 7d \u00b7 ' + formatAge(row.recorded_at));
         }).catch(function() { _hsSet('shareConv', 'critical', 'Error', 'Failed to load share conversion.', ''); });
+    }
+
+    function loadContentInventory() {
+        return _hsLatest('content_inventory').then(function(row) {
+            if (!row) return _hsSet('contentInv', 'warning', 'No data', 'Not reported yet.', 'Tracks unposted social content per platform.');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            if (_hsStaleHrs(row, 24) && h === 'healthy') h = 'warning';
+            var plats = md.platforms || [];
+            var main = plats.map(function(p) {
+                if (p.fresh == null) return (p.emoji || '') + ' ' + p.platform + ' ?';
+                return (p.emoji || '') + ' ' + p.platform + ' ' + p.fresh + (p.evergreen ? ' (evergreen)' : '');
+            }).join('  \u00b7  ');
+            var pill = (md.total_fresh != null ? md.total_fresh + ' fresh' : 'content');
+            var meta;
+            if (md.empty_platforms && md.empty_platforms.length) {
+                meta = '\u26a0 Needs new content: ' + md.empty_platforms.join(', ') + ' \u00b7 ' + formatAge(row.recorded_at);
+            } else if (md.low_platforms && md.low_platforms.length) {
+                meta = 'Running low: ' + md.low_platforms.join(', ') + ' \u00b7 ' + formatAge(row.recorded_at);
+            } else {
+                meta = 'Unposted ready-to-post content \u00b7 ' + formatAge(row.recorded_at);
+            }
+            _hsSet('contentInv', h, pill, main || (md.summary || '\u2014'), meta);
+        }).catch(function() { _hsSet('contentInv', 'critical', 'Error', 'Failed to load content inventory.', ''); });
     }
 
     function loadBotStatus() {
