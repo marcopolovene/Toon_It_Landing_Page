@@ -362,6 +362,11 @@
                 <div class="service-status-main" id="styleMatrixMain">Loading styles...</div>
                 <div class="service-status-meta" id="styleMatrixMeta">Success rate per style (7d).</div>
             </div>
+            <div class="service-status-card" id="shareConvCard">
+                <div class="service-status-head"><div class="service-status-title"><span class="status-dot" id="shareConvDot"></span><span>Share Conversion</span></div><span class="service-status-pill unknown" id="shareConvPill">Loading</span></div>
+                <div class="service-status-main" id="shareConvMain">Loading share loop...</div>
+                <div class="service-status-meta" id="shareConvMeta">Anon share-to-unlock rate (7d).</div>
+            </div>
         </div>
 
         <div class="data-filter-bar" id="testDataFilterBar">
@@ -516,7 +521,7 @@ var currentFilter = 'open';
 
     function refreshAll() {
         document.getElementById('lastUpdated').textContent = 'Refreshing...';
-        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadVeniceHealth(), loadN8nExecHealth(), loadStuckGenerations(), loadN8nCost(), loadFunnel(), loadAnonAuth(), loadLatency(), loadStyleMatrix(), loadBotStatus(), loadFeedback()]).then(function() {
+        Promise.allSettled([loadStats(), loadCharts(), refreshTickets(), loadPipelineStatus(), loadStripeStatus(), loadHealthSuite(), loadVeniceHealth(), loadN8nExecHealth(), loadStuckGenerations(), loadN8nCost(), loadFunnel(), loadAnonAuth(), loadLatency(), loadStyleMatrix(), loadShareConv(), loadBotStatus(), loadFeedback()]).then(function() {
             document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString() + (includeTestData ? ' · test data included' : ' · test data excluded');
         });
     }
@@ -848,6 +853,16 @@ var currentFilter = 'open';
             var worst = styles.slice(0, 3).map(function(s) { return s.style + ' ' + s.success_rate + '%'; }).join(' \u00b7 ');
             _hsSet('styleMatrix', h, h === 'healthy' ? 'healthy' : h, md.summary || '\u2014', worst || ('Checked ' + formatAge(row.recorded_at)));
         }).catch(function() { _hsSet('styleMatrix', 'critical', 'Error', 'Failed to load styles.', ''); });
+    }
+
+    function loadShareConv() {
+        return _hsLatest('share_conversion').then(function(row) {
+            if (!row) return _hsSet('shareConv', 'warning', 'No data', 'Not reported yet.', 'Tracks anon share-to-unlock loop.');
+            var md = row.metadata || {};
+            var h = md.health || 'healthy';
+            _hsSet('shareConv', h, (md.unlock_rate != null ? md.unlock_rate + '%' : 'share loop'), md.summary || '\u2014',
+                (md.share_events != null ? md.share_events + ' share events \u00b7 ' : '') + 'Last 7d \u00b7 ' + formatAge(row.recorded_at));
+        }).catch(function() { _hsSet('shareConv', 'critical', 'Error', 'Failed to load share conversion.', ''); });
     }
 
     function loadBotStatus() {

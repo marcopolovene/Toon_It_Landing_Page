@@ -2952,6 +2952,7 @@
             localStorage.removeItem('toonit_free_used');
             document.cookie = 'toonit_free=; max-age=0; path=/; SameSite=Lax';
             localStorage.setItem('toonit_share_unlock_used', String(Date.now()));
+            try { if (typeof trackEvent === 'function') trackEvent('share_unlock', { source: 'anon_result' }); } catch(e) {}
             showToonToast('\uD83C\uDF81 Thanks for sharing! You unlocked 1 more free transform.');
             var newBtn = document.getElementById('newBtn');
             if (newBtn) {
