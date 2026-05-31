@@ -227,6 +227,7 @@
         .style-loader--chaosgremlin .style-loader-fill { background-image: linear-gradient(90deg, #a855f7, #ec4899, #22d3ee); box-shadow: 0 0 16px rgba(168,85,247,0.26); }
         .style-loader--awardwinner .style-loader-fill { background-image: linear-gradient(90deg, #fbbf24, #f97316, #fef08a); box-shadow: 0 0 16px rgba(251,191,36,0.28); }
         .style-loader--tinyboss .style-loader-fill { background-image: linear-gradient(90deg, #facc15, #fb7185, #60a5fa); box-shadow: 0 0 16px rgba(250,204,21,0.26); }
+        .style-loader--powerup .style-loader-fill { background-image: linear-gradient(90deg, #fde047, #f59e0b, #38bdf8); box-shadow: 0 0 16px rgba(253,224,71,0.28); }
 @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -833,6 +834,11 @@
                 <div class="style-card" data-style="anime" onclick="selectStyle(this)">
                     <span class="style-icon">🌸</span>
                     <span class="style-name">Anime</span>
+                </div>
+                <div class="style-card" data-style="powerup" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-new">NEW</span>
+                    <span class="style-icon">🔥</span>
+                    <span class="style-name">Power-Up</span>
                 </div>
             </div>
             <div id="moreStyles" class="style-cards-more">
@@ -3506,6 +3512,7 @@
             chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin' },
         awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
         tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
+        powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         
         };
         return map[style] || map.storybook;
@@ -5628,6 +5635,7 @@
         chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin' },
         awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
         tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
+        powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5805,6 +5813,16 @@
         3: ['Finalizing the tiny empire... 👑','Charging the crown sparkle... ✨','Briefing the miniature staff... 📣','Adding one last boss glow... ⭐','Your tiny kingdom is almost ready... 🎬']
       }
     };
+    _magicThemes.powerup = {
+      spell: 'Unleash Your Power!',
+      wand: '*',
+      particles: ['*','+','x','~','^','!','o','*'],
+      msgs: {
+        1: ['Charging your aura...','Locating hidden strength...','Spooling up the energy core...','Reading your power level...','Gathering the storm clouds...'],
+        2: ['Powering up beyond limits...','Crackling the lightning...','Flaring your golden aura...','Lifting debris with raw energy...','Pushing past the ceiling...'],
+        3: ['Stabilizing the energy surge...','Charging the final blast...','Locking in maximum power...','Adding one last lightning arc...','Your power-up is almost complete...']
+      }
+    };
   }
   if(typeof _magicFacts !== 'undefined'){
     _magicFacts.maincharacter = [
@@ -5838,6 +5856,14 @@
       'Tiny helper characters are a classic animation trick for making a world feel busy, alive, and playful.',
       'The "boss" joke works because it gives dramatic authority to everyday moments like snacks, laundry, couches, and toys.',
       'A camera push-in can make even a tiny character feel powerful by treating them like the center of the scene.'
+    ];
+    _magicFacts.powerup = [
+      'Anime power-up scenes use rising camera angles and upward motion to make characters feel unstoppable.',
+      'The glowing aura around a charging hero is called an energy field, and animators draw it pulsing to suggest raw power.',
+      'Lightning and crackling sparks are visual shorthand for energy that is too powerful to contain.',
+      'Speed lines radiating from a character focus the viewer eye and create an instant sense of explosive motion.',
+      'Hair lifting upward is one of the fastest ways animators signal that an invisible force is surging around a character.',
+      'High contrast between gold light and dark storm clouds makes a power-up moment feel epic and cinematic.'
     ];
   }
 })();
@@ -6463,6 +6489,7 @@
         chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin' },
         awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
         tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
+        powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
