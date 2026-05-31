@@ -2869,6 +2869,7 @@
         function handleFile(file) {
             if (!file.type.startsWith('image/')) {
                 showToast('Please select an image file', 'warning');
+                var _fiR=document.getElementById('fileInput'); if(_fiR)_fiR.value=''; /* reset_input_on_reject_20260531 */
                 return;
             }
 
@@ -2881,6 +2882,7 @@
                 try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
                 if (w * h < 65536) {
                     showToast('Image too small (' + w + '\u00d7' + h + '). Please use at least 256\u00d7256 pixels.', 'warning');
+                    var _fiR=document.getElementById('fileInput'); if(_fiR)_fiR.value=''; /* reset_input_on_reject_20260531 */
                     return;
                 }
                 _handleFileAccepted(file);
@@ -2888,6 +2890,7 @@
             _dimImg.onerror = function() {
                 try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
                 showToast('Could not read image. Please try another file.', 'warning');
+                var _fiR=document.getElementById('fileInput'); if(_fiR)_fiR.value=''; /* reset_input_on_reject_20260531 */
             };
             _dimImg.src = _dimUrl;
         }
@@ -4899,6 +4902,7 @@
     function handleFileFallback(file) {
         if (!file || !file.type || file.type.indexOf('image/') !== 0) {
             showToast('Please select an image file', 'warning');
+            var _fiR=document.getElementById('fileInput'); if(_fiR)_fiR.value=''; /* reset_input_on_reject_20260531 */
             return;
         }
         // MIN dim guard: Venice requires image >= 65,536 pixels (~256x256)
@@ -4910,6 +4914,7 @@
             try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
             if (w * h < 65536) {
                 showToast('Image too small (' + w + '\u00d7' + h + '). Please use at least 256\u00d7256 pixels.', 'warning');
+                var _fiR=document.getElementById('fileInput'); if(_fiR)_fiR.value=''; /* reset_input_on_reject_20260531 */
                 return;
             }
             _handleFileFallbackAccepted(file);
@@ -4917,6 +4922,7 @@
         _dimImg.onerror = function() {
             try { URL.revokeObjectURL(_dimUrl); } catch(e) {}
             showToast('Could not read image. Please try another file.', 'warning');
+            var _fiR=document.getElementById('fileInput'); if(_fiR)_fiR.value=''; /* reset_input_on_reject_20260531 */
         };
         _dimImg.src = _dimUrl;
     }
