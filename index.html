@@ -228,6 +228,7 @@
         .style-loader--awardwinner .style-loader-fill { background-image: linear-gradient(90deg, #fbbf24, #f97316, #fef08a); box-shadow: 0 0 16px rgba(251,191,36,0.28); }
         .style-loader--tinyboss .style-loader-fill { background-image: linear-gradient(90deg, #facc15, #fb7185, #60a5fa); box-shadow: 0 0 16px rgba(250,204,21,0.26); }
         .style-loader--powerup .style-loader-fill { background-image: linear-gradient(90deg, #fde047, #f59e0b, #38bdf8); box-shadow: 0 0 16px rgba(253,224,71,0.28); }
+        .style-loader--gigachad .style-loader-fill { background-image: linear-gradient(90deg, #e5e7eb, #9ca3af, #64748b); box-shadow: 0 0 16px rgba(148,163,184,0.26); }
 @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -839,6 +840,11 @@
                     <span class="sbadge sbadge-new">NEW</span>
                     <span class="style-icon">🔥</span>
                     <span class="style-name">Power-Up</span>
+                </div>
+                <div class="style-card" data-style="gigachad" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-new">NEW</span>
+                    <span class="style-icon">🏛️</span>
+                    <span class="style-name">Gigachad</span>
                 </div>
             </div>
             <div id="moreStyles" class="style-cards-more">
@@ -3513,6 +3519,7 @@
         awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
         tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
+        gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
         
         };
         return map[style] || map.storybook;
@@ -5636,6 +5643,7 @@
         awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
         tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
+        gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5823,6 +5831,16 @@
         3: ['Stabilizing the energy surge...','Charging the final blast...','Locking in maximum power...','Adding one last lightning arc...','Your power-up is almost complete...']
       }
     };
+    _magicThemes.gigachad = {
+      spell: 'Carve the Legend!',
+      wand: '*',
+      particles: ['*','+','o','~','^','.','*','o'],
+      msgs: {
+        1: ['Selecting the finest marble...','Warming up the chisel...','Measuring heroic proportions...','Positioning the museum spotlight...','Studying classical masters...'],
+        2: ['Carving your legend in stone...','Polishing the marble shine...','Sculpting that perfect jawline...','Smoothing every chiseled curve...','Adding god-like presence...'],
+        3: ['Brushing off the marble dust...','Setting the final spotlight...','Sealing your monument...','Adding one last polish...','Your masterpiece is almost ready...']
+      }
+    };
   }
   if(typeof _magicFacts !== 'undefined'){
     _magicFacts.maincharacter = [
@@ -5864,6 +5882,14 @@
       'Speed lines radiating from a character focus the viewer eye and create an instant sense of explosive motion.',
       'Hair lifting upward is one of the fastest ways animators signal that an invisible force is surging around a character.',
       'High contrast between gold light and dark storm clouds makes a power-up moment feel epic and cinematic.'
+    ];
+    _magicFacts.gigachad = [
+      'Classical sculptors polished marble for weeks so the stone would catch light and appear almost lifelike.',
+      'A dramatic overhead spotlight is a classic museum trick that makes a statue feel monumental and god-like.',
+      'Carved marble veining is often left visible because it adds depth and a sense of natural authenticity to the stone.',
+      'Exaggerated strong jawlines became an internet symbol of confidence, which is why the marble bust look went viral.',
+      'Greek and Roman statues were idealized portraits, designed to make ordinary people look like timeless heroes.',
+      'Deep shadows against pale stone create high contrast that makes carved muscle look powerful and three-dimensional.'
     ];
   }
 })();
@@ -6490,6 +6516,7 @@
         awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
         tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
+        gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
