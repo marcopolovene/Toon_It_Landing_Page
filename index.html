@@ -2981,6 +2981,29 @@
             return true;
         }
 
+        function removeUpgradeNudge() { var n = document.getElementById('upgradeNudge'); if (n) n.remove(); }
+        function maybeShowUpgradeNudge(creditsRemaining) {
+            if (typeof isAnonymousUser === 'function' && isAnonymousUser()) return;
+            if (creditsRemaining === undefined || creditsRemaining === null) return;
+            if (creditsRemaining > 1) return;
+            var result = document.getElementById('result'); if (!result) return;
+            removeUpgradeNudge();
+            var low = creditsRemaining <= 0;
+            var div = document.createElement('div');
+            div.id = 'upgradeNudge';
+            div.className = 'anon-signup-banner';
+            var inner = document.createElement('div'); inner.className = 'asb-inner';
+            var emoji = document.createElement('div'); emoji.className = 'asb-emoji'; emoji.textContent = '\u2728';
+            var title = document.createElement('h3'); title.className = 'asb-title'; title.textContent = low ? 'You\u2019re out of credits' : 'Only 1 credit left!';
+            var text = document.createElement('p'); text.className = 'asb-text'; text.innerHTML = 'Keep the magic going \u2014 get <strong>12 more for $10</strong> (most popular).';
+            var cta = document.createElement('button'); cta.className = 'asb-cta'; cta.textContent = 'Get More Credits';
+            cta.onclick = function() { removeUpgradeNudge(); if (typeof showModal === 'function') showModal('credits'); return false; };
+            var note = document.createElement('p'); note.className = 'asb-note'; note.textContent = 'Secure checkout via Stripe';
+            inner.appendChild(emoji); inner.appendChild(title); inner.appendChild(text); inner.appendChild(cta); inner.appendChild(note);
+            div.appendChild(inner); result.appendChild(div);
+            try { if (typeof trackEvent === 'function') trackEvent('upgrade_nudge_shown', { remaining: creditsRemaining }); } catch (e) {}
+        }
+
         function showToonToast(msg) {
             var t = document.createElement('div');
             t.textContent = msg;
@@ -3037,6 +3060,8 @@
             if (shareBtn) {
                 shareBtn.classList.add('asb-cta');
                 shareBtn.textContent = '\uD83D\uDCE4 Share & Unlock Another Free One';
+                var _rb = shareBtn.parentNode;
+                if (_rb && _rb.firstChild !== shareBtn) _rb.insertBefore(shareBtn, _rb.firstChild);
             }
         }
 
@@ -3968,6 +3993,7 @@
                         const creditEl = document.getElementById('creditCount');
                         if (creditEl) creditEl.textContent = currentCredits;
 
+                        try { maybeShowUpgradeNudge(currentCredits); } catch (e) {}
                         trackEvent('transform_complete', { credits_remaining: currentCredits });
                         console.log('[CREDITS] Deducted 1 credit. Remaining:', currentCredits);
                     }
@@ -5911,7 +5937,7 @@
         document.head.appendChild(css);
 
         var js = document.createElement('script');
-        js.src = '/capacitor-bridge.js?v=20260510v1';
+        js.src = '/capacitor-bridge.js?v=20260603v1';
         document.body.appendChild(js);
         console.log('[ToonIt] Native bridge loading...');
     }
