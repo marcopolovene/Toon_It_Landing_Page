@@ -23,7 +23,7 @@
     return;
   }
 
-  console.log('[ToonIt Bridge] Initializing native bridge v2.8 (Watermark-Preserving Download)...');
+  console.log('[ToonIt Bridge] Initializing native bridge v2.9 (Play Billing + Watermark Download)...');
 
   var platform = window.Capacitor.getPlatform(); // 'ios' | 'android'
   // [v2.5] Watermark-preserving: Let web code handle watermark burn, then Layer 1 intercepts blob <a download> for MediaSaver/share
@@ -34,7 +34,7 @@
   function dbg(msg) {
     console.log('[Bridge] ' + msg);
   }
-  dbg('Bridge v2.8-no-redirect init | platform=' + platform);
+  dbg('Bridge v2.9-play-billing init | platform=' + platform);
 
   // ══════════════════════════════════════════════════════════════
   //  PLUGIN REFERENCES
@@ -804,20 +804,131 @@
   }
 
   // ══════════════════════════════════════════════════════════════
-  //  PAYMENT — Route to web checkout
+  //  PAYMENT — Native Google Play Billing (v2.9)
+  //  Web Stripe path is UNTOUCHED: this block only runs inside the
+  //  native app (bridge is gated by isNativePlatform at top of file).
+  //  NEVER redirect to web checkout (Play Policy 9858738 + UX rule).
   // ══════════════════════════════════════════════════════════════
-  window.toonItOpenCheckout = async function(priceId) {
-    var url = 'https://toonit.ai/pricing.html' + (priceId ? '?price=' + priceId : '');
+  var PLAY_PRODUCTS = {
+    'starter': 'credits_starter',
+    'popular': 'credits_popular',
+    'pro':     'credits_pro'
+  };
+  var PLAY_VERIFY_ENDPOINT = 'https://marcopthevene.app.n8n.cloud/webhook/verify-play-purchase';
+
+  // Deprecated: previously redirected to web Stripe checkout (the policy
+  // violation). Kept as a safe no-op so any legacy callers don't crash.
+  window.toonItOpenCheckout = function() {
+    dbg('toonItOpenCheckout deprecated in native — Play Billing handles purchases');
+  };
+
+  function getBillingStore() {
+    // cordova-plugin-purchase exposes a global CdvPurchase.store (v13+)
+    if (window.CdvPurchase && window.CdvPurchase.store) return window.CdvPurchase.store;
+    if (window.store) return window.store; // older plugin API
+    return null;
+  }
+
+  // Grant credits server-side after a verified Play purchase, then refresh UI.
+  async function verifyPlayPurchase(productId, purchaseToken) {
+    var user = window.currentUser || null;
+    var userId = user && user.id ? user.id : (window.toonItUserId || '');
+    if (!userId) { dbg('verifyPlayPurchase: no user id'); return false; }
+    if (!purchaseToken) { dbg('verifyPlayPurchase: no token'); return false; }
     try {
-      if (CapBrowser) {
-        await CapBrowser.open({ url: url, presentationStyle: 'popover' });
+      var resp = await fetch(PLAY_VERIFY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          product_id: productId,
+          purchase_token: purchaseToken,
+          package_name: 'ai.toonit.app'
+        })
+      });
+      var data = {};
+      try { data = await resp.json(); } catch (e) {}
+      if (resp.ok && data && data.success) {
+        if (typeof window.refreshCredits === 'function') window.refreshCredits();
+        try { if (CapHaptics) CapHaptics.impact({ style: 'HEAVY' }); } catch(e) {}
+        showInAppNotification({ title: 'Credits Added! \u2728', body: (data.credits_added || '') + ' credits are ready to use.' });
+        return true;
+      }
+      dbg('verifyPlayPurchase failed: ' + resp.status);
+      showInAppNotification({ title: 'Purchase issue', body: 'We could not confirm your purchase yet. If you were charged, your credits will arrive shortly.' });
+      return false;
+    } catch (e) {
+      dbg('verifyPlayPurchase error: ' + e.message);
+      return false;
+    }
+  }
+
+  var _playBillingReady = false;
+  function initPlayBilling() {
+    if (_playBillingReady) return;
+    var store = getBillingStore();
+    if (!store) { dbg('Play Billing plugin not present yet'); return; }
+    var CdvP = window.CdvPurchase;
+    try {
+      Object.keys(PLAY_PRODUCTS).forEach(function(bundle) {
+        store.register({
+          id: PLAY_PRODUCTS[bundle],
+          type: CdvP ? CdvP.ProductType.CONSUMABLE : 'consumable',
+          platform: CdvP ? CdvP.Platform.GOOGLE_PLAY : 'android-playstore'
+        });
+      });
+      store.when()
+        .approved(function(transaction) {
+          var pid = (transaction.products && transaction.products[0]) ? transaction.products[0].id : '';
+          var token = transaction.purchaseId || transaction.transactionId ||
+            (transaction.nativePurchase && transaction.nativePurchase.purchaseToken) || '';
+          verifyPlayPurchase(pid, token).then(function(ok) {
+            if (ok) { try { transaction.finish(); } catch(e) {} }
+          });
+        });
+      store.initialize([ CdvP ? CdvP.Platform.GOOGLE_PLAY : 'android-playstore' ]);
+      _playBillingReady = true;
+      dbg('Play Billing initialized');
+    } catch (e) {
+      dbg('initPlayBilling error: ' + e.message);
+    }
+  }
+
+  // Override buyCredits in native -> Play Billing instead of Stripe redirect.
+  window.buyCredits = function(bundle) {
+    var productId = PLAY_PRODUCTS[bundle];
+    if (!productId) { dbg('Unknown bundle: ' + bundle); return; }
+    var user = window.currentUser || null;
+    if (!user) {
+      if (typeof window.showModal === 'function') window.showModal('login');
+      return;
+    }
+    var store = getBillingStore();
+    if (!store) {
+      // NEVER redirect to web checkout — show message instead.
+      showInAppNotification({ title: 'Purchases unavailable', body: 'In-app purchases are not available in this build. Please update the app.' });
+      return;
+    }
+    initPlayBilling();
+    try {
+      var CdvP = window.CdvPurchase;
+      var product = store.get(productId, CdvP ? CdvP.Platform.GOOGLE_PLAY : undefined);
+      var offer = product && product.getOffer ? product.getOffer() : (product && product.offers ? product.offers[0] : null);
+      if (offer && offer.order) {
+        offer.order({ obfuscatedExternalAccountId: user.id });
+      } else if (store.order) {
+        store.order(productId, { obfuscatedExternalAccountId: user.id });
       } else {
-        _origOpen.call(window, url, '_blank');
+        throw new Error('No offer available for ' + productId);
       }
     } catch (e) {
-      _origOpen.call(window, url, '_blank');
+      dbg('buyCredits(play) error: ' + e.message);
+      showInAppNotification({ title: 'Purchase error', body: 'Could not start the purchase. Please try again.' });
     }
   };
+
+  // Initialize billing shortly after bridge load.
+  setTimeout(initPlayBilling, 1500);
 
   // ══════════════════════════════════════════════════════════════
   //  KEYBOARD — iOS safe area
