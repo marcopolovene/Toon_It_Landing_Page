@@ -3356,13 +3356,12 @@
                             return;
                         } else if (data && (data.status === 'failed' || data.status === 'error' || data.status === 'expired' || data.status === 'blocked')) {
                             // Generation failed or blocked — stop polling and show error immediately
-                            console.log('[POLL] Job ended with status:', data.status, data.error_message || '');
+                            console.warn('[POLL] Job ended with status:', data.status, '(diagnostics are logged internally)');
                             clearInterval(pollInterval);
                             if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
                             clearJob();
 
-                            // Detect failure type: content moderation, timeout, or generic
-                            var _isContentBlock = (data.status === "failed" || data.status === "blocked") && !data.error_message && !data.video_url;
+                            // Never expose provider/internal diagnostics to users; keep raw details server-side.
                             var _isFailedGeneration = (data.status === "failed" || data.status === "blocked" || data.status === "error") && !data.video_url;
 
                             // Refund credit if one was deducted for this failed job (belt-and-suspenders)
@@ -3380,22 +3379,15 @@
                                 }
                             }
                             if (statusText) {
-                                var _blockedMsg = 'Our AI provider flagged this photo with the selected style. Your credit has been refunded. Please try a different photo or style.';
-                                var _timeoutMsg = 'Video generation took too long. This sometimes happens during busy periods. Your credit was not charged — please try again.';
-                                var _genericFailMsg = data.error_message || 'Something went wrong. Your credit was not charged — please try again.';
-                                var _finalMsg;
-                                if (_isContentBlock) {
-                                    _finalMsg = _blockedMsg;
-                                } else if (data.error_message && data.error_message.toLowerCase().includes('timeout')) {
-                                    _finalMsg = _timeoutMsg;
-                                } else {
-                                    _finalMsg = _genericFailMsg;
+                                var _userFailMsg = "We couldn't finish this one. Your credit was not charged — please try again.";
+                                if (data.status === 'expired') {
+                                    _userFailMsg = 'This took longer than expected. Your credit was not charged — please try again.';
                                 }
-                                statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _finalMsg + '</div>' +
+                                statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _userFailMsg + '</div>' +
                                     '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
-            }
+                            }
                             return;
-                    }
+                        }
 
                     // Fallback: check Supabase Storage directly after 30s
                     var elapsedSec = transformStartTime ? (Date.now() - transformStartTime) / 1000 : 0;
@@ -4517,18 +4509,16 @@
                     showVideo(data.video_url, data.job_id || null);
                     clearJob();
                 } else if (data.status === 'failed' || data.status === 'expired' || data.status === 'blocked') {
+                    console.warn('[RESUME] Job ended with status:', data.status, '(diagnostics are logged internally)');
                     clearJob();
-                    var _bMsg2 = 'Our AI provider flagged this photo with the selected style. Your credit has been refunded. Please try a different photo or style.';
-                    var _timeoutMsg2 = 'Video generation took too long. This sometimes happens during busy periods. Your credit was not charged — please try again.';
-                    var _genericFailMsg2 = data.error_message || 'Something went wrong. Your credit was not charged — please try again.';
-                    var _finalMsg2;
-                    if (data.status === 'blocked') { _finalMsg2 = data.error_message || _bMsg2; }
-                    else if (data.error_message && data.error_message.toLowerCase().includes('timeout')) { _finalMsg2 = data.error_message || _timeoutMsg2; }
-                    else { _finalMsg2 = _genericFailMsg2; }
+                    var _userFailMsg2 = 'We couldn\'t finish this one. Your credit was not charged — please try again.';
+                    if (data.status === 'expired') {
+                        _userFailMsg2 = 'This took longer than expected. Your credit was not charged — please try again.';
+                    }
                     var _st = document.getElementById('statusText');
-                    if (_st) _st.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _finalMsg2 + '</div>' + '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
+                    if (_st) _st.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + _userFailMsg2 + '</div>' + '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;cursor:pointer;">🔄 Try Again</button>';
                     resetForNew();
-                } else {
+                    var _userFailMsg2 = "We couldn't finish this one. Your credit was not charged — please try again.";
                     startPolling();
                 }
             } catch (error) {

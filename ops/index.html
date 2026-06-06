@@ -579,7 +579,7 @@ var currentFilter = 'open';
             var anonTotal = Number(anonData.anon_total || 0);
             document.getElementById('anonGens24h').textContent = anon24h;
             document.getElementById('anonGens24h').style.color = anon24h > 0 ? 'var(--warning)' : 'var(--text-primary)';
-            document.getElementById('anonGensTotal').textContent = anonTotal + ' all time' + (includeTestData ? '' : (' · ' + Number(anonData.test_anon_generations_7d || 0) + ' test hidden'));
+            document.getElementById('anonGensTotal').textContent = anonTotal + ' all time' + (includeTestData ? '' : (' · ' + Number(anonData.test_anon_generations_7d || 0) + ' test hidden')); 
             document.getElementById('anonGensTotal').className = 'stat-change ' + (anon24h > 0 ? 'negative' : 'positive');
         });
     }
