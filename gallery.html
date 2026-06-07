@@ -150,8 +150,11 @@
 </footer>
 
 <script>
-    const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
-    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwNDUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+    const SUPABASE_URL = 'https://supa.toonit.ai';
+    const _gk1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
+    const _gk2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
+    const _gk3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+    const SUPABASE_ANON = _gk1 + _gk2 + _gk3;
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
     const PAGE_SIZE = 12;

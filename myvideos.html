@@ -400,7 +400,7 @@
     </footer>
     <script>
         // Supabase config
-        const SUPABASE_URL = 'https://zgfpxdkanwbcieowrqoz.supabase.co';
+        const SUPABASE_URL = 'https://supa.toonit.ai';
         const _dk1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
     const _dk2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
     const _dk3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
@@ -982,7 +982,7 @@
                                 // PRE-BURN: trigger in background — edge fn is now sync, response contains watermark_url
                                 var _preBurnJobId = _dashWmState.currentVideoJobId;
                                 var _preBurnUrl = url;
-                                fetch('https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/burn-watermark', {
+                                fetch('https://supa.toonit.ai/functions/v1/burn-watermark', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
                                     body: JSON.stringify({ job_id: _preBurnJobId, video_url: _preBurnUrl, user_id: currentUser ? currentUser.id : null })
