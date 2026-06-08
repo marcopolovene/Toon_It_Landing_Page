@@ -3,18 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=/myvideos.html">
     <link rel="canonical" href="https://toonit.ai/myvideos.html">
-    <title>Page Moved — Toon It!</title>
+    <title>Opening My Videos — Toon It!</title>
     <style>
         body { background: #1a1a2e; color: #e0e0e0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .box { text-align: center; padding: 2rem; }
-        a { color: #a78bfa; font-size: 1.1rem; }
+        a { color: #feca57; font-size: 1.1rem; }
     </style>
+    <script>
+        // dashboard_redirect_myvideos_20260608
+        (function () {
+            try {
+                var target = new URL('/myvideos.html', window.location.origin);
+                target.search = window.location.search || '';
+                target.hash = window.location.hash || '';
+                window.location.replace(target.toString());
+            } catch (err) {
+                window.location.href = '/myvideos.html';
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="box">
-        <h1>This page has moved</h1>
-        <p>Please visit <a href="https://toonit.ai/myvideos.html">My Videos</a> instead.</p>
+        <h1>Opening My Videos…</h1>
+        <p>If you are not redirected automatically, <a href="/myvideos.html">continue to My Videos</a>.</p>
     </div>
 </body>
 </html>
