@@ -434,6 +434,7 @@
      </div>
 
      <script>
+    // ops_login_conflict_fix_20260608
     var OPS_PW = 'toonit2026ops';
     var SB_URL = 'https://supa.toonit.ai';
 var _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
@@ -451,14 +452,29 @@ var currentFilter = 'open';
     var charts = {};
 
     function handleLogin() {
-        var pw = document.getElementById('authPassword').value;
-        if (pw === OPS_PW) {
-            sessionStorage.setItem('ops_auth', '1');
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('dashboard').classList.add('active');
-            refreshAll();
-        } else {
-            document.getElementById('authError').textContent = 'Invalid password';
+        try {
+            console.log('handleLogin started');
+            var pwField = document.getElementById('authPassword');
+            if (!pwField) throw new Error('DOM Error: #authPassword not found');
+            
+            var pw = pwField.value;
+            if (pw === OPS_PW) {
+                sessionStorage.setItem('ops_auth', '1');
+                var overlay = document.getElementById('authOverlay');
+                var dash = document.getElementById('dashboard');
+                if (!overlay || !dash) throw new Error('DOM Error: #authOverlay or #dashboard missing');
+                
+                overlay.style.display = 'none';
+                dash.classList.add('active');
+                refreshAll();
+            } else {
+                var errEl = document.getElementById('authError');
+                if (errEl) errEl.textContent = 'Invalid password';
+                else alert('Invalid password');
+            }
+        } catch (e) {
+            alert('Login System Error: ' + e.message);
+            console.error('Login Crash:', e);
         }
     }
     function handleLogout() {
@@ -472,6 +488,15 @@ var currentFilter = 'open';
         document.getElementById('dashboard').classList.add('active');
     }
 
+    // Global exposure for onclick handlers to prevent silent failures
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
+    window.filterTickets = filterTickets;
+    window.resolveTicket = resolveTicket;
+    window.updateTicket = updateTicket;
+    window.diagnoseTicket = diagnoseTicket;
+    window.deepInvestigate = deepInvestigate;
+    window.addInvestigationReply = addInvestigationReply;
     function apiGet(path) {
         return fetch(SB_URL + '/rest/v1/' + path, {headers: headers})
             .then(function(r) { return r.json(); })
@@ -1015,11 +1040,7 @@ var currentFilter = 'open';
     }
 
     function proxyPost(path, body) {
-<<<<<<< HEAD
-        var proxyUrl = 'https://supa.toonit.ai/functions/v1/ops-proxy' + path + '?pw=toonit2026ops';
-=======
         var proxyUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/ops-proxy' + path + '?pw=toonit2026ops';
->>>>>>> fa8e3a7 (Ops Dashboard: Consolidate Investigating/Diagnosed into Open category)
         return fetch(proxyUrl, {
             method: 'POST',
             headers: Object.assign({}, headers, {'Content-Type': 'application/json', 'x-ops-pw': 'toonit2026ops'}),
