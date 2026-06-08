@@ -414,8 +414,6 @@
             <div class="ticket-filters">
                 <button class="filter-btn" onclick="filterTickets('all',this)">All</button>
                 <button class="filter-btn active" onclick="filterTickets('open',this)">Open</button>
-                <button class="filter-btn" onclick="filterTickets('investigating',this)">Investigating</button>
-                <button class="filter-btn" onclick="filterTickets('diagnosed',this)">Diagnosed</button>
                 <button class="filter-btn" onclick="filterTickets('resolved',this)">Resolved</button>
             </div>
             <div class="tickets-list" id="ticketsList"><div class="loading">Loading tickets...</div></div>
@@ -940,17 +938,14 @@ var currentFilter = 'open';
     }
 
     function renderTickets() {
-        var open = allTickets.filter(function(t) { return t.status === 'diagnosed' || t.status === 'investigating'; }).length;
+        var open = allTickets.filter(function(t) { return t.status !== 'resolved' && t.status !== 'closed'; }).length;
         document.getElementById('ticketCount').textContent = open;
-        var crit = allTickets.filter(function(t) { return t.severity === 'critical' && (t.status === 'diagnosed' || t.status === 'investigating'); }).length;
+        var crit = allTickets.filter(function(t) { return t.severity === 'critical' && t.status !== 'resolved' && t.status !== 'closed'; }).length;
         document.getElementById('ticketSeverity').textContent = crit > 0 ? crit + ' critical' : 'No critical';
         document.getElementById('ticketSeverity').className = 'stat-change ' + (crit > 0 ? 'negative' : 'positive');
 
         var filtered = allTickets;
-        if (currentFilter === 'open') filtered = allTickets.filter(function(t) { return t.status === 'open'; });
-        else if (currentFilter === 'investigating') filtered = allTickets.filter(function(t) { return t.status === 'investigating'; });
-        else if (currentFilter === 'diagnosed') filtered = allTickets.filter(function(t) { return t.status === 'diagnosed'; });
-        else if (currentFilter === 'resolved') filtered = allTickets.filter(function(t) { return t.status === 'resolved'; });
+        if (currentFilter === 'open') filtered = allTickets.filter(function(t) { return t.status !== 'resolved' && t.status !== 'closed'; });
 
         if (filtered.length === 0) { document.getElementById('ticketsList').innerHTML = '<div class="no-tickets">No tickets found</div>'; return; }
 
@@ -1020,7 +1015,11 @@ var currentFilter = 'open';
     }
 
     function proxyPost(path, body) {
+<<<<<<< HEAD
         var proxyUrl = 'https://supa.toonit.ai/functions/v1/ops-proxy' + path + '?pw=toonit2026ops';
+=======
+        var proxyUrl = 'https://zgfpxdkanwbcieowrqoz.supabase.co/functions/v1/ops-proxy' + path + '?pw=toonit2026ops';
+>>>>>>> fa8e3a7 (Ops Dashboard: Consolidate Investigating/Diagnosed into Open category)
         return fetch(proxyUrl, {
             method: 'POST',
             headers: Object.assign({}, headers, {'Content-Type': 'application/json', 'x-ops-pw': 'toonit2026ops'}),
