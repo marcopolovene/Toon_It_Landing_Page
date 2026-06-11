@@ -853,26 +853,6 @@
                 </div>
             </div>
             <div id="moreStyles" class="style-cards-more">
-                <div class="style-card" data-style="maincharacter" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-new">NEW</span>
-                    <span class="style-icon">🌟</span>
-                    <span class="style-name">Main Character</span>
-                </div>
-                <div class="style-card" data-style="chaosgremlin" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-new">NEW</span>
-                    <span class="style-icon">😈</span>
-                    <span class="style-name">Chaos Gremlin</span>
-                </div>
-                <div class="style-card" data-style="awardwinner" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-new">NEW</span>
-                    <span class="style-icon">🏆</span>
-                    <span class="style-name">Award for Literally Anything</span>
-                </div>
-                <div class="style-card" data-style="tinyboss" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-new">NEW</span>
-                    <span class="style-icon">👑</span>
-                    <span class="style-name">Tiny Boss</span>
-                </div>
 <div class="style-card" data-style="chibi" onclick="selectStyle(this)">
                     <span class="style-icon">🐼</span>
                     <span class="style-name">Chibi</span>
@@ -881,10 +861,6 @@
                     <span class="style-icon">🌆</span>
                     <span class="style-name">Cyberpunk</span>
                 </div>
-                <div class="style-card" data-style="storybook" onclick="selectStyle(this)">
-                    <span class="style-icon">🏰</span>
-                    <span class="style-name">Storybook</span>
-                </div>
                 <div class="style-card" data-style="actionfigure" onclick="selectStyle(this)">
                     <span class="style-icon">🦸</span>
                     <span class="style-name">Action Figure</span>
@@ -892,10 +868,6 @@
                 <div class="style-card" data-style="watercolor" onclick="selectStyle(this)">
                     <span class="style-icon">🎨</span>
                     <span class="style-name">Watercolor</span>
-                </div>
-                <div class="style-card" data-style="renaissance" onclick="selectStyle(this)">
-                    <span class="style-icon">🖼️</span>
-                    <span class="style-name">Renaissance</span>
                 </div>
             </div>
             <button id="moreStylesBtn" class="style-toggle-btn"><span>All styles</span> <span class="tarrow">▼</span></button>
@@ -3440,17 +3412,7 @@
     // ==========================================
     // Style-specific magical themes
     var _magicThemes = {
-        storybook: {
-            spell: 'Wibbity Wobbity Woo!',
-            wand: '🪄',
-            particles: ['✨','⭐','💫','🌟','✦','⋆','˚','·'],
-            msgs: {
-                1: ['Casting the enchantment... 🔮','Reading the magical essence...','Discovering hidden stories... 📖','Peering into the looking glass...','Summoning the story spirits...'],
-                2: ['Sprinkling storybook magic... ✨','Painting with pixie dust... 🧚','The enchantment is brewing... 🧪','Weaving threads of wonder...','Colors dancing to the spell... 🎨'],
-                3: ['Bringing the tale to life... 🌟','Stirring the cauldron of motion...','Animating with a flick of the wand... 🪄','The magic is swirling... 🌀','Characters awakening... 🦋']
-            }
-        },
-        anime: {
+                anime: {
             spell: 'Totoro Kaze no Maho!',
             wand: '🍃',
             particles: ['🌸','🍃','🌿','☁️','🌺','🍁','💐','✨'],
@@ -3503,7 +3465,6 @@
     };
 
     var _magicFacts = {
-        storybook: ['Researchers used ancestral DNA tracing to prove that Beauty and the Beast is at least 4,000 years old. Some stories truly never get old.','The golden ratio (1.618) appears in nearly every classic storybook illustration — great artists used it instinctively before math confirmed it.','The hero journey structure behind every fairy tale has been found in stories from every known human culture on Earth.','Children raised with illustrated storybooks develop stronger spatial reasoning and empathy well into adulthood. Pictures shape minds.','The word magic comes from magus — the ancient Persian term for someone who could see what others could not. Art still does this.'],
         cartoon3d: ['Pixar animators spent 3 years studying ocean light just to animate one scene in Finding Nemo — your photo gets that same obsession, in seconds.','A single 3D animated character can have 500 individual facial controls — more expressive range than most humans use in a day.','The 12 Principles of Animation were invented by Disney artists in 1937 — every Pixar, DreamWorks, and AI model still follows them today.','Claymation-style 3D is having a massive revival in 2025 across social media, brand ads, and music videos. You are riding the wave.','Inside Out 2 used real neuroscience consultants to design the new emotions — proof that animation is now part psychology, part art.'],
         comic: ['Spider-Man: Into the Spider-Verse was animated at two different frame rates at once to replicate a real comic book — a first in cinema history.','The halftone dot pattern in classic comics was originally a printing limitation — now it is one of the most iconic aesthetics in modern fashion and fine art.','The first Superman comic sold for $6 million at auction in 2022 — the most expensive comic ever sold.','The bold blue and orange combo in superhero films is scientifically linked to urgency, excitement, and heroic energy. Color does the heavy lifting.','Stan Lee created most of the Avengers while commuting on the NYC subway in the 1960s. Great ideas do not wait for perfect conditions.'],
         anime: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'],
@@ -3513,7 +3474,7 @@
 
     function _getTheme() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
-        return _magicThemes[style] || _magicThemes.storybook;
+        return _magicThemes[style] || _magicThemes.cartoon3d;
     }
 
     var _mIdx = 0, _mFactIdx = 0, _mSpkInt = null, _mActive = false;
@@ -3521,7 +3482,6 @@
     function _getStyleLoaderMeta() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         var map = {
-            storybook: { cls: 'style-loader--storybook', label: 'Magical Storybook' },
             cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' },
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
             anime: { cls: 'style-loader--anime', label: 'Anime' },
@@ -3529,17 +3489,12 @@
             st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish' },
             chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
-            renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
-                        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character' },
-            chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin' },
-        awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
-        tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
         
         };
-        return map[style] || map.storybook;
+        return map[style] || map.cartoon3d;
     }
 
     function _updateStyleLoader(stepNum) {
@@ -3588,7 +3543,7 @@
 
     function _mFact() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
-        var facts = _magicFacts[style] || _magicFacts.storybook;
+        var facts = _magicFacts[style] || _magicFacts.cartoon3d;
         return '💡 ' + facts[_mFactIdx++ % facts.length];
     }
 
@@ -5652,12 +5607,7 @@
       var newMap = {
         chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
-        renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
-        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character' },
-        chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin' },
-        awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
-        tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
       };
@@ -5698,17 +5648,7 @@
         3: ['Polishing your figure to a perfect shine... \ud83d\udc8e','The toy photographer is setting up lights... \ud83d\udcf8','Placing you on the display shelf... \ud83c\udfc6','Your action figure is almost unboxed! \ud83c\udf89','Limited edition \u2014 only one like YOU! \u2b50']
       }
     };
-    _magicThemes.renaissance = {
-      spell: 'By Royal Decree!',
-      wand: '\ud83d\uddbc\ufe0f',
-      particles: ['\u2728','\ud83d\uddbc\ufe0f','\ud83d\udc51','\ud83c\udfa8','\ud83d\udd6f\ufe0f','\ud83d\udcdc','\u269c\ufe0f','\ud83c\udf1f'],
-      msgs: {
-        1: ['Summoning the old masters from their studios... \ud83c\udfa8','Grinding precious lapis lazuli for blue... \ud83d\udc8e','Preparing the oak panel canvas... \ud83e\udeb5','The royal court awaits your portrait... \ud83d\udc51','Lighting the candlelit studio... \ud83d\udd6f\ufe0f'],
-        2: ['Layering golden oil glazes with a steady hand... \u2728','Perfecting the dramatic chiaroscuro shadows... \ud83c\udf11','Draping you in luxurious velvet and silk... \ud83d\udc57','Adding delicate brushstrokes only a master knows... \ud83d\udd8c\ufe0f','The duke nods approvingly... \ud83d\udc68\u200d\ud83c\udfa8'],
-        3: ['Applying the final varnish \u2014 almost immortal! \u2728','Signing the masterpiece with a flourish... \u270d\ufe0f','Hanging your portrait in the grand gallery... \ud83c\udfdb\ufe0f','Candlelight dances across the finished work... \ud83d\udd6f\ufe0f','A masterpiece worthy of the Louvre! \ud83d\uddbc\ufe0f']
-      }
-    };
-    _magicThemes.cyberpunk = {
+        _magicThemes.cyberpunk = {
       spell: 'Neon Dreams: Online!',
       wand: '\ud83c\udfc6',
       particles: ['\u2728','\ud83c\udf06','\ud83d\udc9c','\ud83d\udd2e','\u26a1','\ud83d\udcab','\ud83c\udf03','\ud83d\udfe3'],
@@ -5730,15 +5670,7 @@
       'Hot Toys figures are so lifelike that movie studios sometimes use them for promotional photos instead of hiring photographers.',
       'There are more action figures of Batman than any other character in history \u2014 over 1,200 unique versions and counting.'
     ];
-    _magicFacts.renaissance = [
-      'The Mona Lisa has no visible eyebrows \u2014 X-ray scans confirm Leonardo originally painted them then removed them following the fashion.',
-      'Michelangelo painted the Sistine Chapel ceiling standing up with his arm overhead for 4 years \u2014 he permanently damaged his neck and eyes.',
-      'Renaissance painters ground actual gemstones to make pigments. Ultramarine blue came from lapis lazuli and cost more per ounce than gold.',
-      'Leonardo da Vinci wrote 7,000 pages of notes entirely in mirror script \u2014 you need a mirror to read them. Scholars still debate why.',
-      'Vermeer likely used a camera obscura to achieve impossibly photographic accuracy 350 years before cameras existed.',
-      'Renaissance apprentices started training at age 7 and spent 6+ years just grinding pigments before they were allowed to touch a brush.'
-    ];
-    _magicFacts.cyberpunk = [
+        _magicFacts.cyberpunk = [
       'Neon signs were invented in 1910 by French engineer Georges Claude \u2014 they defined a genre that would not exist for another 70 years.',
       'Akihabara in Tokyo and the Kowloon Walled City in Hong Kong are the two real places that most inspired cyberpunk cities.',
       'William Gibson coined the word cyberspace in his 1984 novel Neuromancer \u2014 which he wrote on a 1937 manual typewriter.',
@@ -5793,123 +5725,7 @@
 })();
 </script>
 
-<script>
-// === MAINCHARACTER + CHAOSGREMLIN STYLE EXTENSION ===
-(function(){
-  if(typeof _magicThemes !== 'undefined'){
-    _magicThemes.maincharacter = {
-      spell: 'Cue the Spotlight!',
-      wand: '*',
-      particles: ['*','+','x','~','^','*','!','o'],
-      msgs: {
-        1: ['Finding your good lighting...','Warming up the wind machine...','Scanning for main character energy...','Calling the tiny spotlight crew...','Preparing your dramatic entrance...'],
-        2: ['Turning ordinary into iconic...','Adding unnecessary drama...','Cueing the confetti breeze...','Polishing your hero glow...','Making the moment way too epic...'],
-        3: ['Sweeping the spotlight...','Finalizing your big reveal...','Charging the cinematic aura...','Adding one last sparkle...','Your main character moment is close...']
-      }
-    };
-    _magicThemes.chaosgremlin = {
-      spell: 'Release the Sparkles!',
-      wand: '~',
-      particles: ['~','+','!','*','^','x','@','o'],
-      msgs: {
-        1: ['Locating the chaos sparkle...','Securing the glitter cannons...','Measuring mischief levels...','Checking for harmless mayhem...','Warming up the wobble machine...'],
-        2: ['Unleashing cute chaos...','Bouncing the tiny props...','Adding sparkle-based nonsense...','Launching confetti safely...','Making mischief adorable...'],
-        3: ['Sweeping up extra glitter...','Taming the final wobble...','Polishing the chaos burst...','Adding one last boing...','Your gremlin reveal is ready soon...']
-      }
-    };
-    _magicThemes.awardwinner = {
-      spell: 'Tiny Trophy Time!',
-      wand: '🏆',
-      particles: ['🏆','🎉','✨','⭐','🎊','💫','🥇','✦'],
-      msgs: {
-        1: ['Alerting the tiny audience... 🏆','Rolling out the mini carpet... 🎉','Checking your victory pose... ⭐','Polishing the trophy glow... ✨','Preparing unnecessary applause... 🎊'],
-        2: ['Dropping celebration confetti... 🎉','Making this moment historic... 🏆','Over-celebrating beautifully... ✨','Adding dramatic trophy sparkle... ⭐','Summoning standing ovation energy... 🎊'],
-        3: ['Final spotlight sweep... 🏆','Counting the confetti pieces... 🎉','Giving the crowd one more cheer... ⭐','Sealing your tiny victory... ✨','Your award moment is almost ready... 🎬']
-      }
-    };
-    _magicThemes.tinyboss = {
-      spell: 'Boss Mode Activated!',
-      wand: '👑',
-      particles: ['👑','✨','📣','⭐','🏰','💫','🎉','✦'],
-      msgs: {
-        1: ['Calling the tiny board meeting... 👑','Inspecting the snack empire... 🏰','Measuring boss energy... ✨','Polishing the mini crown... ⭐','Assembling tiny assistants... 📣'],
-        2: ['Promoting you to tiny boss... 👑','Building your mini kingdom... 🏰','Wiggling the executive props... 💫','Adding very serious authority... ⭐','Preparing the boss reveal... 🎉'],
-        3: ['Finalizing the tiny empire... 👑','Charging the crown sparkle... ✨','Briefing the miniature staff... 📣','Adding one last boss glow... ⭐','Your tiny kingdom is almost ready... 🎬']
-      }
-    };
-    _magicThemes.powerup = {
-      spell: 'Unleash Your Power!',
-      wand: '*',
-      particles: ['*','+','x','~','^','!','o','*'],
-      msgs: {
-        1: ['Charging your aura...','Locating hidden strength...','Spooling up the energy core...','Reading your power level...','Gathering the storm clouds...'],
-        2: ['Powering up beyond limits...','Crackling the lightning...','Flaring your golden aura...','Lifting debris with raw energy...','Pushing past the ceiling...'],
-        3: ['Stabilizing the energy surge...','Charging the final blast...','Locking in maximum power...','Adding one last lightning arc...','Your power-up is almost complete...']
-      }
-    };
-    _magicThemes.gigachad = {
-      spell: 'Carve the Legend!',
-      wand: '*',
-      particles: ['*','+','o','~','^','.','*','o'],
-      msgs: {
-        1: ['Selecting the finest marble...','Warming up the chisel...','Measuring heroic proportions...','Positioning the museum spotlight...','Studying classical masters...'],
-        2: ['Carving your legend in stone...','Polishing the marble shine...','Sculpting that perfect jawline...','Smoothing every chiseled curve...','Adding god-like presence...'],
-        3: ['Brushing off the marble dust...','Setting the final spotlight...','Sealing your monument...','Adding one last polish...','Your masterpiece is almost ready...']
-      }
-    };
-  }
-  if(typeof _magicFacts !== 'undefined'){
-    _magicFacts.maincharacter = [
-      'A slow camera push-in makes a moment feel more important because it guides the viewer directly toward the subject.',
-      'Backlighting and rim light are classic cinematic tricks for making characters feel heroic and larger than life.',
-      'Confetti became a visual shorthand for celebration because it adds instant movement, color, and joy to a scene.',
-      'The main character meme is funny because it treats ordinary life like an epic movie scene.',
-      'Stage spotlights were originally used to isolate performers from the background and make audiences focus emotionally.',
-      'Cinematic haze makes light beams visible, which is why dramatic scenes often feel glowy and magical.'
-    ];
-    _magicFacts.chaosgremlin = [
-      'Squash-and-stretch is an animation principle that makes playful motion feel bouncy, funny, and full of energy.',
-      'Confetti and sparkles create instant visual chaos without making a scene feel scary or messy.',
-      'Rounded shapes usually feel friendlier than sharp shapes, which is why cute chaos should stay soft and bouncy.',
-      'A tiny camera shake can make a cartoon moment feel funnier because it exaggerates impact without changing the character.',
-      'Bright complementary colors make playful scenes feel more energetic because they create strong visual contrast.',
-      'Mischief is funniest when it feels harmless - the viewer gets chaos energy without any real danger.'
-    ];
-    _magicFacts.awardwinner = [
-      'Confetti has been used in celebrations for centuries because tiny falling pieces instantly signal joy and victory.',
-      'Spotlights make ceremonies feel important by separating the winner from the background and focusing attention.',
-      'Trophies often use shiny materials because reflective surfaces feel special, rare, and celebratory on camera.',
-      'The joke of an oversized award moment works because the ceremony is bigger than the achievement.',
-      'Audience silhouettes are a classic animation shortcut - they create the feeling of a crowd without distracting from the star.',
-      'Gold is strongly associated with winning because many cultures connect it with rarity, value, and celebration.'
-    ];
-    _magicFacts.tinyboss = [
-      'Miniature scenes feel funny because tiny scale makes ordinary objects look suddenly huge and important.',
-      'Crowns are one of the fastest visual shortcuts for authority because their silhouette is recognized across many cultures.',
-      'Forced perspective can make small worlds feel enormous by placing familiar objects at surprising sizes.',
-      'Tiny helper characters are a classic animation trick for making a world feel busy, alive, and playful.',
-      'The "boss" joke works because it gives dramatic authority to everyday moments like snacks, laundry, couches, and toys.',
-      'A camera push-in can make even a tiny character feel powerful by treating them like the center of the scene.'
-    ];
-    _magicFacts.powerup = [
-      'Anime power-up scenes use rising camera angles and upward motion to make characters feel unstoppable.',
-      'The glowing aura around a charging hero is called an energy field, and animators draw it pulsing to suggest raw power.',
-      'Lightning and crackling sparks are visual shorthand for energy that is too powerful to contain.',
-      'Speed lines radiating from a character focus the viewer eye and create an instant sense of explosive motion.',
-      'Hair lifting upward is one of the fastest ways animators signal that an invisible force is surging around a character.',
-      'High contrast between gold light and dark storm clouds makes a power-up moment feel epic and cinematic.'
-    ];
-    _magicFacts.gigachad = [
-      'Classical sculptors polished marble for weeks so the stone would catch light and appear almost lifelike.',
-      'A dramatic overhead spotlight is a classic museum trick that makes a statue feel monumental and god-like.',
-      'Carved marble veining is often left visible because it adds depth and a sense of natural authenticity to the stone.',
-      'Exaggerated strong jawlines became an internet symbol of confidence, which is why the marble bust look went viral.',
-      'Greek and Roman statues were idealized portraits, designed to make ordinary people look like timeless heroes.',
-      'Deep shadows against pale stone create high contrast that makes carved muscle look powerful and three-dimensional.'
-    ];
-  }
-})();
-</script>
+<!-- removed: maincharacter/chaosgremlin/awardwinner/tinyboss/powerup/gigachad extensions -->
 
 
 
@@ -6525,12 +6341,7 @@
       var newMap = {
         chibi: { cls: 'style-loader--chibi', label: 'Chibi' },
         actionfigure: { cls: 'style-loader--actionfigure', label: 'Action Figure' },
-        renaissance: { cls: 'style-loader--renaissance', label: 'Renaissance' },
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
-        maincharacter: { cls: 'style-loader--maincharacter', label: 'Main Character' },
-        chaosgremlin: { cls: 'style-loader--chaosgremlin', label: 'Chaos Gremlin' },
-        awardwinner: { cls: 'style-loader--awardwinner', label: 'Award for Literally Anything' },
-        tinyboss: { cls: 'style-loader--tinyboss', label: 'Tiny Boss' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
       };

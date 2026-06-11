@@ -1,7 +1,7 @@
 {
   "name": "Toon It! — Bring Photos to Life",
   "short_name": "Toon It!",
-  "description": "Transform your photos into magical animated storybook videos with AI. The only app that brings your photos to life!",
+  "description": "Transform your photos into magical animated videos with AI. The only app that brings your photos to life!",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
