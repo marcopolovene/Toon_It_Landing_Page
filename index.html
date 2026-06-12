@@ -229,6 +229,7 @@
         .style-loader--tinyboss .style-loader-fill { background-image: linear-gradient(90deg, #facc15, #fb7185, #60a5fa); box-shadow: 0 0 16px rgba(250,204,21,0.26); }
         .style-loader--powerup .style-loader-fill { background-image: linear-gradient(90deg, #fde047, #f59e0b, #38bdf8); box-shadow: 0 0 16px rgba(253,224,71,0.28); }
         .style-loader--gigachad .style-loader-fill { background-image: linear-gradient(90deg, #e5e7eb, #9ca3af, #64748b); box-shadow: 0 0 16px rgba(148,163,184,0.26); }
+        .style-loader--caricature .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ea580c, #0d9488); box-shadow: 0 0 16px rgba(245,158,11,0.26); }
 @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -340,7 +341,7 @@
             position: relative; display: flex; align-items: center; gap: 16px;
         }
         .cb-card:hover { border-color: var(--primary); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(240,180,41,0.15); }
-        .cb-card.cb-popular { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+        .cb-card.cb-popular { border-color: var(--border); box-shadow: none; background: linear-gradient(135deg, rgba(240,180,41,0.06), rgba(255,255,255,0.03)); } /* popular-badge-not-selected-20260612 */
         .cb-card.cb-disabled { opacity: 0.45; pointer-events: none; }
         .cb-badge {
             position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
@@ -868,6 +869,11 @@
                 <div class="style-card" data-style="watercolor" onclick="selectStyle(this)">
                     <span class="style-icon">🎨</span>
                     <span class="style-name">Watercolor</span>
+                </div>
+                <div class="style-card" data-style="caricature" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-new">NEW</span>
+                    <span class="style-icon">🎭</span>
+                    <span class="style-name">Caricature</span>
                 </div>
             </div>
             <button id="moreStylesBtn" class="style-toggle-btn"><span>All styles</span> <span class="tarrow">▼</span></button>
@@ -6552,6 +6558,61 @@
         document.addEventListener('DOMContentLoaded', init);
     } else {
         setTimeout(init, 500);
+    }
+})();
+</script>
+
+<!-- caricature_style_addition_20260612 -->
+<script>
+if (typeof _magicThemes !== 'undefined') {
+    _magicThemes.caricature = {
+        spell: 'Ink and Wash Magic!',
+        wand: '🖌️',
+        particles: ['🎭','🖌️','✨','🎪','🌟','💫','🎨','🤹'],
+        msgs: {
+            1: ['The caricature artist is studying your features... 🎨','Mixing the perfect ink wash... 🖌️','Finding your most distinctive traits... 🎭','Preparing the paper and brushes...','Warm water ready for the first stroke...'],
+            2: ['Bold lines are bringing out your best features... 🖌️','Watercolors are blending beautifully... 🎨','The ink is dancing across the page... ✨','Exaggerating with love and humor... 🎪','Every stroke captures your essence... 🌟'],
+            3: ['The final washes are settling into place... 💫','Signing the masterpiece with a flourish... 🎭','Your caricature portrait comes alive... 🎪','Ink dry, colors bright — all done! 🌟','Step right up and see your cartoon self! 🎨']
+        }
+    };
+}
+</script>
+
+<script>
+if (typeof _magicFacts !== 'undefined') {
+    _magicFacts.caricature = [
+        'The word "caricature" comes from the Italian "caricare" — meaning to load or exaggerate. Every great caricature is literally an overloaded version of you.',
+        'Street caricature artists at London\'s South Bank can sketch a face in under 5 minutes. Your AI artist takes seconds, but the humor is just as sharp.',
+        'The golden age of caricature was 18th-century France, where artists like Daumier used exaggeration to satirize politicians — the original political cartoon.',
+        'Walt Disney himself started as a caricature artist at a Kansas City newspaper. Exaggeration was the seed of an empire.',
+        'Your brain recognizes a face from caricatures faster than from realistic photos — the exaggerated features trigger instant recognition. Science proves bigger noses are more memorable.'
+    ];
+}
+</script>
+
+<script>
+(function() {
+    if (typeof _getStyleLoaderMeta === 'function') {
+        var _origGetStyleLoaderMeta = _getStyleLoaderMeta;
+        _getStyleLoaderMeta = function() {
+            var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+            if (style === 'caricature') {
+                return { cls: 'style-loader--caricature', label: 'Caricature' };
+            }
+            return _origGetStyleLoaderMeta();
+        };
+    }
+})();
+</script>
+
+<script>
+(function() {
+    if (typeof finalMessagesByStyle !== 'undefined') {
+        finalMessagesByStyle.caricature = [
+            'Animation complete — framing your caricature masterpiece... 🎭',
+            'Adding the final ink flourish to your portrait... 🖌️',
+            'Your exaggerated little film is almost ready... 🎪'
+        ];
     }
 })();
 </script>
