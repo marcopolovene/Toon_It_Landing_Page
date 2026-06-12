@@ -20,7 +20,7 @@
   <!-- Blog index -->
   <url>
     <loc>https://toonit.ai/blog/</loc>
-    <lastmod>2026-04-06</lastmod>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -28,12 +28,6 @@
   <!-- Blog posts - pillar / high-priority -->
   <url>
     <loc>https://toonit.ai/blog/animated-video-from-photo-ai.html</loc>
-    <lastmod>2026-05-29</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://toonit.ai/blog/how-to-animate-a-photo-ai.html</loc>
     <lastmod>2026-05-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -90,12 +84,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://toonit.ai/blog/pet-cartoon-maker-2026-02-22.html</loc>
-    <lastmod>2026-02-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://toonit.ai/blog/blog_ai_storybook_generator_20260225_1100AM.html</loc>
     <lastmod>2026-02-25</lastmod>
     <changefreq>monthly</changefreq>
@@ -120,14 +108,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://toonit.ai/blog/blog_turn_photo_into_cartoon_20260223_0817PM.html</loc>
-    <lastmod>2026-02-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://toonit.ai/blog/turn-pet-photo-into-cartoon-2026-02-20.html</loc>
-    <lastmod>2026-02-20</lastmod>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
