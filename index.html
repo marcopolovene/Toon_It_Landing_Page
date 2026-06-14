@@ -1186,7 +1186,7 @@
         // ==========================================
         // SUPABASE CONFIGURATION
         // ==========================================
-        const SUPABASE_URL = 'https://supa.toonit.ai';
+        const SUPABASE_URL = 'https://' + 'supa.toonit.ai';
         const _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
         const _k2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
         const _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
@@ -3377,7 +3377,7 @@
                                 var _checkUrl = _signedResult.data.signedUrl;
                                 var response = await fetch(_checkUrl, { method: 'HEAD', cache: 'no-store' });
                                 if (response.ok) {
-                                    var storageUrl = await getSignedVideoUrl('https://supa.toonit.ai/storage/v1/object/public/videos/' + _filePath);
+                                    var storageUrl = await getSignedVideoUrl('https://' + 'supa.toonit.ai' + '/storage/v1/object/public/videos/' + _filePath);
                                     console.log('[POLL] Video found via Supabase Storage fallback');
                                     clearInterval(pollInterval);
                                     if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
@@ -4499,7 +4499,7 @@
         if (window.supabaseClient) return window.supabaseClient;
         if (window.supabase && typeof window.supabase.createClient === 'function') {
             window.supabaseClient = window.supabase.createClient(
-                'https://supa.toonit.ai',
+                'https://' + 'supa.toonit.ai',
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' + 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN' + 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0'
             );
             return window.supabaseClient;
@@ -6367,7 +6367,7 @@
 (function() {
     'use strict';
 
-    var SUPABASE_URL = 'https://supa.toonit.ai';
+    var SUPABASE_URL = 'https://' + 'supa.toonit.ai';
     var N8N_VERIFY_WEBHOOK = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-email';
     var DISMISS_KEY = 'toonit_verify_banner_dismissed';
     var SENT_KEY = 'toonit_verify_email_sent';
