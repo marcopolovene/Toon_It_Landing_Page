@@ -1,7 +1,7 @@
 {
   "campaign": "SuperDad Father's Day 2026 v2",
   "style_key": "superdad",
-  "download_page": "https://toonit.ai/previews/superdad_social_20260616_v2",
+  "download_page": "https://toonit.ai/previews/superdad_social_20260616_v2/",
   "qa_status": "passed",
   "qa_notes": [
     "Subject classification overridden to 'family' for dad+kid scenarios.",
@@ -28,8 +28,8 @@
       "content_type": "family",
       "top_text": "SuperDad saves the day, one cannonball at a time.",
       "bottom_text": "#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #PoolDays #FamilyFun #AIArt",
-      "reel_url": "https://toonit.ai/previews/superdad_social_20260616_v2/01_poolside_catch_reel.mp4",
-      "cover_url": "https://toonit.ai/previews/superdad_social_20260616_v2/01_poolside_catch_cover.jpg"
+      "reel_url": "https://raw.githubusercontent.com/marcopolovene/Toon_It_Landing_Page/main/previews/superdad_social_20260616_v2/01_poolside_catch_reel.mp4",
+      "cover_url": "https://raw.githubusercontent.com/marcopolovene/Toon_It_Landing_Page/main/previews/superdad_social_20260616_v2/01_poolside_catch_cover.jpg"
     },
     {
       "id": "02_toy_repair_hero",
@@ -49,8 +49,8 @@
       "content_type": "family",
       "top_text": "No toy is too broken for SuperDad.",
       "bottom_text": "#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #ToyRescue #HandyDad #AIArt",
-      "reel_url": "https://toonit.ai/previews/superdad_social_20260616_v2/02_toy_repair_hero_reel.mp4",
-      "cover_url": "https://toonit.ai/previews/superdad_social_20260616_v2/02_toy_repair_hero_cover.jpg"
+      "reel_url": "https://raw.githubusercontent.com/marcopolovene/Toon_It_Landing_Page/main/previews/superdad_social_20260616_v2/02_toy_repair_hero_reel.mp4",
+      "cover_url": "https://raw.githubusercontent.com/marcopolovene/Toon_It_Landing_Page/main/previews/superdad_social_20260616_v2/02_toy_repair_hero_cover.jpg"
     },
     {
       "id": "03_bedtime_defender",
@@ -70,8 +70,8 @@
       "content_type": "family",
       "top_text": "Every hero needs a bedtime story.",
       "bottom_text": "#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #BedtimeStories #FamilyMoments #AIArt",
-      "reel_url": "https://toonit.ai/previews/superdad_social_20260616_v2/03_bedtime_defender_reel.mp4",
-      "cover_url": "https://toonit.ai/previews/superdad_social_20260616_v2/03_bedtime_defender_cover.jpg"
+      "reel_url": "https://raw.githubusercontent.com/marcopolovene/Toon_It_Landing_Page/main/previews/superdad_social_20260616_v2/03_bedtime_defender_reel.mp4",
+      "cover_url": "https://raw.githubusercontent.com/marcopolovene/Toon_It_Landing_Page/main/previews/superdad_social_20260616_v2/03_bedtime_defender_cover.jpg"
     }
   ]
 }
