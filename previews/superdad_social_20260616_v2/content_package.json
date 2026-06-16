@@ -1,0 +1,77 @@
+{
+  "campaign": "SuperDad Father's Day 2026 v2",
+  "style_key": "superdad",
+  "download_page": "https://toonit.ai/previews/superdad_social_20260616_v2",
+  "qa_status": "passed",
+  "qa_notes": [
+    "Subject classification overridden to 'family' for dad+kid scenarios.",
+    "validate_caption_subject_match passed for all captions.",
+    "Manual grammar/spelling/artifact check passed.",
+    "Reels built with ffmpeg drawtext using textfile (no inline escaping issues)."
+  ],
+  "pieces": [
+    {
+      "id": "01_poolside_catch",
+      "theme": "Poolside Catch",
+      "concept": "Dad catching a child mid-cannonball into a swimming pool",
+      "subject": "family",
+      "hook": "SuperDad saves the day, one cannonball at a time.",
+      "caption_template": "{hook}\nPoolside rescue squad activated \ud83c\udfca\u200d\u2642\ufe0f\u2728\nMake your dad the hero at toonit.ai\n\n#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #PoolDays #FamilyFun #AIArt",
+      "caption": "SuperDad saves the day, one cannonball at a time.\nPoolside rescue squad activated \ud83c\udfca\u200d\u2642\ufe0f\u2728\nMake your dad the hero at toonit.ai\n\n#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #PoolDays #FamilyFun #AIArt",
+      "qa": {
+        "classified_subject": "family (overridden)",
+        "content_type": "family",
+        "validation_ok": true,
+        "validation_reason": "OK",
+        "manual_issues": []
+      },
+      "content_type": "family",
+      "top_text": "SuperDad saves the day, one cannonball at a time.",
+      "bottom_text": "#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #PoolDays #FamilyFun #AIArt",
+      "reel_url": "https://toonit.ai/previews/superdad_social_20260616_v2/01_poolside_catch_reel.mp4",
+      "cover_url": "https://toonit.ai/previews/superdad_social_20260616_v2/01_poolside_catch_cover.jpg"
+    },
+    {
+      "id": "02_toy_repair_hero",
+      "theme": "Toy Repair Hero",
+      "concept": "Dad fixing a broken toy with a screwdriver while his child watches",
+      "subject": "family",
+      "hook": "No toy is too broken for SuperDad.",
+      "caption_template": "{hook}\nTiny tools, big hero energy \ud83d\udee0\ufe0f\u2728\nTurn dad moments into comic art at toonit.ai\n\n#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #ToyRescue #HandyDad #AIArt",
+      "caption": "No toy is too broken for SuperDad.\nTiny tools, big hero energy \ud83d\udee0\ufe0f\u2728\nTurn dad moments into comic art at toonit.ai\n\n#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #ToyRescue #HandyDad #AIArt",
+      "qa": {
+        "classified_subject": "family (overridden)",
+        "content_type": "family",
+        "validation_ok": true,
+        "validation_reason": "OK",
+        "manual_issues": []
+      },
+      "content_type": "family",
+      "top_text": "No toy is too broken for SuperDad.",
+      "bottom_text": "#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #ToyRescue #HandyDad #AIArt",
+      "reel_url": "https://toonit.ai/previews/superdad_social_20260616_v2/02_toy_repair_hero_reel.mp4",
+      "cover_url": "https://toonit.ai/previews/superdad_social_20260616_v2/02_toy_repair_hero_cover.jpg"
+    },
+    {
+      "id": "03_bedtime_defender",
+      "theme": "Bedtime Defender",
+      "concept": "Dad reading a bedtime adventure story under a blanket fort with a flashlight",
+      "subject": "family",
+      "hook": "Every hero needs a bedtime story.",
+      "caption_template": "{hook}\nDefending dreams one chapter at a time \ud83d\udcd6\u2728\nCreate your own #SuperDad art at toonit.ai\n\n#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #BedtimeStories #FamilyMoments #AIArt",
+      "caption": "Every hero needs a bedtime story.\nDefending dreams one chapter at a time \ud83d\udcd6\u2728\nCreate your own #SuperDad art at toonit.ai\n\n#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #BedtimeStories #FamilyMoments #AIArt",
+      "qa": {
+        "classified_subject": "family (overridden)",
+        "content_type": "family",
+        "validation_ok": true,
+        "validation_reason": "OK",
+        "manual_issues": []
+      },
+      "content_type": "family",
+      "top_text": "Every hero needs a bedtime story.",
+      "bottom_text": "#SuperDad #FathersDay #ToonItAI #DadLife #HeroDad #BedtimeStories #FamilyMoments #AIArt",
+      "reel_url": "https://toonit.ai/previews/superdad_social_20260616_v2/03_bedtime_defender_reel.mp4",
+      "cover_url": "https://toonit.ai/previews/superdad_social_20260616_v2/03_bedtime_defender_cover.jpg"
+    }
+  ]
+}
