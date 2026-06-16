@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Cache bust: 2026-02-06 16:24:26 -->
+<!-- Cache bust: 2026-06-16 08:41:00 -->
 <html lang="en">
 <head>
     <!-- SEO & Open Graph Meta Tags -->
@@ -230,6 +230,7 @@
         .style-loader--powerup .style-loader-fill { background-image: linear-gradient(90deg, #fde047, #f59e0b, #38bdf8); box-shadow: 0 0 16px rgba(253,224,71,0.28); }
         .style-loader--gigachad .style-loader-fill { background-image: linear-gradient(90deg, #e5e7eb, #9ca3af, #64748b); box-shadow: 0 0 16px rgba(148,163,184,0.26); }
         .style-loader--caricature .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ea580c, #0d9488); box-shadow: 0 0 16px rgba(245,158,11,0.26); }
+        .style-loader--superdad .style-loader-fill { background-image: linear-gradient(90deg, #ef4444, #f0b429, #3b82f6); box-shadow: 0 0 16px rgba(239,68,68,0.28); }
 @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -825,7 +826,12 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card active" data-style="cartoon3d" onclick="selectStyle(this)">
+                <div class="style-card active" data-style="superdad" onclick="selectStyle(this)">
+                    <span class="sbadge sbadge-today">FATHER&#39;S DAY</span>
+                    <span class="style-icon">🦸‍♂️</span>
+                    <span class="style-name">Rescue Hero Dad</span>
+                </div>
+                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
                 </div>
@@ -848,12 +854,12 @@
                     <span class="style-icon">🏛️</span>
                     <span class="style-name">Gigachad</span>
                 </div>
+            </div>
+            <div id="moreStyles" class="style-cards-more">
                 <div class="style-card" data-style="comic" onclick="selectStyle(this)">
                     <span class="style-icon">💥</span>
                     <span class="style-name">Superhero</span>
                 </div>
-            </div>
-            <div id="moreStyles" class="style-cards-more">
 <div class="style-card" data-style="chibi" onclick="selectStyle(this)">
                     <span class="style-icon">🐼</span>
                     <span class="style-name">Chibi</span>
@@ -3488,6 +3494,7 @@
     function _getStyleLoaderMeta() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         var map = {
+            superdad: { cls: 'style-loader--superdad', label: 'Rescue Hero Dad' },
             cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' },
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
             anime: { cls: 'style-loader--anime', label: 'Anime' },
@@ -3498,6 +3505,7 @@
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
+        superdad: { cls: 'style-loader--superdad', label: 'Rescue Hero Dad' },
         
         };
         return map[style] || map.cartoon3d;
@@ -4983,6 +4991,11 @@
                 'Chibi transformation complete — your adorable mini-me is almost ready... 🐼',
                 'Adding final sparkle highlights to those giant chibi eyes... ✨',
                 'Your collectible chibi masterpiece is being wrapped up... 💖'
+            ],
+            superdad: [
+                'Rescue complete — your heroic dad moment is almost ready... 🦸‍♂️',
+                'Cape flutter and emblem polish finalized... 🛡️',
+                "Your Father's Day hero film is wrapping up... 💖"
             ]
         };
         var finalMessages = finalMessagesByStyle[finalStyle] || finalMessagesByStyle.storybook; // failsafe_poll_messages_fix_20260310
@@ -5616,6 +5629,7 @@
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
+        superdad: { cls: 'style-loader--superdad', label: 'Rescue Hero Dad' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5640,427 +5654,6 @@
 (function(){var R=0,T='',D=false,S='';function init(){document.querySelectorAll('.fbw .st').forEach(function(s){s.onclick=function(){R=+this.getAttribute('data-r');document.querySelectorAll('.fbw .st').forEach(function(x){x.classList.toggle('on',+x.getAttribute('data-r')<=R)});var d=document.getElementById('fbExtra');if(d)d.style.display='block'};s.onmouseenter=function(){var h=+this.getAttribute('data-r');document.querySelectorAll('.fbw .st').forEach(function(x){if(+x.getAttribute('data-r')<=h){x.style.filter='grayscale(0) opacity(1)';x.style.transform='scale(1.1)'}})};s.onmouseleave=function(){document.querySelectorAll('.fbw .st').forEach(function(x){if(!x.classList.contains('on')){x.style.filter='';x.style.transform=''}})};});document.querySelectorAll('.fbw .tg').forEach(function(t){t.onclick=function(){document.querySelectorAll('.fbw .tg').forEach(function(x){x.classList.remove('sel')});this.classList.add('sel');T=this.getAttribute('data-t')}});var cm=document.getElementById('fbCmt'),cc=document.getElementById('fbCc');if(cm&&cc)cm.oninput=function(){cc.textContent=this.value.length+'/280'};var el=document.getElementById('result');if(el){new MutationObserver(function(m){m.forEach(function(mu){if(mu.attributeName==='style'&&el.style.display==='block'){setTimeout(function(){window._fbShow&&window._fbShow()},500)}})}).observe(el,{attributes:true,attributeFilter:['style']})}}window._fbShow=function(){D=false;var sc=document.querySelector('.style-card.active');S=sc?sc.getAttribute('data-style'):'';var w=document.getElementById('fbWidget');if(!w)return;w.style.display='block';R=0;T='';document.querySelectorAll('.fbw .st').forEach(function(s){s.classList.remove('on');s.style.filter='';s.style.transform=''});document.querySelectorAll('.fbw .tg').forEach(function(t){t.classList.remove('sel')});var cm=document.getElementById('fbCmt');if(cm)cm.value='';var cc=document.getElementById('fbCc');if(cc)cc.textContent='0/280';var ex=document.getElementById('fbExtra');if(ex)ex.style.display='none';var f=document.getElementById('fbForm');if(f)f.style.display='block';var o=document.getElementById('fbOk');if(o)o.style.display='none';w.classList.remove('done')};window._fbSkip=function(){var w=document.getElementById('fbWidget');if(w)w.style.display='none';if(typeof trackEvent==='function')trackEvent('feedback_dismissed')};window._fbGo=async function(){if(!R){var sd=document.getElementById('fbStars');if(sd){sd.style.animation='none';sd.offsetHeight;sd.style.animation='fbShake .4s ease'}return}var btn=document.getElementById('fbBtn');if(btn){btn.disabled=true;btn.textContent='Submitting...'}var ce=document.getElementById('fbCmt'),cm=ce?ce.value.trim():'';try{var sb=window.supabaseClient;if(!sb)throw new Error('Not logged in');var r=await sb.rpc('submit_feedback',{p_rating:R,p_subject_tag:T||null,p_comment:cm||null,p_style_used:S||null});if(r.error)throw r.error;var d=r.data;D=true;var f=document.getElementById('fbForm');if(f)f.style.display='none';var o=document.getElementById('fbOk');if(o)o.style.display='block';var w=document.getElementById('fbWidget');if(w)w.classList.add('done');var earned=d&&d.credits_earned?d.credits_earned:0;var nb=d&&d.new_balance!=null?d.new_balance:null;var msg=document.getElementById('fbMsg');if(msg)msg.textContent=earned>0?'Thank you for your feedback!':'Feedback recorded! Credit reward available once every 24 hours.';var a=document.getElementById('fbCoins');if(a)a.textContent=earned>0?('+'+earned+' credit'+(earned>1?'s':'')+' earned!'):'Thanks for rating!';if(nb!==null){var cc=document.getElementById('creditCount');if(cc)cc.textContent=nb}if(typeof trackEvent==='function')trackEvent('feedback_submitted',{rating:R,tag:T,comment:cm.length>0,credits:earned});setTimeout(function(){if(w){w.style.opacity='0';w.style.transform='translateY(-10px)';setTimeout(function(){w.style.display='none';w.style.opacity='';w.style.transform=''},300)}},4000)}catch(err){console.error('FB:',err);if(btn){btn.disabled=false;btn.textContent='Submit and Earn Credits'}}};document.addEventListener('DOMContentLoaded',init)})();
 
 </script>
-<script>
-(function(){
-  /* Extended Themes: Action Figure, Renaissance, Cyberpunk */
-  if(typeof _magicThemes !== 'undefined'){
-    _magicThemes.actionfigure = {
-      spell: 'Unbox the Magic!',
-      wand: '\ud83c\udf81',
-      particles: ['\u2728','\ud83c\udf81','\u2b50','\ud83e\uddf8','\ud83c\udf80','\ud83d\udcab','\ud83d\udce6','\ud83c\udf1f'],
-      msgs: {
-        1: ['Opening the collectors vault... \ud83d\uddc4\ufe0f','Scanning your photo for superstar potential... \ud83d\udcf8','Heating up the plastic molds... \ud83d\udd25','Designing your signature pose... \ud83d\udcaa','Selecting premium packaging... \ud83d\udce6'],
-        2: ['Sculpting every tiny detail with care... \ud83c\udfa8','Hand-painting your miniature face... \ud83d\udd8c\ufe0f','Adding adorable little accessories... \ud83c\udf81','Sealing you in a shiny blister pack... \u2728','Printing your collectors box art... \ud83d\uddbc\ufe0f'],
-        3: ['Polishing your figure to a perfect shine... \ud83d\udc8e','The toy photographer is setting up lights... \ud83d\udcf8','Placing you on the display shelf... \ud83c\udfc6','Your action figure is almost unboxed! \ud83c\udf89','Limited edition \u2014 only one like YOU! \u2b50']
-      }
-    };
-        _magicThemes.cyberpunk = {
-      spell: 'Neon Dreams: Online!',
-      wand: '\ud83c\udfc6',
-      particles: ['\u2728','\ud83c\udf06','\ud83d\udc9c','\ud83d\udd2e','\u26a1','\ud83d\udcab','\ud83c\udf03','\ud83d\udfe3'],
-      msgs: {
-        1: ['Booting up the neon mainframe... \ud83d\udcbb','Scanning your photo into the grid... \ud83d\udd0d','Calibrating holographic projectors... \ud83d\udd2e','Rain beginning to fall on the streets... \ud83c\udf27\ufe0f','Powering up the neon signs... \u26a1'],
-        2: ['Wiring electric blue highlights into every shadow... \ud83d\udc99','Rendering rain-soaked street reflections... \ud83c\udf06','Installing your subtle cyber-enhancements... \ud83e\uddbe','Holographic ads flickering to life around you... \ud83d\udcfa','The city hums with electric pink energy... \ud83d\udc9c'],
-        3: ['Fog machines at maximum \u2014 atmosphere is everything... \ud83c\udf2b\ufe0f','Neon reflections rippling in the puddles... \u2728','Your cyberpunk portrait is almost jacked in... \ud83d\udd0c','The city skyline glows behind you... \ud83c\udf03','Welcome to the future \u2014 you look incredible! \u26a1']
-      }
-    };
-  }
-
-  /* Extended Fun Facts: Action Figure, Renaissance, Cyberpunk */
-  if(typeof _magicFacts !== 'undefined'){
-    _magicFacts.actionfigure = [
-      'The very first action figure was G.I. Joe in 1964 \u2014 Hasbro invented the term because boys refused to play with dolls.',
-      'A mint-condition 1978 Boba Fett prototype sold for $236,000 \u2014 making it the most expensive action figure ever auctioned.',
-      'Modern action figures average 22 points of articulation vs. just 5 in the 1960s. Your elbows have never been more expressive.',
-      'Japanese company Kaiyodo sculpts figures so detailed they have been exhibited in actual art museums alongside classical sculpture.',
-      'Hot Toys figures are so lifelike that movie studios sometimes use them for promotional photos instead of hiring photographers.',
-      'There are more action figures of Batman than any other character in history \u2014 over 1,200 unique versions and counting.'
-    ];
-        _magicFacts.cyberpunk = [
-      'Neon signs were invented in 1910 by French engineer Georges Claude \u2014 they defined a genre that would not exist for another 70 years.',
-      'Akihabara in Tokyo and the Kowloon Walled City in Hong Kong are the two real places that most inspired cyberpunk cities.',
-      'William Gibson coined the word cyberspace in his 1984 novel Neuromancer \u2014 which he wrote on a 1937 manual typewriter.',
-      'The rain-soaked neon aesthetic synonymous with cyberpunk was born from one Ridley Scott note: Hong Kong on a bad day.',
-      'Cyberpunk predicted smartwatches, AR glasses, corporate mega-surveillance, and gig economies decades before they became reality.',
-      'The first computer hack in history was in 1903 when a magician intercepted a wireless telegraph demo to send rude Morse code messages.'
-    ];
-  }
-
-  /* Toggle expand/collapse */
-  var btn=document.getElementById('moreStylesBtn');
-  var more=document.getElementById('moreStyles');
-  if(btn&&more){
-    btn.addEventListener('click',function(){
-      var open=more.classList.contains('open');
-      if(open){more.classList.remove('open');}else{more.classList.add('open');}
-      btn.querySelector('.tarrow').textContent=open?'\u25BC':'\u25B2';
-      btn.querySelector('span:first-child').textContent=open?'All styles':'Less';
-    });
-  }
-}());
-
-</script>
-
-<script>
-// === CHIBI STYLE EXTENSION ===
-(function(){
-  if(typeof _magicThemes !== 'undefined'){
-    _magicThemes.chibi = {
-      spell: 'Chibi Magic Activated! 🐼',
-      wand: '🐼',
-      particles: ['🐼','✨','🎀','💖','🌟','🥰','🍡','🦄'],
-      msgs: {
-        1: ['Calculating perfect 1:2 head-to-body ratio... 🐼','Activating baby schema cuteness protocol... ✨','Preparing kawaii transformation... 🎀','Loading super-deformed proportions... 💖','Booting up Nendoroid-grade rendering... 🌟'],
-        2: ['Enlarging eyes to half-face size... 🥰','Shrinking body, maximizing head... 🍡','Adding rosy blush marks to both cheeks... 🎀','Simplifying hands into adorable mittens... 🐼','Applying cel-shaded pastel colors... ✨'],
-        3: ['Sprinkling floating sparkles and hearts... 🦄','Final kawaii energy blast incoming... 🌟','Chibi transformation complete — irresistible! 🐼','Ready for the aww-factor reveal... 💖','Your collectible chibi masterpiece is here! 🎉']
-      }
-    };
-  }
-  if(typeof _magicFacts !== 'undefined'){
-    _magicFacts.chibi = [
-      'The word chibi (ちび) literally means "small" or "runt" in Japanese — but evolved into one of the most beloved art styles on Earth.',
-      'Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies. Science confirmed it with MRI scans.',
-      'Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined what modern collectible chibi looks like worldwide.',
-      'Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height. That’s the magic number.',
-      'In anime and manga, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.',
-      'The oversized eyes in chibi art aren’t just cute — they’re placed LOW on the face to create a massive forehead, which amplifies the baby-like cuteness.',
-      'Chibi hands are deliberately simplified into "mitten" shapes — detailed fingers on a tiny chibi body creates an uncanny valley effect that breaks the magic.',
-      'The 2025 viral chibi trend of characters inside transparent toy capsules comes directly from Japanese gashapon vending machine culture.'
-    ];
-  }
-})();
-</script>
-
-<!-- removed: maincharacter/chaosgremlin/awardwinner/tinyboss/powerup/gigachad extensions -->
-
-
-
-
-
-
-<!-- ── Capacitor Native Bridge (auto-detects native vs web) ── -->
-<script>
-(function() {
-    // Only load native bridge + CSS inside Capacitor native app
-    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-        var css = document.createElement('link');
-        css.rel = 'stylesheet';
-        css.href = '/capacitor-native.css?v=20260328v20';
-        document.head.appendChild(css);
-
-        var js = document.createElement('script');
-        js.src = '/capacitor-bridge.js?v=20260611v1';
-        document.body.appendChild(js);
-        console.log('[ToonIt] Native bridge loading...');
-    }
-})();
-</script>
-
-<!-- ── PWA Install Banner ── -->
-<div class="pwa-install-banner" id="pwaInstallBanner">
-    <img src="/assets/icons/toonit-icon-96.png" alt="Toon It!" class="pwa-install-icon">
-    <div class="pwa-install-text">
-        <strong>Add Toon It! to Home Screen</strong>
-        <span>Transform photos anytime — instant access, no app store needed</span>
-    </div>
-    <button class="pwa-install-btn" id="pwaInstallBtn">Install</button>
-    <button class="pwa-install-close" id="pwaInstallClose">&times;</button>
-</div>
-
-<!-- ── Service Worker Registration + Install Prompt ── -->
-<script>
-(function() {
-    /* ── Register Service Worker ── */
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js')
-                .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
-                .catch(function(err) { console.warn('[SW] Registration failed:', err); });
-        });
-    }
-
-    /* ── Smart Install Prompt ── */
-    var deferredPrompt = null;
-    var banner = document.getElementById('pwaInstallBanner');
-    var installBtn = document.getElementById('pwaInstallBtn');
-    var closeBtn = document.getElementById('pwaInstallClose');
-
-    // Check if user dismissed recently (7-day cooldown)
-    var dismissed = localStorage.getItem('toonit_pwa_dismissed');
-    var installed = localStorage.getItem('toonit_pwa_installed');
-    var cooldown = dismissed ? (Date.now() - parseInt(dismissed)) < 7 * 24 * 60 * 60 * 1000 : false;
-
-    window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        deferredPrompt = e;
-        // Show banner after 30s if not dismissed/installed
-        if (!cooldown && !installed && banner) {
-            setTimeout(function() {
-                if (deferredPrompt) banner.classList.add('show');
-            }, 30000);
-        }
-    });
-
-    if (installBtn) {
-        installBtn.addEventListener('click', function() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(function(result) {
-                if (result.outcome === 'accepted') {
-                    localStorage.setItem('toonit_pwa_installed', '1');
-                    console.log('[PWA] User accepted install');
-                }
-                deferredPrompt = null;
-                if (banner) banner.classList.remove('show');
-            });
-        });
-    }
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            localStorage.setItem('toonit_pwa_dismissed', Date.now().toString());
-            if (banner) banner.classList.remove('show');
-        });
-    }
-
-    // Track when app is actually installed
-    window.addEventListener('appinstalled', function() {
-        localStorage.setItem('toonit_pwa_installed', '1');
-        if (banner) banner.classList.remove('show');
-        console.log('[PWA] App installed successfully');
-    });
-})();
-
-        // ── Promo Code Redemption ──────────────────────
-        async function redeemPromoCode() {
-            const input = document.getElementById('promoInput');
-            const btn = document.getElementById('promoBtn');
-            const msg = document.getElementById('promoMsg');
-            const code = (input.value || '').trim();
-
-            if (!code) { msg.className = 'promo-msg error'; msg.textContent = 'Please enter a promo code'; return; }
-            if (!supabaseClient) { msg.className = 'promo-msg error'; msg.textContent = 'Please log in first'; return; }
-
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { msg.className = 'promo-msg error'; msg.textContent = 'Please log in to redeem codes'; return; }
-
-            btn.disabled = true;
-            btn.textContent = '...';
-            msg.className = 'promo-msg'; msg.textContent = '';
-
-            try {
-                const { data, error } = await supabaseClient.rpc('redeem_promo_code', { p_code: code });
-                if (error) throw error;
-
-                if (data && data.success) {
-                    msg.className = 'promo-msg success';
-                    msg.textContent = '🎉 ' + data.message;
-                    input.value = '';
-                    // Refresh credit display
-                    const cResult = await supabaseClient.from('profiles').select('credits').eq('id', session.user.id).single();
-                    if (cResult.data) {
-                        var el = document.getElementById('creditCount');
-                        if (el) el.textContent = cResult.data.credits;
-                    }
-                } else {
-                    msg.className = 'promo-msg error';
-                    msg.textContent = (data && data.error) || 'Invalid promo code';
-                }
-            } catch (e) {
-                msg.className = 'promo-msg error';
-                msg.textContent = e.message || 'Something went wrong';
-            }
-            btn.disabled = false;
-            btn.textContent = 'Redeem';
-        }
-        // Enter key support for promo input
-        document.addEventListener('DOMContentLoaded', function() {
-            var pi = document.getElementById('promoInput');
-            if (pi) pi.addEventListener('keydown', function(e) { if (e.key === 'Enter') redeemPromoCode(); });
-        });
-
-        </script>
-
-
-
-
-<!-- Princessify Me Extension BEGIN -->
-<script>
-(function(){
-  if (typeof _getStyleLoaderMeta === 'function') {
-    var _princessifyOrigGetStyleLoaderMeta = _getStyleLoaderMeta;
-    _getStyleLoaderMeta = function() {
-      var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
-      if (style === 'princessify') return { cls: 'style-loader--princessify', label: 'Princessify Me' };
-      return _princessifyOrigGetStyleLoaderMeta();
-    };
-  }
-  if (typeof _magicThemes !== 'undefined') {
-    _magicThemes.princessify = {
-      spell: 'Princess Magic!',
-      wand: '👑',
-      particles: ['👑','✨','🌸','💖','⭐','💫','🌹','✦'],
-      msgs: {
-        1: [
-          'Finding your fairytale sparkle... 👑',
-          'Matching your perfect crown glow... ✨',
-          'Choosing your storybook colors... 🌸',
-          'Polishing the royal shimmer... 💖',
-          'Preparing princess magic... ⭐'
-        ],
-        2: [
-          'Princessifying the moment... 👑',
-          'Weaving enchanted fabric... ✨',
-          'Adding petals and sparkle... 🌸',
-          'Keeping your hair color perfect... 💫',
-          'Turning charm all the way up... 💖'
-        ],
-        3: [
-          'Cueing the crown glimmer... 👑',
-          'Floating the final petals... 🌸',
-          'Adding one last twinkle... ✨',
-          'Preparing the princess reveal... 🎬',
-          'Your fairytale moment is close... 💖'
-        ]
-      }
-    };
-  }
-  if (typeof _magicFacts !== 'undefined') {
-    _magicFacts.princessify = [
-      'Princess stories are found in cultures all over the world — the details change, but transformation and wonder stay universal.',
-      'Crowns and tiaras are instantly readable in art because their silhouettes create a clear visual signal of magic and ceremony.',
-      'Fairytale gowns often use flowing shapes because curved fabric lines make an image feel graceful, dreamy, and animated.',
-      'Pink, gold, lavender, and pearl tones are often used in fantasy art because they feel warm, celebratory, and magical together.',
-      'Petals and sparkles are animation shortcuts for enchantment — they create motion without changing the character identity.',
-      'The best character transformations keep identity cues like hair color, eye color, face shape, and expression while changing the world around them.'
-    ];
-  }
-})();
-</script>
-<!-- Princessify Me Extension END -->
-
-
-<!-- STANDALONE SCRIPT FOR SELECTIVE ANDROID APP PROMOTION -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // initAndroidPromo(); // Disabled: App promotion hidden for now
-    });
-
-    function initAndroidPromo() {
-        try {
-            const isAndroid = /Android/i.test(navigator.userAgent || '');
-            const isDismissed = localStorage.getItem('toonit_hide_android_promo') === 'true';
-
-            if (isAndroid && !isDismissed) {
-                const banner = document.getElementById('android-play-banner');
-                if (banner) {
-                    setTimeout(() => {
-                        banner.style.display = 'flex';
-                    }, 1500);
-                }
-            }
-        } catch (e) {
-            console.error("ToonIt Android promo display initialization failed:", e);
-        }
-    }
-
-    function closeAndroidBanner() {
-        try {
-            const banner = document.getElementById('android-play-banner');
-            if (banner) {
-                banner.style.display = 'none';
-            }
-            localStorage.setItem('toonit_hide_android_promo', 'true');
-        } catch (e) {
-            console.error("ToonIt dismiss tracking persistence failed:", e);
-        }
-    }
-</script>
-
-
-<!-- COMPLIANCE MODALS (Blockers 1, 2, 4 - Google Play Policy)    -->
-<!-- ============================================================ -->
-
-<!-- Blocker 2: Terms Acceptance Modal -->
-<div class="compliance-modal-overlay" id="termsAcceptanceModal">
-    <div class="compliance-modal-content">
-        <div class="compliance-emoji">&#128220;</div>
-        <h2>Terms of Use</h2>
-        <p>Before using Toon It, please review and accept our terms:</p>
-        <div class="compliance-policy-box">
-            <h3>Content Policy</h3>
-            <ul>
-                <li>You must own or have permission to use all photos you upload</li>
-                <li>No sexually explicit, violent, or illegal content</li>
-                <li>No impersonation or harassment</li>
-                <li>AI-generated content may not be used to deceive others</li>
-            </ul>
-            <p style="font-size:0.82em;margin-top:12px;">
-                Full terms at <a href="terms.html" target="_blank" style="color:var(--primary);">toonit.ai/terms.html</a>
-            </p>
-        </div>
-        <label class="compliance-checkbox-label">
-            <input type="checkbox" id="termsAcceptanceCheckbox">
-            <span>I agree to the <a href="terms.html" target="_blank" style="color:var(--primary);">Terms of Use</a> and <a href="privacy.html" target="_blank" style="color:var(--primary);">Privacy Policy</a></span>
-        </label>
-        <button class="compliance-btn compliance-btn-primary" id="termsAcceptanceBtn" disabled>Continue</button>
-        <button class="compliance-btn compliance-btn-secondary" onclick="window.complianceCloseModal('termsAcceptanceModal')">Not Now</button>
-    </div>
-</div>
-
-<!-- Blocker 4: Photo Access Disclosure Modal -->
-<div class="compliance-modal-overlay" id="photoDisclosureModal">
-    <div class="compliance-modal-content">
-        <div class="compliance-emoji">&#128248;</div>
-        <h2>Photo Access</h2>
-        <p>To transform your photos into amazing cartoon and video styles, Toon It needs access to your camera and photo library.</p>
-        <div class="compliance-policy-box">
-            <h3>How we use your photos:</h3>
-            <ul>
-                <li>Sent securely to our AI transformation service</li>
-                <li>Stored temporarily for up to 30 days</li>
-                <li>Displayed in your personal gallery</li>
-                <li>Shared with <strong>no third parties</strong></li>
-            </ul>
-        </div>
-        <label class="compliance-checkbox-label">
-            <input type="checkbox" id="photoDisclosureCheckbox">
-            <span>I understand and agree to photo access as described above. I can review the full <a href="privacy.html" target="_blank" style="color:var(--primary);">Privacy Policy</a> anytime.</span>
-        </label>
-        <button class="compliance-btn compliance-btn-primary" id="photoDisclosureBtn" disabled>Grant Access</button>
-        <button class="compliance-btn compliance-btn-secondary" onclick="window.complianceCloseModal('photoDisclosureModal')">Not Now</button>
-    </div>
-</div>
-
-<!-- Blocker 1: Report Content Modal -->
-<div class="compliance-modal-overlay" id="reportContentModal">
-    <div class="compliance-modal-content">
-        <div class="compliance-emoji">&#9873;</div>
-        <h2>Report Content</h2>
-        <p>Help us keep Toon It safe. Why are you reporting this?</p>
-        <div id="reportReasons">
-            <label class="report-reason-option">
-                <input type="radio" name="reportReason" value="inappropriate">
-                Sexual, violent, or otherwise inappropriate content
-            </label>
-            <label class="report-reason-option">
-                <input type="radio" name="reportReason" value="misleading">
-                Misleading or deceptive content
-            </label>
-            <label class="report-reason-option">
-                <input type="radio" name="reportReason" value="impersonation">
-                Impersonation or unauthorized use of likeness
-            </label>
-            <label class="report-reason-option">
-                <input type="radio" name="reportReason" value="other">
-                Other
-            </label>
-        </div>
-        <textarea id="reportDetails" class="report-details-textarea" placeholder="Additional details (optional)"></textarea>
-        <button class="compliance-btn compliance-btn-primary" id="reportSubmitBtn" onclick="window.submitReport()">Submit Report</button>
-        <button class="compliance-btn compliance-btn-secondary" onclick="window.complianceCloseModal('reportContentModal')">Cancel</button>
-    </div>
-</div>
 
 </body>
 
@@ -6069,212 +5662,54 @@
 
 <!-- COMPLIANCE JS (Blockers 1, 2, 4 - Separate Script Tag)         -->
 <!-- ============================================================ -->
+
+
+
+
 <script>
-(function() {
-    'use strict';
-
-    // ── App-Only Gate: Compliance enforced ONLY in Capacitor/Android app ──
-    var IS_APP = !!(window.Capacitor || window.CapacitorNative || window.AndroidBridge);
-    if (!IS_APP) {
-        console.log('Compliance: Web mode — gates disabled');
-    } else {
-        console.log('Compliance: App mode — gates enabled');
-    }
-
-    const CURRENT_TERMS_VERSION = '2026-05-28-v1';
-    const COMPLIANCE_NS = 'toonit_compliance_';
-
-    window.complianceShowModal = function(id) {
-        var el = document.getElementById(id);
-        if (el) el.classList.add('active');
+(function(){
+  if (typeof _magicThemes !== 'undefined') {
+    _magicThemes.superdad = {
+      spell: 'Dad Powers Activated!',
+      wand: '🦸‍♂️',
+      particles: ['🦸‍♂️','💥','🛡️','⚡','✨','🌟','🚀','💖'],
+      msgs: {
+        1: [
+          'Scanning for dad hero potential... 🦸‍♂️',
+          'Lacing up the rescue boots... 🥾',
+          'Checking the cape for wrinkles... 🦸‍♂️',
+          'Powering up the dad signal... 📡',
+          'Finding the bravest angle... 📸'
+        ],
+        2: [
+          'Suiting up for the save... 🛡️',
+          'Drawing the hero lines... ✏️',
+          'Adding the rescue cape flair... 🦸‍♂️',
+          'Painting courage into every shadow... 🎨',
+          'Building the ultimate dad moment... 💪'
+        ],
+        3: [
+          'The heroic reveal is almost here... ✨',
+          'Polishing the rescue emblem... 🛡️',
+          'Cape flutter perfectly timed... 🌬️',
+          'Lighting the father-hero spotlight... 🌟',
+          'Ready to save the day... 🚀'
+        ]
+      }
     };
-
-    window.complianceCloseModal = function(id) {
-        var el = document.getElementById(id);
-        if (el) el.classList.remove('active');
-    };
-
-    function showToast(message) {
-        var toast = document.createElement('div');
-        toast.className = 'compliance-toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(function() { toast.remove(); }, 4000);
-    }
-    window.complianceShowToast = showToast;
-
-    async function checkTermsAcceptance() {
-        if (!IS_APP) return true; // No terms gate on web
-        var accepted = localStorage.getItem(COMPLIANCE_NS + 'terms_accepted');
-        var version = localStorage.getItem(COMPLIANCE_NS + 'terms_version');
-        if (accepted === 'true' && version === CURRENT_TERMS_VERSION) {
-            return true;
-        }
-        return new Promise(function(resolve) {
-            window._termsResolve = resolve;
-            window.complianceShowModal('termsAcceptanceModal');
-        });
-    }
-    window.checkTermsAcceptance = checkTermsAcceptance;
-
-    var termsCheckbox = document.getElementById('termsAcceptanceCheckbox');
-    var termsBtn = document.getElementById('termsAcceptanceBtn');
-    if (termsCheckbox && termsBtn) {
-        termsCheckbox.addEventListener('change', function() {
-            termsBtn.disabled = !this.checked;
-        });
-        termsBtn.addEventListener('click', async function() {
-            if (!termsCheckbox.checked) return;
-            localStorage.setItem(COMPLIANCE_NS + 'terms_accepted', 'true');
-            localStorage.setItem(COMPLIANCE_NS + 'terms_version', CURRENT_TERMS_VERSION);
-            localStorage.setItem(COMPLIANCE_NS + 'terms_accepted_at', new Date().toISOString());
-            if (window.supabaseClient) {
-                try {
-                    var _r = await window.supabaseClient.auth.getUser();
-                    var user = _r.data && _r.data.user;
-                    if (user) {
-                        await window.supabaseClient.from('profiles').update({
-                            terms_accepted: true,
-                            terms_accepted_at: new Date().toISOString(),
-                            terms_version: CURRENT_TERMS_VERSION
-                        }).eq('id', user.id);
-                    }
-                } catch(e) { console.log('Terms sync error:', e); }
-            }
-            window.complianceCloseModal('termsAcceptanceModal');
-            if (window._termsResolve) window._termsResolve(true);
-        });
-    }
-
-    async function checkPhotoDisclosure() {
-        if (!IS_APP) return true; // No photo gate on web
-        var disclosed = localStorage.getItem(COMPLIANCE_NS + 'photo_disclosed');
-        if (disclosed === 'true') return true;
-        return new Promise(function(resolve) {
-            window._photoResolve = resolve;
-            window.complianceShowModal('photoDisclosureModal');
-        });
-    }
-    window.checkPhotoDisclosure = checkPhotoDisclosure;
-
-    var photoCheckbox = document.getElementById('photoDisclosureCheckbox');
-    var photoBtn = document.getElementById('photoDisclosureBtn');
-    if (photoCheckbox && photoBtn) {
-        photoCheckbox.addEventListener('change', function() {
-            photoBtn.disabled = !this.checked;
-        });
-        photoBtn.addEventListener('click', async function() {
-            if (!photoCheckbox.checked) return;
-            localStorage.setItem(COMPLIANCE_NS + 'photo_disclosed', 'true');
-            localStorage.setItem(COMPLIANCE_NS + 'photo_disclosed_at', new Date().toISOString());
-            if (window.supabaseClient) {
-                try {
-                    var _r = await window.supabaseClient.auth.getUser();
-                    var user = _r.data && _r.data.user;
-                    if (user) {
-                        await window.supabaseClient.from('profiles').update({
-                            photo_disclosure_accepted: true,
-                            photo_disclosure_date: new Date().toISOString()
-                        }).eq('id', user.id);
-                    }
-                } catch(e) { console.log('Photo sync error:', e); }
-            }
-            window.complianceCloseModal('photoDisclosureModal');
-            if (window._photoResolve) window._photoResolve(true);
-        });
-    }
-
-    function hookUploadFlow() {
-        if (!IS_APP) return; // Skip upload gates on web
-        var uploadArea = document.getElementById('uploadArea');
-        if (!uploadArea) {
-            setTimeout(hookUploadFlow, 500);
-            return;
-        }
-        uploadArea.addEventListener('click', async function(e) {
-            var termsOk = await checkTermsAcceptance();
-            if (!termsOk) { e.stopPropagation(); e.preventDefault(); return; }
-            var photoOk = await checkPhotoDisclosure();
-            if (!photoOk) { e.stopPropagation(); e.preventDefault(); return; }
-        }, true);
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', hookUploadFlow);
-    } else {
-        hookUploadFlow();
-    }
-
-    var currentReportGenerationId = null;
-
-    window.openReportModal = function(generationId) {
-        currentReportGenerationId = generationId;
-        document.querySelectorAll('input[name="reportReason"]').forEach(function(r) { r.checked = false; });
-        var details = document.getElementById('reportDetails');
-        if (details) details.value = '';
-        document.querySelectorAll('.report-reason-option').forEach(function(el) { el.classList.remove('selected'); });
-        window.complianceShowModal('reportContentModal');
-    };
-
-    document.querySelectorAll('input[name="reportReason"]').forEach(function(radio) {
-        radio.addEventListener('change', function() {
-            document.querySelectorAll('.report-reason-option').forEach(function(el) { el.classList.remove('selected'); });
-            var parent = this.parentElement;
-            if (parent) parent.classList.add('selected');
-        });
-    });
-
-    window.submitReport = async function() {
-        var selected = document.querySelector('input[name="reportReason"]:checked');
-        if (!selected) { showToast('Please select a reason for your report'); return; }
-        if (!window.supabaseClient) { showToast('Unable to submit report. Please try again later.'); return; }
-        try {
-            var _r = await window.supabaseClient.auth.getUser();
-            var user = _r.data && _r.data.user;
-            if (!user) { showToast('Please sign in to report content'); return; }
-            var detailsEl = document.getElementById('reportDetails');
-            var details = detailsEl ? detailsEl.value : null;
-            var result = await window.supabaseClient
-                .from('content_reports')
-                .insert({
-                    generation_id: currentReportGenerationId,
-                    reporter_user_id: user.id,
-                    report_reason: selected.value,
-                    report_details: details || null
-                });
-            if (result.error) {
-                console.error('Report error:', result.error);
-                if (result.error.code === '23505') showToast('You have already reported this content');
-                else showToast('Failed to submit report. Please try again.');
-                return;
-            }
-            window.complianceCloseModal('reportContentModal');
-            showToast('Thank you for reporting. We will review this content.');
-        } catch (err) {
-            console.error('Report submit error:', err);
-            showToast('Failed to submit report. Please try again.');
-        }
-    };
-
-    function addReportButtonToResult() {
-        var result = document.getElementById('result');
-        if (!result) return;
-        if (result.querySelector('.result-actions-bar')) return;
-        var actionBar = document.createElement('div');
-        actionBar.className = 'result-actions-bar';
-        actionBar.innerHTML = '<button class="result-action-btn report-btn" onclick="var genId = window._lastGenerationId; if(genId) window.openReportModal(genId); else window.complianceShowToast(&quot;Unable to report. Please try again.&quot;);">&#9873; Report</button>';
-        result.appendChild(actionBar);
-    }
-
-    setInterval(function() {
-        var result = document.getElementById('result');
-        if (result && result.style.display !== 'none') addReportButtonToResult();
-    }, 1000);
-
-    console.log('=== Compliance JS loaded (Blockers 1, 2, 4) ===');
+  }
+  if (typeof _magicFacts !== 'undefined') {
+    _magicFacts.superdad = [
+      'The first Father\u2019s Day was celebrated in 1910 in Spokane, Washington, and took 58 years to become a national US holiday.',
+      'Superhero comics were born during the Great Depression to give readers hope — the original heroes were everyday people rising to impossible moments.',
+      'Cape designs in comics were inspired by medieval knights and circus strongmen, symbolizing both protection and dramatic arrival.',
+      'The human brain recognizes a helping hand faster than almost any other gesture — which is why rescue poses feel instantly heroic.',
+      'Fathers in classical mythology often had speed, strength, or wisdom as gifts — modern dads just need coffee and love.',
+      'Comic splash pages were invented to make a single image feel like a movie poster, freezing one epic moment in time.'
+    ];
+  }
 })();
 </script>
-
 </body>
 <script>
 (function(){
@@ -6350,6 +5785,7 @@
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
+        superdad: { cls: 'style-loader--superdad', label: 'Rescue Hero Dad' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -6612,6 +6048,11 @@ if (typeof _magicFacts !== 'undefined') {
             'Animation complete — framing your caricature masterpiece... 🎭',
             'Adding the final ink flourish to your portrait... 🖌️',
             'Your exaggerated little film is almost ready... 🎪'
+        ];
+        finalMessagesByStyle.superdad = [
+            'Rescue complete — your heroic dad moment is almost ready... 🦸‍♂️',
+            'Cape flutter and emblem polish finalized... 🛡️',
+            "Your Father's Day hero film is wrapping up... 💖"
         ];
     }
 })();
