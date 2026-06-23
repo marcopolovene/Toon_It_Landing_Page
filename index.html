@@ -3499,6 +3499,7 @@
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
+        princessify: { cls: 'style-loader--princessify', label: 'Princess' },
         
         };
         return map[style] || map.cartoon3d;
@@ -5061,6 +5062,7 @@
                 anime: { cls: 'style-loader--anime', label: 'Anime', facts: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'] },
                 watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
                 st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] },
+                princessify: { cls: 'style-loader--princessify', label: 'Princess', facts: ['The earliest fairy tales were oral traditions passed down for thousands of years before ever being written down — princess stories are older than books themselves.','The concept of a magical princess transformation appears in folklore from every continent — it is one of the most universal human storytelling patterns ever discovered.','Modern animated princess films spend up to 80% of their budget on hair and fabric physics alone — making the gowns flow perfectly is the hardest part.','The color palette of classic princess gowns was chosen to match specific emotional wavelengths — blue for calm and trust, pink for warmth and love, green for growth and nature.','Walt Disney revolutionized princess animation in 1937 with Snow White — the first full-length animated feature in cinema history, made when most experts said it was impossible.'] },
                 chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] },
             };
             var theme = themes[style] || themes.storybook;
@@ -5617,6 +5619,7 @@
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
+        princessify: { cls: 'style-loader--princessify', label: 'Princess' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5640,6 +5643,58 @@
 /* Feedback Widget v2 - isolated script */
 (function(){var R=0,T='',D=false,S='';function init(){document.querySelectorAll('.fbw .st').forEach(function(s){s.onclick=function(){R=+this.getAttribute('data-r');document.querySelectorAll('.fbw .st').forEach(function(x){x.classList.toggle('on',+x.getAttribute('data-r')<=R)});var d=document.getElementById('fbExtra');if(d)d.style.display='block'};s.onmouseenter=function(){var h=+this.getAttribute('data-r');document.querySelectorAll('.fbw .st').forEach(function(x){if(+x.getAttribute('data-r')<=h){x.style.filter='grayscale(0) opacity(1)';x.style.transform='scale(1.1)'}})};s.onmouseleave=function(){document.querySelectorAll('.fbw .st').forEach(function(x){if(!x.classList.contains('on')){x.style.filter='';x.style.transform=''}})};});document.querySelectorAll('.fbw .tg').forEach(function(t){t.onclick=function(){document.querySelectorAll('.fbw .tg').forEach(function(x){x.classList.remove('sel')});this.classList.add('sel');T=this.getAttribute('data-t')}});var cm=document.getElementById('fbCmt'),cc=document.getElementById('fbCc');if(cm&&cc)cm.oninput=function(){cc.textContent=this.value.length+'/280'};var el=document.getElementById('result');if(el){new MutationObserver(function(m){m.forEach(function(mu){if(mu.attributeName==='style'&&el.style.display==='block'){setTimeout(function(){window._fbShow&&window._fbShow()},500)}})}).observe(el,{attributes:true,attributeFilter:['style']})}}window._fbShow=function(){D=false;var sc=document.querySelector('.style-card.active');S=sc?sc.getAttribute('data-style'):'';var w=document.getElementById('fbWidget');if(!w)return;w.style.display='block';R=0;T='';document.querySelectorAll('.fbw .st').forEach(function(s){s.classList.remove('on');s.style.filter='';s.style.transform=''});document.querySelectorAll('.fbw .tg').forEach(function(t){t.classList.remove('sel')});var cm=document.getElementById('fbCmt');if(cm)cm.value='';var cc=document.getElementById('fbCc');if(cc)cc.textContent='0/280';var ex=document.getElementById('fbExtra');if(ex)ex.style.display='none';var f=document.getElementById('fbForm');if(f)f.style.display='block';var o=document.getElementById('fbOk');if(o)o.style.display='none';w.classList.remove('done')};window._fbSkip=function(){var w=document.getElementById('fbWidget');if(w)w.style.display='none';if(typeof trackEvent==='function')trackEvent('feedback_dismissed')};window._fbGo=async function(){if(!R){var sd=document.getElementById('fbStars');if(sd){sd.style.animation='none';sd.offsetHeight;sd.style.animation='fbShake .4s ease'}return}var btn=document.getElementById('fbBtn');if(btn){btn.disabled=true;btn.textContent='Submitting...'}var ce=document.getElementById('fbCmt'),cm=ce?ce.value.trim():'';try{var sb=window.supabaseClient;if(!sb)throw new Error('Not logged in');var r=await sb.rpc('submit_feedback',{p_rating:R,p_subject_tag:T||null,p_comment:cm||null,p_style_used:S||null});if(r.error)throw r.error;var d=r.data;D=true;var f=document.getElementById('fbForm');if(f)f.style.display='none';var o=document.getElementById('fbOk');if(o)o.style.display='block';var w=document.getElementById('fbWidget');if(w)w.classList.add('done');var earned=d&&d.credits_earned?d.credits_earned:0;var nb=d&&d.new_balance!=null?d.new_balance:null;var msg=document.getElementById('fbMsg');if(msg)msg.textContent=earned>0?'Thank you for your feedback!':'Feedback recorded! Credit reward available once every 24 hours.';var a=document.getElementById('fbCoins');if(a)a.textContent=earned>0?('+'+earned+' credit'+(earned>1?'s':'')+' earned!'):'Thanks for rating!';if(nb!==null){var cc=document.getElementById('creditCount');if(cc)cc.textContent=nb}if(typeof trackEvent==='function')trackEvent('feedback_submitted',{rating:R,tag:T,comment:cm.length>0,credits:earned});setTimeout(function(){if(w){w.style.opacity='0';w.style.transform='translateY(-10px)';setTimeout(function(){w.style.display='none';w.style.opacity='';w.style.transform=''},300)}},4000)}catch(err){console.error('FB:',err);if(btn){btn.disabled=false;btn.textContent='Submit and Earn Credits'}}};document.addEventListener('DOMContentLoaded',init)})();
 
+</script>
+
+<script>
+(function(){
+  if (typeof _magicThemes !== 'undefined') {
+    _magicThemes.princessify = {
+      spell: 'Princess Magic Activate!',
+      wand: '✨',
+      particles: ['👸','✨','🌸','💄','🎀','✧','💫','🌹'],
+      msgs: {
+        1: [
+          'Summoning royal magic... 👑',
+          'Choosing your gown colors... 🎀',
+          'Waving the fairy wand... ✨',
+          'Crowning your princess look... 👑',
+          'Sprinkling sparkle dust... ✧'
+        ],
+        2: [
+          'Painting your royal portrait... 🌸',
+          'Adding golden light rays... ✨',
+          'Styling your palace gown... 🎀',
+          'Glittering the tiara... 👑',
+          'Enchanting the background... 💫'
+        ],
+        3: [
+          'The royal reveal is almost here... ✨',
+          'Polishing the final sparkle... ✧',
+          'Your princess film is wrapping up... 🌹',
+          'Casting the final magic... 💄',
+          'Ready for your royal debut... 👑'
+        ]
+      }
+    };
+  }
+  if (typeof _magicFacts !== 'undefined') {
+    _magicFacts.princessify = [
+      'The earliest fairy tales were oral traditions passed down for thousands of years before ever being written down — princess stories are older than books themselves.',
+      'The concept of a magical princess transformation appears in folklore from every continent — it is one of the most universal human storytelling patterns ever discovered.',
+      'Modern animated princess films spend up to 80% of their budget on hair and fabric physics alone — making the gowns flow perfectly is the hardest part.',
+      'The color palette of classic princess gowns was chosen to match specific emotional wavelengths — blue for calm and trust, pink for warmth and love, green for growth and nature.',
+      'Walt Disney revolutionized princess animation in 1937 with Snow White — the first full-length animated feature in cinema history, made when most experts said it was impossible.',
+      'The tiara has been a symbol of princess status for over 2,000 years — ancient Roman princesses wore them, and the tradition never went out of style.'
+    ];
+  }
+  if (typeof finalMessagesByStyle !== 'undefined') {
+    finalMessagesByStyle.princessify = [
+      'Your royal transformation is complete — almost ready... 👑',
+      'Final sparkle and tiara polish applied... ✨',
+      'Your princess fairytale film is wrapping up... 🎀'
+    ];
+  }
+})();
 </script>
 
 <script>
@@ -5763,6 +5818,7 @@
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
+        princessify: { cls: 'style-loader--princessify', label: 'Princess' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
