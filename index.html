@@ -230,7 +230,7 @@
         .style-loader--powerup .style-loader-fill { background-image: linear-gradient(90deg, #fde047, #f59e0b, #38bdf8); box-shadow: 0 0 16px rgba(253,224,71,0.28); }
         .style-loader--gigachad .style-loader-fill { background-image: linear-gradient(90deg, #e5e7eb, #9ca3af, #64748b); box-shadow: 0 0 16px rgba(148,163,184,0.26); }
         .style-loader--caricature .style-loader-fill { background-image: linear-gradient(90deg, #f59e0b, #ea580c, #0d9488); box-shadow: 0 0 16px rgba(245,158,11,0.26); }
-        .style-loader--superdad .style-loader-fill { background-image: linear-gradient(90deg, #ef4444, #f0b429, #3b82f6); box-shadow: 0 0 16px rgba(239,68,68,0.28); }
+
 @keyframes loaderShift { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
         @keyframes loaderSheen { 0%, 100% { right: -20%; opacity: 0.15; } 50% { right: 82%; opacity: 0.5; } }
         .progress-steps { display: none; justify-content: center; gap: 24px; }
@@ -826,11 +826,6 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card active" data-style="superdad" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-today">FATHER&#39;S DAY</span>
-                    <span class="style-icon">🦸‍♂️</span>
-                    <span class="style-name">SuperDad</span>
-                </div>
                 <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
@@ -838,7 +833,7 @@
                 <div class="style-card" data-style="princessify" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-new">NEW</span>
                     <span class="style-icon">👑</span>
-                    <span class="style-name">Princessify Me</span>
+                    <span class="style-name">Princess</span>
                 </div>
                 <div class="style-card" data-style="anime" onclick="selectStyle(this)">
                     <span class="style-icon">🌸</span>
@@ -3494,7 +3489,6 @@
     function _getStyleLoaderMeta() {
         var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
         var map = {
-            superdad: { cls: 'style-loader--superdad', label: 'SuperDad' },
             cartoon3d: { cls: 'style-loader--cartoon3d', label: '3D Cartoon' },
             comic: { cls: 'style-loader--comic', label: 'Superhero' },
             anime: { cls: 'style-loader--anime', label: 'Anime' },
@@ -3505,7 +3499,6 @@
             cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
-        superdad: { cls: 'style-loader--superdad', label: 'SuperDad' },
         
         };
         return map[style] || map.cartoon3d;
@@ -4992,11 +4985,6 @@
                 'Adding final sparkle highlights to those giant chibi eyes... ✨',
                 'Your collectible chibi masterpiece is being wrapped up... 💖'
             ],
-            superdad: [
-                'Rescue complete — your heroic dad moment is almost ready... 🦸‍♂️',
-                'Cape flutter and emblem polish finalized... 🛡️',
-                "Your Father's Day hero film is wrapping up... 💖"
-            ]
         };
         var finalMessages = finalMessagesByStyle[finalStyle] || finalMessagesByStyle.storybook; // failsafe_poll_messages_fix_20260310
         var finalWidths = [92, 93, 94, 95, 96, 97, 98];
@@ -5629,7 +5617,6 @@
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
-        superdad: { cls: 'style-loader--superdad', label: 'SuperDad' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5669,44 +5656,8 @@
 <script>
 (function(){
   if (typeof _magicThemes !== 'undefined') {
-    _magicThemes.superdad = {
-      spell: 'Dad Powers Activated!',
-      wand: '🦸‍♂️',
-      particles: ['🦸‍♂️','💥','🛡️','⚡','✨','🌟','🚀','💖'],
-      msgs: {
-        1: [
-          'Scanning for dad hero potential... 🦸‍♂️',
-          'Lacing up the rescue boots... 🥾',
-          'Checking the cape for wrinkles... 🦸‍♂️',
-          'Powering up the dad signal... 📡',
-          'Finding the bravest angle... 📸'
-        ],
-        2: [
-          'Suiting up for the save... 🛡️',
-          'Drawing the hero lines... ✏️',
-          'Adding the rescue cape flair... 🦸‍♂️',
-          'Painting courage into every shadow... 🎨',
-          'Building the ultimate dad moment... 💪'
-        ],
-        3: [
-          'The heroic reveal is almost here... ✨',
-          'Polishing the rescue emblem... 🛡️',
-          'Cape flutter perfectly timed... 🌬️',
-          'Lighting the father-hero spotlight... 🌟',
-          'Ready to save the day... 🚀'
-        ]
-      }
-    };
   }
   if (typeof _magicFacts !== 'undefined') {
-    _magicFacts.superdad = [
-      'The first Father\u2019s Day was celebrated in 1910 in Spokane, Washington, and took 58 years to become a national US holiday.',
-      'Superhero comics were born during the Great Depression to give readers hope — the original heroes were everyday people rising to impossible moments.',
-      'Cape designs in comics were inspired by medieval knights and circus strongmen, symbolizing both protection and dramatic arrival.',
-      'The human brain recognizes a helping hand faster than almost any other gesture — which is why rescue poses feel instantly heroic.',
-      'Fathers in classical mythology often had speed, strength, or wisdom as gifts — modern dads just need coffee and love.',
-      'Comic splash pages were invented to make a single image feel like a movie poster, freezing one epic moment in time.'
-    ];
   }
 })();
 </script>
@@ -5785,7 +5736,6 @@
         cyberpunk: { cls: 'style-loader--cyberpunk', label: 'Cyberpunk' },
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
-        superdad: { cls: 'style-loader--superdad', label: 'SuperDad' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -6048,11 +5998,6 @@ if (typeof _magicFacts !== 'undefined') {
             'Animation complete — framing your caricature masterpiece... 🎭',
             'Adding the final ink flourish to your portrait... 🖌️',
             'Your exaggerated little film is almost ready... 🎪'
-        ];
-        finalMessagesByStyle.superdad = [
-            'Rescue complete — your heroic dad moment is almost ready... 🦸‍♂️',
-            'Cape flutter and emblem polish finalized... 🛡️',
-            "Your Father's Day hero film is wrapping up... 💖"
         ];
     }
 })();
