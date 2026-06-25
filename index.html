@@ -830,7 +830,7 @@
     <div class="style-selector" id="styleSelector">
             <h3>✨ Choose Your Style</h3>
             <div class="style-cards">
-                <div class="style-card" data-style="american_hero" onclick="selectStyle(this)">
+                <div class="style-card active" data-style="american_hero" onclick="selectStyle(this)">
                     <span class="sbadge sbadge-july4th">JULY 4TH</span>
                     <span class="style-icon">🦅</span>
                     <span class="style-name">American Hero</span>
@@ -845,7 +845,7 @@
                     <span class="style-icon">🎩</span>
                     <span class="style-name">Founding Father</span>
                 </div>
-                <div class="style-card active" data-style="cartoon3d" onclick="selectStyle(this)">
+                <div class="style-card" data-style="cartoon3d" onclick="selectStyle(this)">
                     <span class="style-icon">🎬</span>
                     <span class="style-name">Cartoon</span>
                 </div>
@@ -4742,7 +4742,7 @@
 
     function getSelectedStyleFallback() {
         var active = document.querySelector('.style-card.active');
-        return (active && active.getAttribute('data-style')) || 'cartoon3d';
+        return (active && active.getAttribute('data-style')) || 'american_hero';
     }
 
     function saveJobFallback(jobId) {
@@ -4999,6 +4999,21 @@
                 'Animation complete — letting the final colors settle... 🎨',
                 'The last watercolor touches are drying beautifully... 💧',
                 'Your painted little film is almost ready... ✨'
+            ],
+            american_hero: [
+                'Animation complete — USA! Your hero transformation is almost ready... 🇺🇸',
+                'The eagle has landed — adding final patriotic polish... 🦅',
+                'Your American Hero film is almost ready for the premiere... 🎆'
+            ],
+            patriot_figure: [
+                'Animation complete — your collectible is almost ready for display... 🇺🇸',
+                'Final packaging touches being applied... 🎉',
+                'Your Patriot Figure unboxing film is almost ready... ✨'
+            ],
+            founding_father: [
+                'Animation complete — history is coming alive... 🇺🇸',
+                'The founding father portrait is almost ready... 🎩',
+                'Your revolutionary transformation is nearly complete... 🇺🇸'
             ],
             chibi: [
                 'Chibi transformation complete — your adorable mini-me is almost ready... 🐼',
@@ -5759,11 +5774,11 @@ if (typeof _magicThemes !== 'undefined') {
     _magicThemes.patriot_figure = {
         spell: 'Collector Edition Activate!',
         wand: '🎖️',
-        particles: ['🎖️','⭐','🇺🇸','📦','✨','🎆','🛡️','💫'],
+        particles: ['🎖️','⭐','🇺🇸','📦','✨','🎉','🛡️','💫'],
         msgs: {
             1: ['Preparing the collector edition mold... 🎖️','Scanning your patriotic features... ⭐','The toy factory is buzzing... 📦','Stars and stripes loading... 🇺🇸','Packaging design in progress... ✨'],
-            2: ['Plastic sculpting your figure... 🎖️','Blister pack sealing into place... 📦','American flag backing card printing... 🇺🇸','Toy accessories being molded... 🛡️','Sparkle effects adding... 🎆'],
-            3: ['Your Patriot Figure is ready for display... 📦','Collector edition complete... 🎖️','Premium toy reveal incoming... ✨','July 4th edition finalized... 🇺🇸','Time to unbox your hero... 🎆']
+            2: ['Plastic sculpting your figure... 🎖️','Blister pack sealing into place... 📦','American flag backing card printing... 🇺🇸','Toy accessories being molded... 🛡️','Sparkle effects adding... 🎉'],
+            3: ['Your Patriot Figure is ready for display... 📦','Collector edition complete... 🎖️','Premium toy reveal incoming... ✨','July 4th edition finalized... 🇺🇸','Time to unbox your hero... 🎉']
         }
     };
     _magicThemes.founding_father = {
@@ -5778,17 +5793,20 @@ if (typeof _magicThemes !== 'undefined') {
     };
 }
 if (typeof _magicFacts !== 'undefined') {
-    _magicFacts.american_hero = ['The bald eagle became the national bird of the United States in 1782 — Benjamin Franklin famously preferred the wild turkey instead.','The American flag has been modified 27 times since 1777, with each new state adding a star. The current 50-star design was created by a 17-year-old student for a school project.','Comic book superheroes were invented in America — Superman debuted in 1938 and every superhero since traces back to that moment.','The phrase 'United We Stand, Divided We Fall' was first used by John Dickinson in 1768, predating the Revolution itself.','Fireworks were used to celebrate the first anniversary of Independence Day in 1777 — making July 4th fireworks a 250-year tradition.'];
+    _magicFacts.american_hero = ['The bald eagle became the national bird of the United States in 1782 — Benjamin Franklin famously preferred the wild turkey instead.','The American flag has been modified 27 times since 1777, with each new state adding a star. The current 50-star design was created by a 17-year-old student for a school project.','Comic book superheroes were invented in America — Superman debuted in 1938 and every superhero since traces back to that moment.','The phrase United We Stand, Divided We Fall was first used by John Dickinson in 1768, predating the Revolution itself.','Fireworks were used to celebrate the first anniversary of Independence Day in 1777 — making July 4th fireworks a 250-year tradition.'];
     _magicFacts.patriot_figure = ['The first action figure ever made was G.I. Joe in 1964 — created specifically as an American military hero toy.','Collectible toy unboxing videos generate over 2 billion views per month on YouTube — the unboxing reveal is the most satisfying moment in toy content.','POP MART blind boxes became a $1 billion business by making every person feel like a collectible — the same energy powers this transformation.','The blister pack was invented in 1956 and revolutionized retail — seeing yourself in one taps into decades of shopping nostalgia.','Toy photography has become a legit art form with international competitions — your Patriot Figure photo could be a gallery piece.'];
-    _magicFacts.founding_father = ['Only two people signed the Declaration of Independence on July 4, 1776 — most delegates signed on August 2nd, over a month later.','John Hancock signed so large that his name became a synonym for signature itself — hence 'put your John Hancock here.'','The oldest Founding Father to sign the Declaration was Benjamin Franklin at age 70 — the youngest was Edward Rutledge at 26.','The tricorn hat was practical, not decorative — its three sides were designed to let rain roll off and keep muskets rested on the shoulder.','Rembrandt lighting, used in this portrait style, was invented in the 1600s and remains the most dramatic portrait lighting technique 400 years later.'];
+    _magicFacts.founding_father = ['Only two people signed the Declaration of Independence on July 4, 1776 — most delegates signed on August 2nd, over a month later.','John Hancock signed so large that his name became a synonym for signature itself — hence put your John Hancock here.','The oldest Founding Father to sign the Declaration was Benjamin Franklin at age 70 — the youngest was Edward Rutledge at 26.','The tricorn hat was practical, not decorative — its three sides were designed to let rain roll off and keep muskets rested on the shoulder.','Rembrandt lighting, used in this portrait style, was invented in the 1600s and remains the most dramatic portrait lighting technique 400 years later.'];
 }
-// Extend _getStyleLoaderMeta with July 4th styles
+if (typeof finalMessagesByStyle !== 'undefined') {
+    finalMessagesByStyle.american_hero = ['Animation complete — USA! Your hero transformation is almost ready... 🇺🇸','The eagle has landed — adding final patriotic polish... 🦅','Your American Hero film is almost ready for the premiere... 🎆'];
+    finalMessagesByStyle.patriot_figure = ['Animation complete — your collectible is almost ready for display... 🇺🇸','Final packaging touches being applied... 🎉','Your Patriot Figure unboxing film is almost ready... ✨'];
+    finalMessagesByStyle.founding_father = ['Animation complete — history is coming alive... 🇺🇸','The founding father portrait is almost ready... 🎩','Your revolutionary transformation is nearly complete... 🇺🇸'];
+}
 (function() {
     var origFn = window._getStyleLoaderMeta;
     if (typeof origFn === 'function') {
-        var origMap = origFn.call(window);
         window._getStyleLoaderMeta = function() {
-            var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
+            var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'american_hero';
             var july4thMap = {
                 american_hero: { cls: 'style-loader--american_hero', label: 'American Hero' },
                 patriot_figure: { cls: 'style-loader--patriot_figure', label: 'Patriot Figure' },
@@ -5817,63 +5835,6 @@ if (typeof _magicFacts !== 'undefined') {
   }
   if (typeof _magicFacts !== 'undefined') {
   }
-})();
-</script>
-<!-- July 4th Styles Extension Script -->
-<script>
-if (typeof _magicThemes !== 'undefined') {
-    _magicThemes.american_hero = {
-        spell: 'USA! Eagle Power Activate!',
-        wand: '🦅',
-        particles: ['🦅','⭐','🎆','🇺🇸','💥','✨','🛡️','💫'],
-        msgs: {
-            1: ['Channeling the spirit of 1776... 🦅','The bald eagle is spreading its wings... ⭐','Scanning for patriotic energy... 🎆','Reading your heroic American essence...','Freedom powers charging up... 💥'],
-            2: ['Stars and stripes materializing... 🇺🇸','Cape flowing in the wind... 💨','Fireworks loading in the background... 🎆','Eagle companion taking flight... 🦅','Heroic colors activated... 🔥'],
-            3: ['Your American Hero transformation is complete... 🦅','USA! power fully unleashed... 💥','Eagle soaring beside you... ⭐','Fireworks exploding into view... 🎆','Hero protocol activated... 🛡️']
-        }
-    };
-    _magicThemes.patriot_figure = {
-        spell: 'Collector Edition Activate!',
-        wand: '🎖️',
-        particles: ['🎖️','⭐','🇺🇸','📦','✨','🎆','🛡️','💫'],
-        msgs: {
-            1: ['Preparing the collector edition mold... 🎖️','Scanning your patriotic features... ⭐','The toy factory is buzzing... 📦','Stars and stripes loading... 🇺🇸','Packaging design in progress... ✨'],
-            2: ['Plastic sculpting your figure... 🎖️','Blister pack sealing into place... 📦','American flag backing card printing... 🇺🇸','Toy accessories being molded... 🛡️','Sparkle effects adding... 🎆'],
-            3: ['Your Patriot Figure is ready for display... 📦','Collector edition complete... 🎖️','Premium toy reveal incoming... ✨','July 4th edition finalized... 🇺🇸','Time to unbox your hero... 🎆']
-        }
-    };
-    _magicThemes.founding_father = {
-        spell: 'History Comes Alive!',
-        wand: '🎩',
-        particles: ['🎩','📜','🇺🇸','🦅','✨','🏛️','⭐','💫'],
-        msgs: {
-            1: ['Traveling back to 1776... 🎩','The colonial painter is preparing... 📜','Dusting off the founding documents... 🇺🇸','Reading your historical essence... ✨','Rembrandt lighting being set up... 🏛️'],
-            2: ['Oil paints mixing with history... 🎨','Frock coat materializing... 🎩','Tricorn hat taking shape... ✨','Canvas texture being applied... 📜','The eagle silhouette appears in the sky... 🦅'],
-            3: ['Your Founding Father portrait is complete... 🎩','History comes alive on canvas... 📜','Eagle soaring through the painting... 🦅','A masterpiece of patriotism... 🇺🇸','The Revolution lives on... ⭐']
-        }
-    };
-}
-if (typeof _magicFacts !== 'undefined') {
-    _magicFacts.american_hero = ['The bald eagle became the national bird of the United States in 1782 — Benjamin Franklin famously preferred the wild turkey instead.','The American flag has been modified 27 times since 1777, with each new state adding a star. The current 50-star design was created by a 17-year-old student for a school project.','Comic book superheroes were invented in America — Superman debuted in 1938 and every superhero since traces back to that moment.','The phrase 'United We Stand, Divided We Fall' was first used by John Dickinson in 1768, predating the Revolution itself.','Fireworks were used to celebrate the first anniversary of Independence Day in 1777 — making July 4th fireworks a 250-year tradition.'];
-    _magicFacts.patriot_figure = ['The first action figure ever made was G.I. Joe in 1964 — created specifically as an American military hero toy.','Collectible toy unboxing videos generate over 2 billion views per month on YouTube — the unboxing reveal is the most satisfying moment in toy content.','POP MART blind boxes became a $1 billion business by making every person feel like a collectible — the same energy powers this transformation.','The blister pack was invented in 1956 and revolutionized retail — seeing yourself in one taps into decades of shopping nostalgia.','Toy photography has become a legit art form with international competitions — your Patriot Figure photo could be a gallery piece.'];
-    _magicFacts.founding_father = ['Only two people signed the Declaration of Independence on July 4, 1776 — most delegates signed on August 2nd, over a month later.','John Hancock signed so large that his name became a synonym for signature itself — hence 'put your John Hancock here.'','The oldest Founding Father to sign the Declaration was Benjamin Franklin at age 70 — the youngest was Edward Rutledge at 26.','The tricorn hat was practical, not decorative — its three sides were designed to let rain roll off and keep muskets rested on the shoulder.','Rembrandt lighting, used in this portrait style, was invented in the 1600s and remains the most dramatic portrait lighting technique 400 years later.'];
-}
-// Extend _getStyleLoaderMeta with July 4th styles
-(function() {
-    var origFn = window._getStyleLoaderMeta;
-    if (typeof origFn === 'function') {
-        var origMap = origFn.call(window);
-        window._getStyleLoaderMeta = function() {
-            var style = (typeof getSelectedStyle === 'function') ? getSelectedStyle() : 'cartoon3d';
-            var july4thMap = {
-                american_hero: { cls: 'style-loader--american_hero', label: 'American Hero' },
-                patriot_figure: { cls: 'style-loader--patriot_figure', label: 'Patriot Figure' },
-                founding_father: { cls: 'style-loader--founding_father', label: 'Founding Father' }
-            };
-            if (july4thMap[style]) return july4thMap[style];
-            return origFn.call(window);
-        };
-    }
 })();
 </script>
 </body>
