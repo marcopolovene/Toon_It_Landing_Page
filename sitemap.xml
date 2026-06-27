@@ -158,4 +158,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- New June 2026 posts -->
+  <url>
+    <loc>https://toonit.ai/blog/july-4th-photo-ideas-patriotic-ai-art.html</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
