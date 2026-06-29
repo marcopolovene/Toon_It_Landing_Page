@@ -222,7 +222,6 @@
         .style-loader--st_patricks .style-loader-fill { background-image: linear-gradient(90deg, #22c55e, #fbbf24, #818cf8); box-shadow: 0 0 16px rgba(34,197,94,0.28); }
 
         .style-loader--princessify .style-loader-fill { background-image: linear-gradient(90deg, #f472b6, #facc15, #c084fc); box-shadow: 0 0 16px rgba(244,114,182,0.26); }
-        .style-loader--adelaide_bday .style-loader-fill { background-image: linear-gradient(90deg, #f472b6, #fbbf24, #f9a8d4, #c084fc); box-shadow: 0 0 20px rgba(244,114,182,0.30); }
         .style-loader--powerup .style-loader-fill { background-image: linear-gradient(90deg, #fde047, #f59e0b, #38bdf8); box-shadow: 0 0 16px rgba(253,224,71,0.28); }
         .style-loader--gigachad .style-loader-fill { background-image: linear-gradient(90deg, #e5e7eb, #9ca3af, #64748b); box-shadow: 0 0 16px rgba(148,163,184,0.26); }
         .style-loader--american_hero .style-loader-fill { background-image: linear-gradient(90deg, #ef4444, #f8fafc, #3b82f6); box-shadow: 0 0 16px rgba(239,68,68,0.28); }
@@ -893,11 +892,6 @@
                     <span class="sbadge sbadge-new">NEW</span>
                     <span class="style-icon">🏛️</span>
                     <span class="style-name">Gigachad</span>
-                </div>
-                <div class="style-card" data-style="adelaide_bday" onclick="selectStyle(this)">
-                    <span class="sbadge sbadge-new">🎂 BDAY</span>
-                    <span class="style-icon">🎂</span>
-                    <span class="style-name">Adelaide's Princess</span>
                 </div>
             </div>
             <button id="moreStylesBtn" class="style-toggle-btn"><span>All styles</span> <span class="tarrow">▼</span></button>
@@ -3440,17 +3434,7 @@
     // ==========================================
     // MAGICAL WAITING EXPERIENCE
     // ==========================================
-    // Style-specific magical themes,
-        adelaide_bday: {
-            spell: "Adelaide's Birthday Princess Magic!",
-            wand: '🎂',
-            particles: ['🎂','👑','✨','🎈','🎀','✧','💫','🎉'],
-            msgs: {
-                1: ['Getting ready for Adelaide's royal ball! 👑','Choosing your birthday princess gown... 🎀','Waving the birthday fairy wand... ✨','Crowning your princess look for Adelaide's party! 👑','Sprinkling birthday sparkle dust... ✧'],
-                2: ['Painting your royal birthday portrait... 🎂','Adding birthday cake and balloons to the scene... 🎈','Styling your palace party gown... 🎀','Glittering the birthday tiara... 👑','Lighting the birthday candles... 🎉'],
-                3: ['Happy 3rd Birthday Princess Adelaide! 🎂👑','Your birthday princess film is wrapping up... ✨','The royal birthday reveal is almost here! 🎈','Casting the final birthday magic... 💫','Ready for Adelaide's royal birthday debut! 🎉']
-            }
-        }
+    // Style-specific magical themes
     var _magicThemes = {
                 anime: {
             spell: 'Totoro Kaze no Maho!',
@@ -3501,16 +3485,6 @@
                 2: ['Power levels rising... 💪','With great power comes great art... 🦸','Energy shields forming... 🛡️','Heroic colors activated... 🔥','The multiverse is aligning... 🌀'],
                 3: ['Activating hero protocol... 🛡️','Cape and mask materializing... 🦸','Your powers are manifesting... ⚡','Superhero transformation complete... 💥','Assembling the final scene... 🌟']
             }
-        },
-        adelaide_bday: {
-            spell: "Adelaide's Birthday Princess Magic!",
-            wand: '🎂',
-            particles: ['🎂','👑','✨','🎈','🎀','✧','💫','🎉'],
-            msgs: {
-                1: ['Getting ready for Adelaide\'s royal ball! 👑','Choosing your birthday princess gown... 🎀','Waving the birthday fairy wand... ✨','Crowning your princess look for Adelaide\'s party! 👑','Sprinkling birthday sparkle dust... ✧'],
-                2: ['Painting your royal birthday portrait... 🎂','Adding birthday cake and balloons to the scene... 🎈','Styling your palace party gown... 🎀','Glittering the birthday tiara... 👑','Lighting the birthday candles... 🎉'],
-                3: ['Happy 3rd Birthday Princess Adelaide! 🎂👑','Your birthday princess film is wrapping up... ✨','The royal birthday reveal is almost here! 🎈','Casting the final birthday magic... 💫','Ready for Adelaide\'s royal birthday debut! 🎉']
-            }
         }
     };
 
@@ -3520,7 +3494,6 @@
         anime: ['Ghibli background artists hand-paint each scene with 300+ individual details — some single backgrounds take an entire week to finish.','The Ghibli food effect is studied by food psychologists: animated meals in Spirited Away trigger genuine appetite and joy through visuals alone.','The hazy distance in Ghibli films is called atmospheric perspective — borrowed from Renaissance oil painting centuries before anime existed.','Global anime revenue hit $31 billion in 2023 — one of the largest entertainment sectors on the planet.','Ma — the Japanese concept of meaningful pause — is the secret behind the most emotional Ghibli moments. The silence is part of the story.'],
         watercolor: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'],
         st_patricks: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'],
-        adelaide_bday: ['Birthday parties became a tradition in ancient Egypt — pharaohs were crowned and celebrated as gods on their birthday!','The world record for most birthday candles on a cake is 72,585 — lit on a single cake in 2016!','Princess parties are the most popular birthday theme for 3-year-olds — crowns, gowns, and magic wands everywhere!','The first birthday cake with candles was made in 18th century Germany — each candle represented a year of life!','Wishing on birthday candles started because people believed smoke carried wishes to the gods in the sky!','A royal ball birthday party means dancing, tiaras, and celebrating like a princess — exactly what Adelaide loves!']
     };
 
     function _getTheme() {
@@ -3544,7 +3517,6 @@
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
         princessify: { cls: 'style-loader--princessify', label: 'Princess' },
-        adelaide_bday: { cls: 'style-loader--adelaide_bday', label: 'Adelaide Birthday' },
         
         };
         return map[style] || map.cartoon3d;
@@ -5118,7 +5090,6 @@
                 watercolor: { cls: 'style-loader--watercolor', label: 'Watercolor', facts: ['The oldest known watercolor paintings date back 40,000 years — cave artists mixed water and pigment on stone walls long before civilization existed.','The bloom effect — when wet paint bleeds into other wet paint — is impossible to fully control. Most masters say their best work was a happy accident.','Wabi-sabi — the Japanese philosophy of finding beauty in imperfection — is considered the spiritual soul of watercolor art.','In 2025, luxury fashion houses shifted toward watercolor aesthetics in their campaigns because it signals handcraft and exclusivity like nothing else.','Paul Cezanne used watercolor sketches to plan every oil painting. His watercolor studies now sell for more at auction than many finished canvases.'] },
                 st_patricks: { cls: 'style-loader--st_patricks', label: 'Lucky Irish', facts: ['Ireland is called the Emerald Isle because of its 40+ shades of green — more than anywhere else on Earth thanks to its unique Atlantic rainfall patterns.','Four-leaf clovers occur roughly 1 in every 10,000 three-leaf clovers. Finding one is genuinely rare — and people have been collecting them for luck since the Middle Ages.','St. Patrick was actually born in Britain, not Ireland. He was kidnapped as a teen, enslaved in Ireland for 6 years, then returned to convert the whole island.','The shamrock was used by St. Patrick as a teaching tool to explain the Holy Trinity — which is why it became the enduring symbol of Ireland.','Ireland has the only national flag in the world where the color green officially represents Celtic tradition and hope for the future.'] },
                 princessify: { cls: 'style-loader--princessify', label: 'Princess', facts: ['The earliest fairy tales were oral traditions passed down for thousands of years before ever being written down — princess stories are older than books themselves.','The concept of a magical princess transformation appears in folklore from every continent — it is one of the most universal human storytelling patterns ever discovered.','Modern animated princess films spend up to 80% of their budget on hair and fabric physics alone — making the gowns flow perfectly is the hardest part.','The color palette of classic princess gowns was chosen to match specific emotional wavelengths — blue for calm and trust, pink for warmth and love, green for growth and nature.','Walt Disney revolutionized princess animation in 1937 with Snow White — the first full-length animated feature in cinema history, made when most experts said it was impossible.'] },
-                adelaide_bday: { cls: 'style-loader--adelaide_bday', label: 'Adelaide Birthday', facts: ['The tradition of birthday cakes started in Germany in the 1400s at children's parties called Kinderfest.','The song "Happy Birthday to You" was written in 1893 by two sisters — it is the most recognized song in the English language.','Princess birthday parties became popular after Disney princesses — every child dreams of being royalty on their special day.','The world's largest birthday cake was made in 1989 weighing 128,238 pounds — that's as heavy as an elephant!','Blowing out birthday candles started as a belief that smoke carried wishes up to the stars where wishes could come true.','Tiara comes from the Greek word "tiara" meaning a crown worn by Persian kings — now it's the ultimate princess birthday accessory!'] },
                 chibi: { cls: 'style-loader--chibi', label: 'Chibi', facts: ['The word chibi literally means "small" in Japanese — but evolved into one of the most beloved art styles on Earth.','Chibi proportions trigger the "baby schema" effect — the same brain chemistry that makes you want to protect actual babies.','Professional chibi artists use a strict 1:2 head-to-body ratio — the head is literally HALF the character’s total height.','Good Smile Company has produced over 2,000 Nendoroid chibi figures since 2006 — they defined modern collectible chibi worldwide.','In anime, characters transform INTO chibi form to express extreme emotions — chibi IS the visual language of exaggerated feeling.'] },
             };
             var theme = themes[style] || themes.cartoon3d;
@@ -5676,7 +5647,6 @@
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
         princessify: { cls: 'style-loader--princessify', label: 'Princess' },
-        adelaide_bday: { cls: 'style-loader--adelaide_bday', label: 'Adelaide Birthday' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
@@ -5733,34 +5703,6 @@
         ]
       }
     };
-    _magicThemes.adelaide_bday = {
-      spell: "Adelaide's Birthday Princess Magic! 🎂",
-      wand: '🎂',
-      particles: ['🎂','👑','✨','🎈','🎀','✧','💫','🎉'],
-      msgs: {
-        1: [
-          'Getting ready for Adelaide's royal ball! 👑',
-          'Choosing your birthday princess gown... 🎀',
-          'Waving the birthday fairy wand... ✨',
-          'Crowning your princess look for Adelaide's party! 👑',
-          'Sprinkling birthday sparkle dust... ✧'
-        ],
-        2: [
-          'Painting your royal birthday portrait... 🎂',
-          'Adding birthday cake and balloons to the scene... 🎈',
-          'Styling your palace party gown... 🎀',
-          'Glittering the birthday tiara... 👑',
-          'Lighting the birthday candles... 🎉'
-        ],
-        3: [
-          'Happy 3rd Birthday Princess Adelaide! 🎂👑',
-          'Your birthday princess film is wrapping up... ✨',
-          'The royal birthday reveal is almost here! 🎈',
-          'Casting the final birthday magic... 💫',
-          'Ready for Adelaide's royal birthday debut! 🎉'
-        ]
-      }
-    };
   }
   if (typeof _magicFacts !== 'undefined') {
     _magicFacts.princessify = [
@@ -5771,25 +5713,12 @@
       'Walt Disney revolutionized princess animation in 1937 with Snow White — the first full-length animated feature in cinema history, made when most experts said it was impossible.',
       'The tiara has been a symbol of princess status for over 2,000 years — ancient Roman princesses wore them, and the tradition never went out of style.'
     ];
-    _magicFacts.adelaide_bday = [
-      'Birthday parties became a tradition in ancient Egypt — pharaohs were crowned and celebrated as gods on their birthday!',
-      'The world record for most birthday candles on a cake is 72,585 — lit on a single cake in 2016!',
-      'Princess parties are the most popular birthday theme for 3-year-olds — crowns, gowns, and magic wands everywhere!',
-      'The first birthday cake with candles was made in 18th century Germany — each candle represented a year of life!',
-      'Wishing on birthday candles started because people believed smoke carried wishes to the gods in the sky!',
-      'A "royal ball" birthday party means dancing, tiaras, and celebrating like a princess — exactly what Adelaide loves!'
-    ];
   }
   if (typeof finalMessagesByStyle !== 'undefined') {
     finalMessagesByStyle.princessify = [
       'Your royal transformation is complete — almost ready... 👑',
       'Final sparkle and tiara polish applied... ✨',
       'Your princess fairytale film is wrapping up... 🎀'
-    ];
-    finalMessagesByStyle.adelaide_bday = [
-      'Happy Birthday Adelaide! Your princess transformation is complete... 🎂👑',
-      'Final birthday sparkle and tiara polish applied... ✨🎈',
-      'Your birthday princess film is wrapping up... 🎉'
     ];
   }
 })();
@@ -5977,7 +5906,6 @@ if (typeof finalMessagesByStyle !== 'undefined') {
         powerup: { cls: 'style-loader--powerup', label: 'Power-Up' },
         gigachad: { cls: 'style-loader--gigachad', label: 'Gigachad' },
         princessify: { cls: 'style-loader--princessify', label: 'Princess' },
-        adelaide_bday: { cls: 'style-loader--adelaide_bday', label: 'Adelaide Birthday' },
       };
       if (newMap[style]) return newMap[style];
       return origGetStyleLoaderMeta();
