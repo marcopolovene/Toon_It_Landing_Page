@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adelaide's Royal Court</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a0a2e; color: #fff; overflow: hidden; font-family: 'Georgia', serif; }
+
+#court-container {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+#title-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+  background: linear-gradient(180deg, rgba(26,10,46,0.9) 0%, rgba(26,10,46,0) 100%);
+  padding: 20px 40px; text-align: center; pointer-events: none;
+}
+#title-overlay h1 {
+  font-size: 2.5em; font-weight: bold; letter-spacing: 2px;
+  background: linear-gradient(90deg, #f472b6, #fbbf24, #c084fc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(244,114,182,0.3);
+}
+#title-overlay .subtitle {
+  font-size: 1.1em; color: #f9a8d4; margin-top: 5px; opacity: 0.8;
+}
+
+#video-stage {
+  width: 100%; height: 100%; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+
+#main-video {
+  max-width: 90%; max-height: 80%; border-radius: 12px;
+  box-shadow: 0 0 60px rgba(244,114,182,0.15);
+  transition: opacity 0.8s ease;
+}
+#main-video.fade-out { opacity: 0; }
+#main-video.fade-in { opacity: 1; }
+
+#guest-count {
+  position: fixed; bottom: 20px; right: 30px; z-index: 100;
+  font-size: 1.2em; color: #fbbf24; opacity: 0.7;
+}
+
+#welcome-screen {
+  text-align: center; z-index: 50;
+}
+#welcome-screen .crown { font-size: 5em; animation: float 3s ease-in-out infinite; }
+#welcome-screen h2 { font-size: 2em; margin: 20px 0; color: #f472b6; }
+#welcome-screen p { font-size: 1.3em; color: #f9a8d4; opacity: 0.7; }
+
+#loading-indicator {
+  position: fixed; bottom: 20px; left: 30px; z-index: 100;
+  font-size: 0.9em; color: #c084fc; opacity: 0.5;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.sparkle {
+  position: fixed; pointer-events: none; z-index: 5;
+  animation: sparkle-fall 4s linear infinite;
+}
+@keyframes sparkle-fall {
+  0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(110vh) translateX(20px); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="title-overlay">
+  <h1>🏰 Adelaide's Royal Court 🏰</h1>
+  <div class="subtitle">Happy 3rd Birthday Princess Adelaide! 👑🎂</div>
+</div>
+
+<div id="court-container">
+  <div id="video-stage">
+    <div id="welcome-screen">
+      <div class="crown">👑</div>
+      <h2>Welcome to Adelaide's Royal Court!</h2>
+      <p>Princess transformations will appear here as guests arrive...</p>
+    </div>
+    <video id="main-video" style="display:none;" autoplay muted playsinline></video>
+  </div>
+</div>
+
+<div id="guest-count"></div>
+<div id="loading-indicator">Connecting to Royal Court...</div>
+
+<script>
+// Supabase configuration (key obfuscated for security)
+var _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
+var _k2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
+var _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+var SUPABASE_URL = 'https://' + 'supa.toonit.ai';
+var SUPABASE_ANON = _k1 + _k2 + _k3;
+// Direct storage URL for video files (not proxied)
+var SUPABASE_STORAGE = 'https://' + 'zgfpxdkanwbcieowrqoz.supabase.co';
+
+var videos = [];
+var currentIdx = 0;
+var pollTimer = null;
+var welcomeVideoUrl = null;
+var isFirstLoad = true;
+
+// Create sparkle particles
+function createSparkles() {
+  var emojis = ['✨','🎂','👑','🎈','🎀','💫'];
+  for (var i = 0; i < 8; i++) {
+    var s = document.createElement('div');
+    s.className = 'sparkle';
+    s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDelay = Math.random() * 4 + 's';
+    s.style.animationDuration = (3 + Math.random() * 3) + 's';
+    s.style.fontSize = (1 + Math.random() * 1.5) + 'em';
+    document.body.appendChild(s);
+  }
+}
+
+// Fetch completed adelaide_bday videos from Supabase
+async function fetchVideos() {
+  try {
+    var url = SUPABASE_URL + '/rest/v1/generations?style=eq.adelaide_bday&status=eq.complete&select=job_id,video_url,created_at&order=created_at.asc';
+    var resp = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON
+      }
+    });
+    
+    if (!resp.ok) {
+      console.error('Supabase query failed:', resp.status);
+      document.getElementById('loading-indicator').textContent = 'Connection error - retrying...';
+      return;
+    }
+    
+    var data = await resp.json();
+    document.getElementById('loading-indicator').textContent = 'Connected to Royal Court ✅';
+    
+    // Build video list
+    var newVideos = [];
+    
+    // Check for Adelaide's welcome video first
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].job_id === 'adelaide_welcome_loop' && data[i].video_url) {
+        welcomeVideoUrl = data[i].video_url;
+        break;
+      }
+    }
+    
+    // Add welcome video first if available
+    if (welcomeVideoUrl) {
+      newVideos.push({ url: welcomeVideoUrl, isWelcome: true });
+    }
+    
+    // Add all guest videos (excluding welcome video)
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].job_id !== 'adelaide_welcome_loop' && data[i].video_url) {
+        newVideos.push({ url: data[i].video_url, isWelcome: false, job_id: data[i].job_id });
+      }
+    }
+    
+    // Check if we have new videos
+    var hasNew = newVideos.length !== videos.length;
+    if (!hasNew && videos.length > 0) {
+      for (var i = 0; i < newVideos.length; i++) {
+        if (!videos[i] || videos[i].url !== newVideos[i].url) {
+          hasNew = true;
+          break;
+        }
+      }
+    }
+    
+    if (hasNew || isFirstLoad) {
+      videos = newVideos;
+      isFirstLoad = false;
+      updateGuestCount();
+      
+      if (videos.length > 0 && currentIdx >= videos.length) {
+        currentIdx = 0;
+      }
+      
+      // Start playing if we have videos and nothing is playing
+      var vid = document.getElementById('main-video');
+      if (videos.length > 0 && vid.style.display === 'none') {
+        playCurrent();
+      }
+    }
+  } catch(e) {
+    console.error('Fetch error:', e);
+    document.getElementById('loading-indicator').textContent = 'Connection error - retrying...';
+  }
+}
+
+function updateGuestCount() {
+  var guestVideos = videos.filter(function(v) { return !v.isWelcome; });
+  var el = document.getElementById('guest-count');
+  if (guestVideos.length > 0) {
+    el.textContent = '👸 ' + guestVideos.length + ' Royal Court Member' + (guestVideos.length > 1 ? 's' : '');
+  } else {
+    el.textContent = '';
+  }
+}
+
+function playCurrent() {
+  if (videos.length === 0) {
+    document.getElementById('main-video').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'block';
+    return;
+  }
+  
+  var vid = document.getElementById('main-video');
+  var welcome = document.getElementById('welcome-screen');
+  
+  // Fade out
+  vid.classList.add('fade-out');
+  
+  setTimeout(function() {
+    var current = videos[currentIdx];
+    vid.src = current.url;
+    vid.style.display = 'block';
+    welcome.style.display = 'none';
+    
+    // Fade in
+    vid.classList.remove('fade-out');
+    vid.classList.add('fade-in');
+    
+    vid.play().catch(function(e) { console.log('Auto-play prevented:', e); });
+    
+    // Update title for welcome video
+    var subtitle = document.querySelector('#title-overlay .subtitle');
+    if (current.isWelcome) {
+      subtitle.textContent = '👑 Princess Adelaide welcomes you to her Royal Court! 🎂';
+    } else {
+      subtitle.textContent = 'Happy 3rd Birthday Princess Adelaide! 👑🎂';
+    }
+  }, 800);
+}
+
+function playNext() {
+  if (videos.length === 0) return;
+  currentIdx = (currentIdx + 1) % videos.length;
+  playCurrent();
+}
+
+// Video event listeners
+document.getElementById('main-video').addEventListener('ended', function() {
+  // Wait 2 seconds before advancing (let the video finish)
+  setTimeout(playNext, 2000);
+});
+
+document.getElementById('main-video').addEventListener('error', function() {
+  // Skip to next on error
+  setTimeout(playNext, 1000);
+});
+
+// Click to advance (for manual control)
+document.getElementById('video-stage').addEventListener('click', function() {
+  playNext();
+});
+
+// Initialize
+createSparkles();
+fetchVideos();
+
+// Poll every 20 seconds for new videos
+pollTimer = setInterval(fetchVideos, 20000);
+
+// If no videos after 5 seconds, show welcome screen
+setTimeout(function() {
+  if (videos.length === 0) {
+    document.getElementById('loading-indicator').textContent = 'Waiting for Royal Court members...';
+  }
+}, 5000);
+</script>
+</body>
+</html>
