@@ -108,7 +108,8 @@ body { background: #1a0a2e; color: #fff; overflow: hidden; font-family: 'Georgia
       <h2>Welcome to Adelaide's Royal Ball!</h2>
       <p>Princess transformations will appear here as guests arrive...</p>
     </div>
-    <video id="main-video" style="display:none;" autoplay muted playsinline></video>
+    <video id="main-video" style="display:none;" autoplay playsinline></video>
+    <div id="tap-to-unmute" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(244,114,182,0.9);color:#fff;padding:20px 40px;border-radius:12px;font-size:1.5em;cursor:pointer;display:none;text-align:center;box-shadow:0 0 40px rgba(244,114,182,0.4);">Tap to enable sound</div>
   </div>
 </div>
 
@@ -249,6 +250,25 @@ function playCurrent() {
     vid.classList.add('fade-in');
     
     vid.play().catch(function(e) { console.log('Auto-play prevented:', e); });
+    
+    // Check if video is muted by browser autoplay policy — show tap prompt
+    var vid2 = document.getElementById('main-video');
+    var unmutePrompt = document.getElementById('tap-to-unmute');
+    setTimeout(function() {
+      if (vid2.paused || vid2.muted) {
+        unmutePrompt.style.display = 'block';
+      }
+    }, 1000);
+    
+    // Tap to unmute and play
+    if (unmutePrompt) {
+      unmutePrompt.addEventListener('click', function() {
+        vid2.muted = false;
+        vid2.volume = 1.0;
+        vid2.play().catch(function() {});
+        unmutePrompt.style.display = 'none';
+      });
+    }
     
     var subtitle = document.querySelector('#title-overlay .subtitle');
     if (current.isWelcome) {
