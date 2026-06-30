@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adelaide's Royal Gallery</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%); color: #fff; font-family: 'Georgia', serif; min-height: 100vh; padding: 20px; }
+
+#header { text-align: center; margin-bottom: 30px; }
+#header h1 {
+  font-size: 2.5em; font-weight: bold; letter-spacing: 2px;
+  background: linear-gradient(90deg, #f472b6, #fbbf24, #c084fc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; color: #f472b6;
+  text-shadow: 0 0 30px rgba(244,114,182,0.3);
+  margin-bottom: 5px;
+}
+#header .subtitle { font-size: 1.1em; color: #f9a8d4; opacity: 0.8; }
+#header .count { font-size: 0.9em; color: #fbbf24; opacity: 0.7; margin-top: 8px; }
+
+#gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.video-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(244,114,182,0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(244,114,182,0.2);
+}
+
+.video-card video {
+  width: 100%; display: block; cursor: pointer;
+  border-bottom: 1px solid rgba(244,114,182,0.1);
+}
+
+.video-card .card-actions {
+  padding: 12px;
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+.btn {
+  flex: 1; min-width: 100px;
+  padding: 10px 16px; border: none; border-radius: 25px;
+  font-size: 0.9em; font-weight: 700; cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+  text-align: center;
+}
+.btn:active { transform: scale(0.96); }
+.btn-download {
+  background: linear-gradient(135deg, #7c6bfa 0%, #9d8bff 100%);
+  color: white;
+}
+.btn-share {
+  background: linear-gradient(135deg, #f472b6 0%, #fbbf24 100%);
+  color: white;
+}
+.btn-disabled { opacity: 0.4; pointer-events: none; }
+
+#empty-state {
+  text-align: center; padding: 60px 20px;
+  color: #f9a8d4; opacity: 0.6;
+}
+#empty-state .crown {
+  font-size: 3em; margin-bottom: 15px;
+  display: inline-block; animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+#loading { text-align: center; padding: 40px; color: #c084fc; opacity: 0.6; }
+
+#footer { text-align: center; margin-top: 30px; color: #f9a8d4; opacity: 0.4; font-size: 0.8em; }
+
+/* CSS Crown */
+.css-crown {
+  width: 60px; height: 45px; margin: 0 auto 10px;
+  position: relative; animation: float 3s ease-in-out infinite;
+}
+.css-crown::before {
+  content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 20px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-radius: 4px 4px 8px 8px;
+  box-shadow: 0 0 15px rgba(251,191,36,0.4);
+}
+.css-crown::after {
+  content: ''; position: absolute; bottom: 15px; left: 0; width: 100%; height: 28px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  clip-path: polygon(0 100%, 0 40%, 15% 80%, 25% 0%, 40% 60%, 50% 10%, 60% 60%, 75% 0%, 85% 80%, 100% 40%, 100% 100%);
+  filter: drop-shadow(0 0 10px rgba(251,191,36,0.5));
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Adelaide's Royal Gallery</h1>
+  <div class="subtitle">Download your royal transformation</div>
+  <div class="count" id="count"></div>
+</div>
+
+<div id="loading">Loading royal transformations...</div>
+<div id="gallery" style="display:none;"></div>
+<div id="empty-state" style="display:none;">
+  <div class="css-crown"></div>
+  <h2>No transformations yet!</h2>
+  <p>Check back after guests start transforming...</p>
+</div>
+
+<div id="footer">Adelaide's 3rd Birthday Royal Ball</div>
+
+<script>
+// Supabase configuration (key obfuscated for security)
+var _k1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6';
+var _k2 = 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN';
+var _k3 = 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+var SUPABASE_URL = 'https://' + 'supa.toonit.ai';
+var SUPABASE_ANON = _k1 + _k2 + _k3;
+
+var videos = [];
+var pollTimer = null;
+
+async function fetchVideos() {
+  try {
+    var url = SUPABASE_URL + '/rest/v1/generations?style=eq.adelaide_bday&status=eq.complete&select=job_id,video_url,created_at&order=created_at.desc';
+    var resp = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON
+      }
+    });
+
+    if (!resp.ok) {
+      console.error('Supabase query failed:', resp.status);
+      return;
+    }
+
+    var data = await resp.json();
+    var newVideos = [];
+
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].job_id === 'adelaide_welcome_loop') continue;
+      if (data[i].video_url) {
+        newVideos.push({
+          job_id: data[i].job_id,
+          url: data[i].video_url,
+          created: data[i].created_at
+        });
+      }
+    }
+
+    // Check if videos changed
+    var changed = newVideos.length !== videos.length;
+    if (!changed && videos.length > 0) {
+      for (var i = 0; i < newVideos.length; i++) {
+        if (!videos[i] || videos[i].url !== newVideos[i].url) { changed = true; break; }
+      }
+    }
+
+    if (changed) {
+      videos = newVideos;
+      renderGallery();
+    }
+  } catch(e) {
+    console.error('Fetch error:', e);
+  }
+}
+
+function timeAgo(ts) {
+  var diff = Date.now() - new Date(ts).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+function renderGallery() {
+  var gallery = document.getElementById('gallery');
+  var empty = document.getElementById('empty-state');
+  var loading = document.getElementById('loading');
+  var count = document.getElementById('count');
+
+  loading.style.display = 'none';
+
+  if (videos.length === 0) {
+    gallery.style.display = 'none';
+    empty.style.display = 'block';
+    count.textContent = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  gallery.style.display = 'grid';
+  count.textContent = videos.length + ' Royal Court Member' + (videos.length > 1 ? 's' : '');
+
+  gallery.innerHTML = '';
+
+  for (var i = 0; i < videos.length; i++) {
+    var v = videos[i];
+    var card = document.createElement('div');
+    card.className = 'video-card';
+
+    var vid = document.createElement('video');
+    vid.src = v.url;
+    vid.preload = 'metadata';
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.addEventListener('click', function() {
+      if (this.paused) { this.muted = false; this.play(); }
+      else { this.pause(); }
+    });
+    card.appendChild(vid);
+
+    var actions = document.createElement('div');
+    actions.className = 'card-actions';
+
+    var dlBtn = document.createElement('button');
+    dlBtn.className = 'btn btn-download';
+    dlBtn.textContent = 'Download';
+    dlBtn.addEventListener('click', function(url, job) {
+      return function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        downloadVideo(url, job);
+      };
+    }(v.url, v.job_id));
+    actions.appendChild(dlBtn);
+
+    var shareBtn = document.createElement('button');
+    shareBtn.className = 'btn btn-share';
+    shareBtn.textContent = 'Share';
+    shareBtn.addEventListener('click', function(url) {
+      return function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        shareVideo(url);
+      };
+    }(v.url));
+    actions.appendChild(shareBtn);
+
+    card.appendChild(actions);
+    gallery.appendChild(card);
+  }
+}
+
+async function downloadVideo(url, jobId) {
+  try {
+    var btn = event.target;
+    btn.textContent = 'Downloading...';
+    btn.classList.add('btn-disabled');
+
+    var response = await fetch(url);
+    var blob = await response.blob();
+    var dlUrl = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = dlUrl;
+    a.download = 'adelaide_royal_' + jobId + '.mp4';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(dlUrl); }, 1000);
+
+    btn.textContent = 'Saved!';
+    setTimeout(function() { btn.textContent = 'Download'; btn.classList.remove('btn-disabled'); }, 2000);
+  } catch(e) {
+    console.error('Download error:', e);
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+    event.target.textContent = 'Download';
+    event.target.classList.remove('btn-disabled');
+  }
+}
+
+async function shareVideo(url) {
+  try {
+    if (navigator.share) {
+      // Fetch the video as a file for sharing
+      var response = await fetch(url);
+      var blob = await response.blob();
+      var file = new File([blob], 'adelaide_royal.mp4', { type: 'video/mp4' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Adelaide\u2019s Royal Ball',
+          text: 'My princess transformation from Adelaide\u2019s Royal Ball!'
+        });
+      } else {
+        await navigator.share({
+          title: 'Adelaide\u2019s Royal Ball',
+          text: 'Check out my princess transformation!',
+          url: url
+        });
+      }
+    } else {
+      // Fallback: copy URL to clipboard
+      var textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      event.target.textContent = 'Link Copied!';
+      setTimeout(function() { event.target.textContent = 'Share'; }, 2000);
+    }
+  } catch(e) {
+    console.error('Share error:', e);
+    if (e.name !== 'AbortError') {
+      window.open(url, '_blank');
+    }
+  }
+}
+
+fetchVideos();
+pollTimer = setInterval(fetchVideos, 20000);
+</script>
+</body>
+</html>
