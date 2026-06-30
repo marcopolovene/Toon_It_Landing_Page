@@ -97,15 +97,15 @@ body { background: #1a0a2e; color: #fff; overflow: hidden; font-family: 'Georgia
 <body>
 
 <div id="title-overlay">
-  <h1>Adelaide's Royal Court</h1>
-  <div class="subtitle">Happy 3rd Birthday Princess Adelaide!</div>
+  <h1>Adelaide's Royal Ball</h1>
+  <div class="subtitle">Join the Royal Court</div>
 </div>
 
 <div id="court-container">
   <div id="video-stage">
     <div id="welcome-screen">
       <div class="css-crown"></div>
-      <h2>Welcome to Adelaide's Royal Court!</h2>
+      <h2>Welcome to Adelaide's Royal Ball!</h2>
       <p>Princess transformations will appear here as guests arrive...</p>
     </div>
     <video id="main-video" style="display:none;" autoplay muted playsinline></video>
@@ -221,7 +221,7 @@ function updateGuestCount() {
   var guestVideos = videos.filter(function(v) { return !v.isWelcome; });
   var el = document.getElementById('guest-count');
   if (guestVideos.length > 0) {
-    el.textContent = guestVideos.length + ' Royal Court Member' + (guestVideos.length > 1 ? 's' : '');
+    el.textContent = guestVideos.length + ' Royal Court Member' + (guestVideos.length > 1 ? 's at the Ball' : ' at the Ball');
   } else {
     el.textContent = '';
   }
@@ -252,9 +252,9 @@ function playCurrent() {
     
     var subtitle = document.querySelector('#title-overlay .subtitle');
     if (current.isWelcome) {
-      subtitle.textContent = 'Princess Adelaide welcomes you to her Royal Court!';
+      subtitle.textContent = 'Princess Adelaide welcomes you to her Royal Ball!';
     } else {
-      subtitle.textContent = 'Happy 3rd Birthday Princess Adelaide!';
+      subtitle.textContent = 'Join the Royal Court';
     }
   }, 800);
 }
