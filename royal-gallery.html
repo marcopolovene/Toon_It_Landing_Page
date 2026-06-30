@@ -232,25 +232,25 @@ function renderGallery() {
     var dlBtn = document.createElement('button');
     dlBtn.className = 'btn btn-download';
     dlBtn.textContent = 'Download';
-    dlBtn.addEventListener('click', function(url, job) {
-      return function(e) {
+    (function(btn, url, job) {
+      btn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        downloadVideo(url, job);
-      };
-    }(v.url, v.job_id));
+        downloadVideo(btn, url, job);
+      });
+    })(dlBtn, v.url, v.job_id);
     actions.appendChild(dlBtn);
 
     var shareBtn = document.createElement('button');
     shareBtn.className = 'btn btn-share';
     shareBtn.textContent = 'Share';
-    shareBtn.addEventListener('click', function(url) {
-      return function(e) {
+    (function(btn, url) {
+      btn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        shareVideo(url);
-      };
-    }(v.url));
+        shareVideo(btn, url);
+      });
+    })(shareBtn, v.url);
     actions.appendChild(shareBtn);
 
     card.appendChild(actions);
@@ -258,13 +258,13 @@ function renderGallery() {
   }
 }
 
-async function downloadVideo(url, jobId) {
+async function downloadVideo(btn, url, jobId) {
   try {
-    var btn = event.target;
     btn.textContent = 'Downloading...';
     btn.classList.add('btn-disabled');
 
     var response = await fetch(url);
+    if (!response.ok) throw new Error('Fetch failed: ' + response.status);
     var blob = await response.blob();
     var dlUrl = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -273,23 +273,28 @@ async function downloadVideo(url, jobId) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(dlUrl); }, 1000);
+    setTimeout(function() { URL.revokeObjectURL(dlUrl); }, 2000);
 
     btn.textContent = 'Saved!';
     setTimeout(function() { btn.textContent = 'Download'; btn.classList.remove('btn-disabled'); }, 2000);
   } catch(e) {
     console.error('Download error:', e);
-    // Fallback: open in new tab
-    window.open(url, '_blank');
-    event.target.textContent = 'Download';
-    event.target.classList.remove('btn-disabled');
+    // Fallback: direct link with download attribute
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'adelaide_royal_' + jobId + '.mp4';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    btn.textContent = 'Download';
+    btn.classList.remove('btn-disabled');
   }
 }
 
-async function shareVideo(url) {
+async function shareVideo(btn, url) {
   try {
     if (navigator.share) {
-      // Fetch the video as a file for sharing
       var response = await fetch(url);
       var blob = await response.blob();
       var file = new File([blob], 'adelaide_royal.mp4', { type: 'video/mp4' });
@@ -308,15 +313,14 @@ async function shareVideo(url) {
         });
       }
     } else {
-      // Fallback: copy URL to clipboard
       var textArea = document.createElement('textarea');
       textArea.value = url;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      event.target.textContent = 'Link Copied!';
-      setTimeout(function() { event.target.textContent = 'Share'; }, 2000);
+      btn.textContent = 'Link Copied!';
+      setTimeout(function() { btn.textContent = 'Share'; }, 2000);
     }
   } catch(e) {
     console.error('Share error:', e);
