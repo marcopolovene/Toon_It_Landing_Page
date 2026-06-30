@@ -6235,4 +6235,126 @@ if (typeof _magicFacts !== 'undefined') {
 })();
 </script>
 
+<script>
+// Universal Camera Capture Button v1.0
+// Works in browser mode — uses <input capture="environment"> for camera access
+// In Android app: capacitor-bridge.js native button takes precedence
+(function() {
+    'use strict';
+
+    // Skip inside Capacitor native app — bridge handles camera
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        console.log('[Camera] Native Capacitor app \u2014 bridge handles camera');
+        return;
+    }
+
+    console.log('[Camera] Browser mode \u2014 injecting camera capture button');
+
+    // Create persistent hidden camera input (survives uploadArea innerHTML resets)
+    var camInput = document.createElement('input');
+    camInput.type = 'file';
+    camInput.accept = 'image/*';
+    camInput.capture = 'environment';
+    camInput.style.display = 'none';
+    camInput.id = 'universalCamInput';
+    document.body.appendChild(camInput);
+
+    camInput.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            var file = e.target.files[0];
+            if (typeof window.handleFileFallback === 'function') {
+                window.handleFileFallback(file);
+            } else if (typeof handleFile === 'function') {
+                handleFile(file);
+            } else {
+                var input = document.querySelector('#uploadArea input[type="file"]');
+                if (input) {
+                    var dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+            e.target.value = '';
+        }
+    });
+
+    function injectCameraButton() {
+        var ua = document.getElementById('uploadArea');
+        if (!ua) { setTimeout(injectCameraButton, 1000); return; }
+        if (document.getElementById('universalCamBtn')) return;
+        if (ua.dataset && ua.dataset.fileSelected === '1') return;
+
+        var btn = document.createElement('button');
+        btn.id = 'universalCamBtn';
+        btn.innerHTML = '\uD83D\uDCF7 Take a Photo';
+        btn.style.cssText = 'display:block;margin:12px auto 0;padding:12px 28px;'
+            + 'background:linear-gradient(135deg,#7c6bfa 0%,#9d8bff 100%);color:white;'
+            + 'border:none;border-radius:30px;font-size:1em;font-weight:700;cursor:pointer;'
+            + 'transition:transform 0.2s;';
+        btn.addEventListener('mouseenter', function() { btn.style.transform = 'scale(1.05)'; });
+        btn.addEventListener('mouseleave', function() { btn.style.transform = 'scale(1)'; });
+
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            camInput.value = '';
+            camInput.click();
+        });
+
+        ua.parentNode.insertBefore(btn, ua.nextSibling);
+        syncVisibility();
+    }
+
+    function syncVisibility() {
+        var btn = document.getElementById('universalCamBtn');
+        if (!btn) return;
+        var ua = document.getElementById('uploadArea');
+        var res = document.getElementById('result');
+        var uploadHidden = ua && ua.style.display === 'none';
+        var resultVisible = res && res.style.display === 'block';
+        var fileSelected = ua && ua.dataset && ua.dataset.fileSelected === '1';
+        btn.style.display = (uploadHidden || resultVisible || fileSelected) ? 'none' : 'block';
+    }
+
+    var observer = new MutationObserver(function() {
+        var btn = document.getElementById('universalCamBtn');
+        var ua = document.getElementById('uploadArea');
+        if (!btn && ua && (!ua.dataset || ua.dataset.fileSelected !== '1')) {
+            injectCameraButton();
+        }
+        syncVisibility();
+    });
+
+    function startObserving() {
+        var ua = document.getElementById('uploadArea');
+        var res = document.getElementById('result');
+        if (ua) {
+            observer.observe(ua, { attributes: true, attributeFilter: ['style', 'data-file-selected'], childList: true, subtree: true });
+        }
+        if (res) {
+            observer.observe(res, { attributes: true, attributeFilter: ['style'] });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { injectCameraButton(); startObserving(); });
+    } else {
+        injectCameraButton(); startObserving();
+    }
+
+    // Periodic re-check catches uploadArea recreation that observer might miss
+    setInterval(function() {
+        var ua = document.getElementById('uploadArea');
+        var btn = document.getElementById('universalCamBtn');
+        if (ua && !btn && (!ua.dataset || ua.dataset.fileSelected !== '1')) {
+            injectCameraButton();
+        }
+        syncVisibility();
+    }, 2000);
+
+    console.log('[Camera] Universal camera button script loaded');
+})();
+</script>
+
 </html>
