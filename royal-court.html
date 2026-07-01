@@ -178,12 +178,24 @@ async function fetchVideos() {
       }
     }
     
+    // Check for Adelaide's instruction video
+    var instructionVideoUrl = null;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].job_id === 'adelaide_instruction_loop' && data[i].video_url) {
+        instructionVideoUrl = data[i].video_url;
+        break;
+      }
+    }
+    
     if (welcomeVideoUrl) {
       newVideos.push({ url: welcomeVideoUrl, isWelcome: true });
     }
+    if (instructionVideoUrl) {
+      newVideos.push({ url: instructionVideoUrl, isWelcome: true, isInstruction: true });
+    }
     
     for (var i = 0; i < data.length; i++) {
-      if (data[i].job_id !== 'adelaide_welcome_loop' && data[i].video_url) {
+      if (data[i].job_id !== 'adelaide_welcome_loop' && data[i].job_id !== 'adelaide_instruction_loop' && data[i].video_url) {
         newVideos.push({ url: data[i].video_url, isWelcome: false, job_id: data[i].job_id });
       }
     }
@@ -272,7 +284,11 @@ function playCurrent() {
     
     var subtitle = document.querySelector('#title-overlay .subtitle');
     if (current.isWelcome) {
-      subtitle.textContent = 'Princess Adelaide welcomes you to her Royal Ball!';
+      if (current.isInstruction) {
+        subtitle.textContent = 'Follow these steps to join the Royal Court!';
+      } else {
+        subtitle.textContent = 'Princess Adelaide welcomes you to her Royal Ball!';
+      }
     } else {
       subtitle.textContent = 'Join the Royal Court';
     }
