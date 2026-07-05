@@ -22,7 +22,7 @@ body { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%
 
 #gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
   max-width: 1200px;
   margin: 0 auto;
@@ -40,46 +40,9 @@ body { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%
   box-shadow: 0 8px 30px rgba(244,114,182,0.2);
 }
 
-.card-media {
-  display: flex;
-  gap: 2px;
-  border-bottom: 1px solid rgba(244,114,182,0.1);
-}
-
-.card-media .photo-side {
-  flex: 0 0 40%;
-  position: relative;
-  overflow: hidden;
-  background: rgba(0,0,0,0.2);
-}
-.card-media .photo-side img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  cursor: pointer;
-}
-.card-media .photo-side .photo-label {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.6); color: #f9a8d4;
-  font-size: 0.7em; text-align: center; padding: 3px 0;
-  text-transform: uppercase; letter-spacing: 1px;
-}
-
-.card-media .video-side {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-.card-media .video-side video {
-  width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer;
-}
-.card-media .video-side .video-label {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.6); color: #c084fc;
-  font-size: 0.7em; text-align: center; padding: 3px 0;
-  text-transform: uppercase; letter-spacing: 1px;
-}
-
 .video-card video {
   width: 100%; display: block; cursor: pointer;
+  border-bottom: 1px solid rgba(244,114,182,0.1);
 }
 
 .video-card .card-actions {
@@ -146,7 +109,6 @@ body { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%
 
 @media (max-width: 480px) {
   #gallery { grid-template-columns: 1fr; }
-  .card-media { flex-direction: row; }
   .btn { min-width: 70px; font-size: 0.8em; }
 }
 </style>
@@ -265,37 +227,7 @@ function renderGallery() {
     var card = document.createElement('div');
     card.className = 'video-card';
 
-    // Media section: photo + video side by side (Option A)
-    var media = document.createElement('div');
-    media.className = 'card-media';
-
-    // Photo side (only if original_photo_url exists)
-    if (v.photo_url) {
-      var photoSide = document.createElement('div');
-      photoSide.className = 'photo-side';
-
-      var img = document.createElement('img');
-      img.src = v.photo_url;
-      img.alt = 'Original Photo';
-      img.loading = 'lazy';
-      img.addEventListener('click', function() {
-        if (this.requestFullscreen) this.requestFullscreen();
-        else if (this.webkitRequestFullscreen) this.webkitRequestFullscreen();
-      });
-      photoSide.appendChild(img);
-
-      var photoLabel = document.createElement('div');
-      photoLabel.className = 'photo-label';
-      photoLabel.textContent = 'Original';
-      photoSide.appendChild(photoLabel);
-
-      media.appendChild(photoSide);
-    }
-
-    // Video side
-    var videoSide = document.createElement('div');
-    videoSide.className = 'video-side';
-
+    // Video thumbnail (top of card)
     var vid = document.createElement('video');
     vid.src = v.url;
     vid.preload = 'metadata';
@@ -305,21 +237,13 @@ function renderGallery() {
       if (this.paused) { this.muted = false; this.play(); }
       else { this.pause(); }
     });
-    videoSide.appendChild(vid);
+    card.appendChild(vid);
 
-    var videoLabel = document.createElement('div');
-    videoLabel.className = 'video-label';
-    videoLabel.textContent = 'Royal';
-    videoSide.appendChild(videoLabel);
-
-    media.appendChild(videoSide);
-    card.appendChild(media);
-
-    // Actions section
+    // Actions section (buttons below video)
     var actions = document.createElement('div');
     actions.className = 'card-actions';
 
-    // Download Photo button (only if photo exists)
+    // Download Photo button (only if original_photo_url exists)
     if (v.photo_url) {
       var photoBtn = document.createElement('button');
       photoBtn.className = 'btn btn-photo';
