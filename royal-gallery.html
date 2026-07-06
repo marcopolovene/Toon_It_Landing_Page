@@ -229,8 +229,8 @@ function renderGallery() {
 
     // Video thumbnail (top of card)
     var vid = document.createElement('video');
-    vid.src = v.url;
-    vid.preload = 'metadata';
+    vid.src = v.url + '#t=0.5';
+    vid.preload = 'auto';
     vid.muted = true;
     vid.playsInline = true;
     vid.addEventListener('click', function() {
