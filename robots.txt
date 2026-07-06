@@ -1,11 +1,13 @@
 # Toon It! — Robots.txt
-# Last updated: 2026-06-26
+# Last updated: 2026-07-06
 #
 # POLICY: Pages with noindex meta tags are NOT blocked here.
 # Blocking prevents Googlebot from reading the noindex directive.
 # Only truly non-content resources are Disallowed.
 # EXCEPTION: /video/ showcase pages are blocked at crawl level to
 # prevent GSC "Video not processed" noise and save crawl budget.
+# EXCEPTION: dashboard.html has meta refresh redirect — must block
+# at crawl level to prevent GSC "Page with redirect" flag.
 
 User-agent: *
 Allow: /
@@ -14,6 +16,15 @@ Allow: /
 Disallow: /app-diag.html
 Disallow: /offline.html
 Disallow: /404.html
+Disallow: /delete-account.html
+
+# Redirect page (meta refresh + JS redirect to /myvideos.html)
+# Must block at crawl level to prevent GSC "Page with redirect" flag
+Disallow: /dashboard.html
+
+# Archived party pages (no SEO value, may be removed)
+Disallow: /royal-court.html
+Disallow: /royal-gallery.html
 
 # Video showcase pages (noindex + blocked to stop GSC video processing alerts)
 Disallow: /video/
