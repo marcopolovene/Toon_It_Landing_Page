@@ -566,6 +566,190 @@
 .compliance-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .compliance-btn-secondary { background: transparent; border: 1px solid #2a2a40; color: #a0a0b0; }
 
+
+/* === SHARE OVERLAY (viral share loop) === */
+.share-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(7,7,15,0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: shareFadeIn 0.35s ease forwards;
+}
+.share-overlay.active { display: flex; }
+@keyframes shareFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.share-card {
+    background: linear-gradient(180deg, rgba(24,24,48,0.98) 0%, rgba(10,10,18,0.98) 100%);
+    border: 1px solid rgba(240,180,41,0.24);
+    border-radius: 26px;
+    padding: 24px 20px 22px;
+    max-width: 460px;
+    width: 100%;
+    position: relative;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+    animation: shareSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes shareSlideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.share-title {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0 0 4px;
+}
+.share-subtitle {
+    text-align: center;
+    font-size: 0.82em;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+}
+.share-beforeafter {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 12px;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+}
+.share-ba-panel {
+    flex: 1;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-card);
+}
+.share-ba-panel img,
+.share-ba-panel video {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    border-radius: 10px;
+}
+.share-ba-label {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 0.7em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(0,0,0,0.6);
+    color: var(--text-main);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+.share-ba-watermark {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-family: 'Pacifico', cursive;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    pointer-events: none;
+    user-select: none;
+}
+.share-caption {
+    background: rgba(124,107,250,0.1);
+    border: 1px solid rgba(124,107,250,0.2);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.84em;
+    color: var(--text-dark);
+    margin: 0 0 14px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.share-caption:hover { border-color: var(--secondary); }
+.share-caption-label {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.share-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0 0 14px;
+}
+.share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: 14px;
+    border: none;
+    font-size: 0.9em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    color: #fff;
+}
+.share-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.share-btn:active { transform: translateY(0); }
+.share-btn-ig { background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+.share-btn-tiktok { background: linear-gradient(135deg, #25F4EE 0%, #000 50%, #FE2C55 100%); }
+.share-btn-fb { background: #1877F2; }
+.share-btn-x { background: #000; border: 1px solid #333; }
+.share-btn-native { background: var(--primary); color: var(--bg-dark); grid-column: 1 / -1; }
+.share-challenge {
+    text-align: center;
+    font-size: 0.86em;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(240,180,41,0.08);
+    border: 1px solid rgba(240,180,41,0.15);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 0 0 14px;
+}
+.share-challenge span { color: var(--primary); font-weight: 800; }
+.share-dismiss {
+    display: block;
+    width: 100%;
+    padding: 11px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+.share-dismiss:hover { color: var(--text-main); border-color: var(--text-muted); }
+.share-copy-toast {
+    text-align: center;
+    font-size: 0.8em;
+    color: var(--success);
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.share-copy-toast.show { opacity: 1; }
+@media (max-width: 420px) {
+    .share-buttons { grid-template-columns: 1fr 1fr; }
+    .share-ba-panel img, .share-ba-panel video { height: 150px; }
+}
+
 </style>
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
@@ -924,7 +1108,41 @@
 
     
             <div id="fbWidget" class="fbw" style="display:none"><div id="fbForm"><div class="ttl">How did your Toon turn out?</div><div class="stars" id="fbStars"><span class="st" data-r="1">&#11088;</span><span class="st" data-r="2">&#11088;</span><span class="st" data-r="3">&#11088;</span><span class="st" data-r="4">&#11088;</span><span class="st" data-r="5">&#11088;</span></div><div id="fbExtra" style="display:none"><div style="font-size:.85em;color:var(--text-muted);margin-bottom:8px;font-weight:600">What did you transform?</div><div class="tags" id="fbTags"><span class="tg" data-t="baby">Baby</span><span class="tg" data-t="pet">Pet</span><span class="tg" data-t="family">Family</span><span class="tg" data-t="myself">Myself</span><span class="tg" data-t="couple">Couple</span><span class="tg" data-t="other">Other</span></div><div class="cw"><textarea class="ct" id="fbCmt" placeholder="Any feedback? (optional)" maxlength="280"></textarea><span class="cc" id="fbCc">0/280</span></div><button class="go" id="fbBtn" onclick="window._fbGo()">Submit and Earn Credits</button></div><button class="skip" onclick="window._fbSkip()">Maybe later</button></div><div id="fbOk" class="ok" style="display:none"><div class="coins" id="fbCoins"></div><div class="okmsg" id="fbMsg">Thank you for your feedback!</div></div></div>
-</div>
+
+            <!-- Viral Share Overlay -->
+            <div class="share-overlay" id="shareOverlay">
+                <div class="share-card">
+                    <div class="share-title">✨ Share Your Magic</div>
+                    <div class="share-subtitle">Show off your transformation — go viral!</div>
+                    <div class="share-beforeafter" id="shareBeforeAfter">
+                        <div class="share-ba-panel">
+                            <img id="shareBeforeImg" src="" alt="Before">
+                            <span class="share-ba-label">Before</span>
+                        </div>
+                        <div class="share-ba-panel">
+                            <video id="shareAfterVideo" src="" muted loop playsinline></video>
+                            <span class="share-ba-label">After</span>
+                            <span class="share-ba-watermark">toonit.ai</span>
+                        </div>
+                    </div>
+                    <div class="share-caption" id="shareCaptionBox" onclick="window._shareCopyCaption()">
+                        <div class="share-caption-label">📈 Caption (tap to copy)</div>
+                        <div id="shareCaptionText">I made this in 2 clicks at toonit.ai — no prompts, no tech skills! Try it free 👆</div>
+                    </div>
+                    <div class="share-buttons">
+                        <button class="share-btn share-btn-ig" onclick="window._sharePlatform('ig')">📷 Instagram Story</button>
+                        <button class="share-btn share-btn-tiktok" onclick="window._sharePlatform('tiktok')">🎬 TikTok</button>
+                        <button class="share-btn share-btn-fb" onclick="window._sharePlatform('fb')">📞 Facebook</button>
+                        <button class="share-btn share-btn-x" onclick="window._sharePlatform('x')">🐦 X / Twitter</button>
+                        <button class="share-btn share-btn-native" id="shareNativeBtn" style="display:none;" onclick="window._shareNative()">📤 Share Video</button>
+                    </div>
+                    <div class="share-challenge">🎨 <span>ToonIt Challenge</span> — Transform your photo and share with <span>#ToonItMagic</span></div>
+                    <button class="share-dismiss" onclick="window._shareDismiss()">Skip Sharing</button>
+                    <div class="share-copy-toast" id="shareToast"></div>
+                </div>
+            </div>
+
+        </div>
 
     
 
@@ -6193,6 +6411,191 @@ if (typeof _magicFacts !== 'undefined') {
     }, 2000);
 
     console.log('[Camera] Universal camera button script loaded');
+})();
+</script>
+
+<script>
+/* === Viral Share Overlay Logic === */
+(function() {
+    var SHARE_CAPTION = 'I made this in 2 clicks at toonit.ai \u2014 no prompts, no tech skills! Try it free \u{1F446}';
+    var SHARE_HASHTAG = ' #ToonItMagic';
+    var SHARE_URL = 'https://toonit.ai';
+    var overlayShown = false;
+    var shareTimer = null;
+
+    function _getBeforeSrc() {
+        var previewImg = document.querySelector('#uploadArea img#preview');
+        if (previewImg && previewImg.src) return previewImg.src;
+        var altPreview = document.getElementById('preview');
+        if (altPreview && altPreview.src) return altPreview.src;
+        return '';
+    }
+
+    function _getAfterSrc() {
+        var v = document.getElementById('resultVideo');
+        return v && v.src ? v.src : '';
+    }
+
+    function _showOverlay() {
+        if (overlayShown) return;
+        var overlay = document.getElementById('shareOverlay');
+        if (!overlay) return;
+
+        var beforeImg = document.getElementById('shareBeforeImg');
+        var afterVideo = document.getElementById('shareAfterVideo');
+        var beforeSrc = _getBeforeSrc();
+        var afterSrc = _getAfterSrc();
+
+        if (beforeImg && beforeSrc) beforeImg.src = beforeSrc;
+        if (afterVideo && afterSrc) {
+            afterVideo.src = afterSrc;
+            afterVideo.play().catch(function(){});
+        }
+
+        var nativeBtn = document.getElementById('shareNativeBtn');
+        if (nativeBtn && navigator.share) nativeBtn.style.display = 'flex';
+
+        overlay.classList.add('active');
+        overlayShown = true;
+        if (typeof trackEvent === 'function') trackEvent('share_overlay_shown');
+    }
+
+    function _hideOverlay() {
+        var overlay = document.getElementById('shareOverlay');
+        if (overlay) overlay.classList.remove('active');
+        overlayShown = false;
+        var afterVideo = document.getElementById('shareAfterVideo');
+        if (afterVideo) { afterVideo.pause(); afterVideo.src = ''; }
+        if (shareTimer) { clearTimeout(shareTimer); shareTimer = null; }
+    }
+
+    window._shareDismiss = function() {
+        _hideOverlay();
+        if (typeof trackEvent === 'function') trackEvent('share_overlay_dismissed');
+    };
+
+    window._shareCopyCaption = function() {
+        var text = SHARE_CAPTION + SHARE_HASHTAG;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                _showToast('Caption copied!');
+            }).catch(function() {
+                _fallbackCopy(text);
+            });
+        } else {
+            _fallbackCopy(text);
+        }
+    };
+
+    function _fallbackCopy(text) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); _showToast('Caption copied!'); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
+    function _showToast(msg) {
+        var t = document.getElementById('shareToast');
+        if (!t) return;
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 2000);
+    }
+
+    window._sharePlatform = function(platform) {
+        var videoUrl = _getAfterSrc();
+        var text = SHARE_CAPTION + SHARE_HASHTAG;
+        var encText = encodeURIComponent(text);
+        var encUrl = encodeURIComponent(SHARE_URL);
+        var shareUrl = '';
+
+        if (platform === 'ig') {
+            if (navigator.share) {
+                navigator.share({ title: 'My Toon It! Creation', text: text, url: videoUrl || SHARE_URL }).catch(function(){});
+            } else {
+                _fallbackCopy(text);
+                _showToast('Caption copied \u2014 paste in Instagram!');
+                window.open('https://www.instagram.com', '_blank');
+            }
+            if (typeof trackEvent === 'function') trackEvent('share_click_ig');
+            return;
+        }
+        if (platform === 'tiktok') {
+            _fallbackCopy(text);
+            _showToast('Caption copied \u2014 paste in TikTok!');
+            window.open('https://www.tiktok.com/upload', '_blank');
+            if (typeof trackEvent === 'function') trackEvent('share_click_tiktok');
+            return;
+        }
+        if (platform === 'fb') {
+            shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encUrl + '&quote=' + encText;
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+            if (typeof trackEvent === 'function') trackEvent('share_click_fb');
+            return;
+        }
+        if (platform === 'x') {
+            shareUrl = 'https://twitter.com/intent/tweet?text=' + encText + '&url=' + encUrl;
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+            if (typeof trackEvent === 'function') trackEvent('share_click_x');
+            return;
+        }
+    };
+
+    window._shareNative = function() {
+        var videoUrl = _getAfterSrc();
+        if (!videoUrl) return;
+        var text = SHARE_CAPTION + SHARE_HASHTAG;
+
+        if (navigator.share) {
+            fetch(videoUrl).then(function(r) { return r.blob(); }).then(function(blob) {
+                var file = new File([blob], 'toonit_creation.mp4', { type: 'video/mp4' });
+                var shareData = { title: 'My Toon It! Creation', text: text, files: [file] };
+                if (navigator.canShare && navigator.canShare(shareData)) {
+                    navigator.share(shareData).then(function() {
+                        if (typeof grantShareUnlock === 'function') grantShareUnlock();
+                    }).catch(function(){});
+                } else {
+                    navigator.share({ title: 'My Toon It! Creation', text: text, url: videoUrl }).catch(function(){});
+                }
+            }).catch(function() {
+                navigator.share({ title: 'My Toon It! Creation', text: text, url: videoUrl }).catch(function(){});
+            });
+            if (typeof trackEvent === 'function') trackEvent('share_click_native');
+        } else {
+            _fallbackCopy(videoUrl);
+            _showToast('Video link copied!');
+        }
+    };
+
+    function initShareOverlayObserver() {
+        var resultEl = document.getElementById('result');
+        if (!resultEl) return;
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mu) {
+                if (mu.attributeName === 'style' && resultEl.style.display === 'block') {
+                    if (shareTimer) clearTimeout(shareTimer);
+                    shareTimer = setTimeout(function() {
+                        _showOverlay();
+                    }, 1500);
+                } else if (mu.attributeName === 'style' && resultEl.style.display === 'none') {
+                    _hideOverlay();
+                }
+            });
+        });
+        observer.observe(resultEl, { attributes: true, attributeFilter: ['style'] });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initShareOverlayObserver);
+    } else {
+        initShareOverlayObserver();
+    }
+
+    console.log('[Share Overlay] Viral share overlay script loaded');
 })();
 </script>
 
