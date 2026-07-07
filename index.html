@@ -6580,7 +6580,7 @@ if (typeof _magicFacts !== 'undefined') {
                     if (shareTimer) clearTimeout(shareTimer);
                     shareTimer = setTimeout(function() {
                         _showOverlay();
-                    }, 1500);
+                    }, 10000);
                 } else if (mu.attributeName === 'style' && resultEl.style.display === 'none') {
                     _hideOverlay();
                 }
