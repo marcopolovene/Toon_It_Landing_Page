@@ -2905,7 +2905,7 @@
                 // Award 1 credit to referrer for purchase
                 var { data: referrer } = await supabaseClient
                     .from('profiles')
-                    .select('credits, total_referral_purchases')
+                    .select('credits, total_referral_purchases, email')
                     .eq('id', profile.referred_by)
                     .single();
 
@@ -2932,7 +2932,11 @@
                     console.log('[REFERRAL] Purchase reward credited to referrer');
 
                     // Send email to referrer
-                    sendEmailNotification('referral_success', referrer.email);
+                    if (referrer.email) {
+                        sendEmailNotification('referral_success', referrer.email);
+                    } else {
+                        console.log('[REFERRAL] Skipping email — referrer has no email on file');
+                    }
                 }
             } catch(e) {
                 console.log('[REFERRAL] Purchase tracking error:', e);
