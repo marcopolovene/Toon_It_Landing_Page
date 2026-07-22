@@ -5208,13 +5208,21 @@
             var fill = document.getElementById('failsafeInlineLoaderFill');
             if (fill) fill.style.width = finalWidths[Math.min(i, finalWidths.length - 1)] + '%';
             try {
-                var result = await sb.from('generations').select('status,video_url,job_id').eq('job_id', jobId).single();
-                if (result && result.data && result.data.video_url) { // mobile_completion_fix_20260309
+                // anon_poll_webhook_fix_20260722: poll status webhook instead of Supabase
+                // (anon Supabase key is blocked by RLS on is_public=false generations)
+                var statusUrl = (window._toonitStatusUrl || '') || ('https://marcopthevene.app.n8n.cloud/webhook/toon-it-status?job_id=' + encodeURIComponent(jobId));
+                var sr = await fetch(statusUrl, { cache: 'no-store' });
+                var result = { data: await sr.json() };
+                if (result && result.data && result.data.status === 'complete' && result.data.video_url) { // mobile_completion_fix_20260309
                     showResultFallback(result.data.video_url, jobId);
                     return true;
                 }
                 if (result && result.data && (result.data.status === 'failed' || result.data.status === 'error')) {
-                    if (statusText) statusText.textContent = 'Error: Video generation failed. Please try again.';
+                    if (statusText) statusText.textContent = 'Error: ' + (result.data.message || 'Video generation failed. Please try again.');
+                    return false;
+                }
+                if (result && result.data && result.data.status === 'expired') {
+                    if (statusText) statusText.textContent = 'Error: ' + (result.data.message || 'Job expired. Please try again.');
                     return false;
                 }
             } catch(e) {}
