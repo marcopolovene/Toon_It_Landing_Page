@@ -3513,6 +3513,40 @@
         async function checkStatus() {
                 if (!currentJobId) return;
                 pollCount++;
+
+                // anon_checkStatus_webhook_fix_20260722: poll status webhook for anon users
+                // (anon Supabase key is blocked by RLS on is_public=false generations)
+                var _isAnonCheck = !window.currentUser || !window.currentUser.id;
+                if (_isAnonCheck) {
+                    console.log('[POLL] Anon path: checking status webhook for job:', currentJobId, 'attempt:', pollCount);
+                    try {
+                        var _anonStatusUrl = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status?job_id=' + encodeURIComponent(currentJobId);
+                        var _anonResp = await fetch(_anonStatusUrl, { cache: 'no-store' });
+                        var _anonData = await _anonResp.json();
+                        if (_anonData && _anonData.status === 'complete' && _anonData.video_url) {
+                            console.log('[POLL] Anon video ready via status webhook');
+                            clearInterval(pollInterval);
+                            if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+                            var _savedJobId = currentJobId;
+                            clearJob();
+                            showVideo(_anonData.video_url, _savedJobId);
+                            return;
+                        } else if (_anonData && (_anonData.status === 'failed' || _anonData.status === 'error' || _anonData.status === 'expired')) {
+                            console.warn('[POLL] Anon job ended:', _anonData.status);
+                            clearInterval(pollInterval);
+                            if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+                            clearJob();
+                            if (statusText) {
+                                statusText.innerHTML = '<div style="color:var(--error);margin-bottom:15px;">❌ ' + (_anonData.message || 'Video generation failed.') + '</div>' +
+                                    '<button onclick="resetForNew()" style="background:var(--primary);color:var(--text-dark);border:none;padding:12px 30px;border-radius:25px;font-weight:600;">🔄 Try Again</button>';
+                            }
+                            return;
+                        }
+                        // Still processing — continue polling
+                        return;
+                    } catch(e) { console.log('[POLL] Anon status webhook error:', e.message); }
+                    // Fall through to Supabase polling as backup
+                }
                 if (pollCount > MAX_POLLS) {
             cleanupMagic();
                     clearInterval(pollInterval);
@@ -3587,25 +3621,34 @@
                     // Fallback: check Supabase Storage directly after 30s
                     var elapsedSec = transformStartTime ? (Date.now() - transformStartTime) / 1000 : 0;
                     if (elapsedSec > 30) {
-                        var _filePath = currentJobId + '.mp4';
-                        try {
-                            var _signedResult = await supabaseClient.storage.from('videos').createSignedUrl(_filePath, 60);
-                            if (_signedResult.data && _signedResult.data.signedUrl) {
-                                var _checkUrl = _signedResult.data.signedUrl;
-                                var response = await fetch(_checkUrl, { method: 'HEAD', cache: 'no-store' });
-                                if (response.ok) {
-                                    var storageUrl = await getSignedVideoUrl('https://' + 'supa.toonit.ai' + '/storage/v1/object/public/videos/' + _filePath);
-                                    console.log('[POLL] Video found via Supabase Storage fallback');
-                                    clearInterval(pollInterval);
-                                    if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
-                                    var savedJobId = currentJobId;
-                                    clearJob();
-                                    showVideo(storageUrl, savedJobId);
-                                await loadUserCredits();
-                                return;
-                            }
-                            }
-                        } catch(e) { console.log('[POLL] Storage fallback skipped:', e.message); }
+                        // anon_storage_fallback_fix_20260722: anon videos go to videos/anonymous/{job_id}.mp4
+                        var _isAnonUser = !window.currentUser || !window.currentUser.id;
+                        var _paths = _isAnonUser
+                            ? ['anonymous/' + currentJobId + '.mp4', currentJobId + '.mp4']
+                            : [currentJobId + '.mp4', 'anonymous/' + currentJobId + '.mp4'];
+                        var _found = false;
+                        for (var _pi = 0; _pi < _paths.length && !_found; _pi++) {
+                            var _filePath = _paths[_pi];
+                            try {
+                                var _signedResult = await supabaseClient.storage.from('videos').createSignedUrl(_filePath, 60);
+                                if (_signedResult.data && _signedResult.data.signedUrl) {
+                                    var _checkUrl = _signedResult.data.signedUrl;
+                                    var response = await fetch(_checkUrl, { method: 'HEAD', cache: 'no-store' });
+                                    if (response.ok) {
+                                        var storageUrl = await getSignedVideoUrl('https://' + 'supa.toonit.ai' + '/storage/v1/object/public/videos/' + _filePath);
+                                        console.log('[POLL] Video found via Supabase Storage fallback at path:', _filePath);
+                                        clearInterval(pollInterval);
+                                        if (typeof progressInterval !== 'undefined') clearInterval(progressInterval);
+                                        var savedJobId = currentJobId;
+                                        clearJob();
+                                        showVideo(storageUrl, savedJobId);
+                                        await loadUserCredits();
+                                        _found = true;
+                                        return;
+                                    }
+                                }
+                            } catch(e) { console.log('[POLL] Storage fallback skipped for path', _filePath, ':', e.message); }
+                        }
                     }
                     }  // close if (supabaseClient)
 
