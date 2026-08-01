@@ -38,4 +38,7 @@ Disallow: /manifest.json
 # Internal functions
 Disallow: /supabase/
 
+# Ops dashboard (internal tool — service keys removed 2026-08-01, keep out of indexes)
+Disallow: /ops/
+
 Sitemap: https://toonit.ai/sitemap.xml
