@@ -3518,19 +3518,36 @@
  setTimeout(checkStatus, 3000);
  }
 
+        // anon_status_rpc_helper_20260803: direct Supabase RPC status check (replaces n8n status webhook to save n8n executions)
+        async function _toonitAnonJobStatus(jobId) {
+            var _rpcKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' + 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN' + 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+            var _rpcResp = await fetch('https://supa.toonit.ai/rest/v1/rpc/get_generation_status', {
+                method: 'POST',
+                cache: 'no-store',
+                headers: {
+                    'apikey': _rpcKey,
+                    'Authorization': 'Bearer ' + _rpcKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ p_job_id: jobId })
+            });
+            var _rpcJson = await _rpcResp.json();
+            if (Array.isArray(_rpcJson)) _rpcJson = _rpcJson[0] || null;
+            if (!_rpcJson) return { status: 'processing', job_id: jobId };
+            if (_rpcJson.status === 'complete' && !_rpcJson.video_url) _rpcJson.status = 'processing';
+            return _rpcJson;
+        }
+
         async function checkStatus() {
                 if (!currentJobId) return;
                 pollCount++;
 
-                // anon_checkStatus_webhook_fix_20260722: poll status webhook for anon users
-                // (anon Supabase key is blocked by RLS on is_public=false generations)
+                // anon_checkStatus_rpc_fix_20260803: poll Supabase RPC for anon users (replaces n8n status webhook to save n8n executions)
                 var _isAnonCheck = !window.currentUser || !window.currentUser.id;
                 if (_isAnonCheck) {
-                    console.log('[POLL] Anon path: checking status webhook for job:', currentJobId, 'attempt:', pollCount);
+                    console.log('[POLL] Anon path: checking status RPC for job:', currentJobId, 'attempt:', pollCount);
                     try {
-                        var _anonStatusUrl = 'https://marcopthevene.app.n8n.cloud/webhook/toon-it-status?job_id=' + encodeURIComponent(currentJobId);
-                        var _anonResp = await fetch(_anonStatusUrl, { cache: 'no-store' });
-                        var _anonData = await _anonResp.json();
+                        var _anonData = await _toonitAnonJobStatus(currentJobId);
                         if (_anonData && _anonData.status === 'complete' && _anonData.video_url) {
                             console.log('[POLL] Anon video ready via status webhook');
                             clearInterval(pollInterval);
@@ -4717,21 +4734,10 @@
             if (statusText) statusText.textContent = 'Resuming... Checking status...';
 
             try {
-                const response = await fetch(`${STATUS_URL}?job_id=${currentJobId}`);
-                if (!response.ok) {
-                    console.warn('Status check failed:', response.status);
-                    startPolling();
-                    return;
-                }
-                var statusRawText = await response.text();
-                if (!statusRawText) {
+                // resume_rpc_fix_20260803: STATUS_URL webhook was dead (commented out); use Supabase RPC directly
+                var data = await _toonitAnonJobStatus(currentJobId);
+                if (!data) {
                     console.warn('Empty status response');
-                    startPolling();
-                    return;
-                }
-                var data;
-                try { data = JSON.parse(statusRawText); } catch(e) {
-                    console.warn('Invalid status JSON:', e);
                     startPolling();
                     return;
                 }
@@ -5265,11 +5271,18 @@
             var fill = document.getElementById('failsafeInlineLoaderFill');
             if (fill) fill.style.width = finalWidths[Math.min(i, finalWidths.length - 1)] + '%';
             try {
-                // anon_poll_webhook_fix_20260722: poll status webhook instead of Supabase
-                // (anon Supabase key is blocked by RLS on is_public=false generations)
-                var statusUrl = (window._toonitStatusUrl || '') || ('https://marcopthevene.app.n8n.cloud/webhook/toon-it-status?job_id=' + encodeURIComponent(jobId));
-                var sr = await fetch(statusUrl, { cache: 'no-store' });
-                var result = { data: await sr.json() };
+                // anon_poll_rpc_fix_20260803: poll Supabase RPC instead of n8n status webhook (saves n8n executions)
+                var _rpcDataB = null;
+                if (typeof _toonitAnonJobStatus === 'function') {
+                    _rpcDataB = await _toonitAnonJobStatus(jobId);
+                } else {
+                    var _fsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6' + 'InpnZnB4ZGthbndiY2llb3dycW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTAwN' + 'DUsImV4cCI6MjA4NTg4NjA0NX0.07T6ACLiIkWY_JbaodznjwEBgrWuVkLKQ-j7bIMpYF0';
+                    var sr = await fetch('https://supa.toonit.ai/rest/v1/rpc/get_generation_status', { method: 'POST', cache: 'no-store', headers: { 'apikey': _fsKey, 'Authorization': 'Bearer ' + _fsKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_job_id: jobId }) });
+                    _rpcDataB = await sr.json();
+                    if (Array.isArray(_rpcDataB)) _rpcDataB = _rpcDataB[0] || null;
+                    if (!_rpcDataB) _rpcDataB = { status: 'processing' };
+                }
+                var result = { data: _rpcDataB };
                 if (result && result.data && result.data.status === 'complete' && result.data.video_url) { // mobile_completion_fix_20260309
                     showResultFallback(result.data.video_url, jobId);
                     return true;
