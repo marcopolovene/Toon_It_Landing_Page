@@ -629,16 +629,42 @@ var currentFilter = 'open';
             });
             var errorRates = metrics.map(function(r) { return r.transformations_total > 0 ? ((r.transformations_error / r.transformations_total) * 100) : 0; }).reverse();
 
-            var co = {responsive: true, maintainAspectRatio: false, plugins: {legend: {labels: {color: '#a0a0b0'}}}, scales: {x: {ticks: {color: '#6a6a80'}, grid: {color: '#1a1a2e'}}, y: {ticks: {color: '#6a6a80'}, grid: {color: '#2a2a40'}}}};
+            // --- Premium chart styling helpers (Chart.js 4) ---
+            function vGrad(ctx, hexTop, hexBottom) {
+                var g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+                g.addColorStop(0, hexTop); g.addColorStop(1, hexBottom);
+                return g;
+            }
+            var tooltipStyle = {
+                backgroundColor: 'rgba(22,33,62,0.95)', titleColor: '#e2e8f0', bodyColor: '#a0a0b0',
+                borderColor: 'rgba(167,139,250,0.35)', borderWidth: 1, cornerRadius: 10,
+                padding: 12, boxPadding: 6, usePointStyle: true, titleFont: {weight: '700', size: 13}
+            };
+            var legendStyle = {labels: {color: '#a0a0b0', usePointStyle: true, pointStyle: 'circle', padding: 16, font: {size: 12}}};
+            var co = {responsive: true, maintainAspectRatio: false, animation: {duration: 900, easing: 'easeOutQuart'},
+                interaction: {mode: 'index', intersect: false},
+                plugins: {legend: legendStyle, tooltip: tooltipStyle},
+                scales: {x: {ticks: {color: '#6a6a80', font: {size: 11}}, grid: {display: false}, border: {color: '#2a2a40'}},
+                         y: {ticks: {color: '#6a6a80', font: {size: 11}, padding: 6}, grid: {color: 'rgba(42,42,64,0.5)'}, border: {display: false}, beginAtZero: true}}};
 
             if (charts.gen) charts.gen.destroy();
-            charts.gen = new Chart(document.getElementById('genChart'), {type:'bar',data:{labels:dayLabels,datasets:[{label:'Success',data:successData,backgroundColor:'#10b981'},{label:'Error',data:errorData,backgroundColor:'#ef4444'}]},options:co});
+            charts.gen = new Chart(document.getElementById('genChart'), {type:'bar',data:{labels:dayLabels,datasets:[
+                {label:'Success',data:successData,backgroundColor:function(c){return vGrad(c.chart.ctx,'#34d399','#065f46');},hoverBackgroundColor:'#6ee7b7',borderRadius:7,borderSkipped:false,maxBarThickness:26},
+                {label:'Error',data:errorData,backgroundColor:function(c){return vGrad(c.chart.ctx,'#f87171','#7f1d1d');},hoverBackgroundColor:'#fca5a5',borderRadius:7,borderSkipped:false,maxBarThickness:26}
+            ]},options:co});
 
+            function areaLine(canvasId, data, label, rgb) {
+                return {type:'line',data:{labels:dayLabels,datasets:[{label:label,data:data,
+                    borderColor:'rgb('+rgb+')',borderWidth:2.5,tension:0.42,fill:true,
+                    backgroundColor:function(c){var ctx=c.chart.ctx;var g=ctx.createLinearGradient(0,0,0,ctx.canvas.height);g.addColorStop(0,'rgba('+rgb+',0.35)');g.addColorStop(0.6,'rgba('+rgb+',0.08)');g.addColorStop(1,'rgba('+rgb+',0)');return g;},
+                    pointRadius:3.5,pointHoverRadius:6,pointBackgroundColor:'rgb('+rgb+')',pointBorderColor:'#0a0a1a',pointBorderWidth:2,pointHoverBorderWidth:2.5}]},
+                    options:co};
+            }
             if (charts.signup) charts.signup.destroy();
-            charts.signup = new Chart(document.getElementById('signupChart'), {type:'line',data:{labels:dayLabels,datasets:[{label:'New Signups',data:signupData,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,0.1)',fill:true}]},options:co});
+            charts.signup = new Chart(document.getElementById('signupChart'), areaLine('signupChart', signupData, 'New Signups', '167,139,250'));
 
             if (charts.error) charts.error.destroy();
-            charts.error = new Chart(document.getElementById('errorChart'), {type:'line',data:{labels:dayLabels,datasets:[{label:'Error Rate %',data:errorRates,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.1)',fill:true}]},options:co});
+            charts.error = new Chart(document.getElementById('errorChart'), areaLine('errorChart', errorRates, 'Error Rate %', '239,68,68'));
 
             var sorted = (styleData || []).map(function(r) {
                 return {
@@ -650,7 +676,7 @@ var currentFilter = 'open';
             }).filter(function(r) { return r.total > 0; });
             var colors = ['#a78bfa','#10b981','#3b82f6','#f59e0b','#ef4444','#ec4899','#14b8a6','#8b5cf6'];
             if (charts.style) charts.style.destroy();
-            charts.style = new Chart(document.getElementById('styleChart'), {type:'doughnut',data:{labels:sorted.map(function(s){return s.style;}),datasets:[{data:sorted.map(function(s){return s.total;}),backgroundColor:colors,completeData:sorted.map(function(s){return s.complete;}),failedData:sorted.map(function(s){return s.failed;})}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#a0a0b0'}},tooltip:{callbacks:{label:function(ctx){var ds=ctx.dataset||{};var i=ctx.dataIndex;var label=ctx.label||'unknown';var total=ctx.parsed||0;var complete=(ds.completeData&&ds.completeData[i])||0;var failed=(ds.failedData&&ds.failedData[i])||0;return label + ': ' + total + ' total (' + complete + ' complete, ' + failed + ' failed)';}}}}}});
+            charts.style = new Chart(document.getElementById('styleChart'), {type:'doughnut',data:{labels:sorted.map(function(s){return s.style;}),datasets:[{data:sorted.map(function(s){return s.total;}),backgroundColor:colors,completeData:sorted.map(function(s){return s.complete;}),failedData:sorted.map(function(s){return s.failed;}),borderColor:'#16213e',borderWidth:3,borderRadius:8,spacing:3,hoverOffset:12,hoverBorderColor:'#16213e'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',animation:{duration:900,easing:'easeOutQuart'},plugins:{legend:{position:'right',labels:{color:'#a0a0b0',usePointStyle:true,pointStyle:'circle',padding:14,font:{size:12}}},tooltip:{backgroundColor:'rgba(22,33,62,0.95)',titleColor:'#e2e8f0',bodyColor:'#a0a0b0',borderColor:'rgba(167,139,250,0.35)',borderWidth:1,cornerRadius:10,padding:12,boxPadding:6,usePointStyle:true,callbacks:{label:function(ctx){var ds=ctx.dataset||{};var i=ctx.dataIndex;var label=ctx.label||'unknown';var total=ctx.parsed||0;var complete=(ds.completeData&&ds.completeData[i])||0;var failed=(ds.failedData&&ds.failedData[i])||0;return label + ': ' + total + ' total (' + complete + ' complete, ' + failed + ' failed)';}}}}}});
         });
     }
 
