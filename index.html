@@ -5988,6 +5988,58 @@
 </script>
 
 <script>
+(function(){
+  if (typeof _magicThemes !== 'undefined') {
+    _magicThemes.powerup = {
+      spell: 'Ki Energy Surge!',
+      wand: '⚡',
+      particles: ['⚡','🔥','💫','✨','🌪️','💥','⭐','🔮'],
+      msgs: {
+        1: [
+          'Charging your ki energy... ⚡',
+          'Gathering power from the earth... 🌍',
+          'Your aura is beginning to glow... ✨',
+          'Sensing your hidden strength... 🔮',
+          'The energy storm is forming... 🌪️'
+        ],
+        2: [
+          'Your aura is igniting gold... 🔥',
+          'Lightning crackling around you... ⚡',
+          'Hair rising in the energy updraft... 💥',
+          'Breaking through your limits... 💫',
+          'The shockwave is building... 🌪️'
+        ],
+        3: [
+          'Power level still climbing... ⚡',
+          'Final energy surge incoming... 🔥',
+          'Your hero form is stabilizing... ✨',
+          'The aura is at maximum... 💫',
+          'Transformation nearly complete... ⭐'
+        ]
+      }
+    };
+  }
+  if (typeof _magicFacts !== 'undefined') {
+    _magicFacts.powerup = [
+      'The golden-hair power-up transformation debuted in Dragon Ball Z in 1991 — the gold color was chosen partly to save the manga artist hours of inking black hair.',
+      'The glowing aura around powering-up heroes comes from ki — the life-energy concept from real Chinese martial arts philosophy practiced for thousands of years.',
+      'Anime power-up screams are legendary endurance feats — some transformation screams have lasted over 20 seconds in a single voice take.',
+      'The white flash frames during anime shockwaves are called impact frames — a 1-frame trick that makes your brain physically feel the force of the blow.',
+      'Dragon Ball Z once stretched a 5-minute planet countdown across 19 episodes — the longest power-up sequence in television history.',
+      'Upward-flowing hair during power-ups was designed to show energy defying gravity — it became one of the most imitated visual tropes in animation history.'
+    ];
+  }
+  if (typeof finalMessagesByStyle !== 'undefined') {
+    finalMessagesByStyle.powerup = [
+      'Your power-up transformation is complete — aura at maximum... ⚡',
+      'Final energy surge locked in... 🔥',
+      'Your hero form is ready for battle... 💫'
+    ];
+  }
+})();
+</script>
+
+<script>
 (function() {
   var btn = document.getElementById('moreStylesBtn');
   var more = document.getElementById('moreStyles');
