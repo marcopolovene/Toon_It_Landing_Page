@@ -759,12 +759,47 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://toonit.ai/#organization",
+        "name": "Toon It!",
+        "url": "https://toonit.ai",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://toonit.ai/assets/icons/toonit-icon-512.png",
+            "width": 512,
+            "height": 512
+        },
+        "description": "Toon It! transforms your photos into magical animated art with AI. Upload any photo and watch it come alive as an enchanting animated story.",
+        "sameAs": [
+            "https://x.com/T00N1Ta1",
+            "https://www.tiktok.com/@straw_hat00",
+            "https://play.google.com/store/apps/details?id=ai.toonit.app"
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "support@toonit.ai",
+            "url": "https://toonit.ai"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
         "@type": "WebApplication",
+        "@id": "https://toonit.ai/#webapp",
         "name": "Toon It!",
         "url": "https://toonit.ai",
         "description": "Transform your photos into magical animated art with AI. Upload any photo and watch it come alive as an enchanting animated story.",
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "Web",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "screenshot": {
+            "@type": "ImageObject",
+            "url": "https://res.cloudinary.com/dzarqnick/image/upload/v1772100992/toonit_og_card.jpg",
+            "width": 1200,
+            "height": 630
+        },
         "offers": {
             "@type": "Offer",
             "price": "0",
@@ -772,9 +807,7 @@
             "description": "3 free credits on signup"
         },
         "creator": {
-            "@type": "Organization",
-            "name": "Toon It!",
-            "url": "https://toonit.ai"
+            "@id": "https://toonit.ai/#organization"
         },
         "featureList": [
             "AI-powered photo to video transformation",
