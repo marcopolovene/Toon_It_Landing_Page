@@ -558,7 +558,16 @@
                     .order('created_at', { ascending: false })
                     .limit(20);
 
-                const txList = document.getElementById('transactionList');
+                function escapeHtml(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+const txList = document.getElementById('transactionList');
 
                 // Count purchases
                 const purchases = data ? data.filter(t => t.type === 'purchase').length : 0;
@@ -574,7 +583,7 @@
                                         ${tx.type === 'purchase' ? '💳' : tx.type === 'use' ? '🎬' : tx.type === 'feedback' ? '⭐' : '🎁'}
                                     </div>
                                     <div class="transaction-details">
-                                        <div class="transaction-desc">${tx.description || tx.type}</div>
+                                        <div class="transaction-desc">${escapeHtml(tx.description || tx.type)}</div>
                                         <div class="transaction-date">${formatDate(tx.created_at)}</div>
                                     </div>
                                 </div>
